@@ -1,0 +1,49 @@
+name: lint
+# Validates the orchestration layer itself — shell syntax, shellcheck, the stage-selection logic, and the
+# workflow YAML — so a typo here is caught on a PR instead of on the real OCI lab host. Nothing in this
+# workflow touches OCI, SSH, or any secret: it only reads this repo's own files.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: lint-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash -n (syntax) on every script
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            bash -n "$f" || fail=1
+          done < <(find scripts remote config -name '*.sh' -print0)
+          exit $fail
+
+      - name: shellcheck (warning and above)
+        run: |
+          command -v shellcheck >/dev/null || { sudo apt-get update -qq && sudo apt-get install -qq -y shellcheck; }
+          shellcheck -x --severity=warning scripts/*.sh remote/*.sh config/*.sh
+
+      - name: stage-selection self-test (pure logic, no SSH)
+        run: |
+          scripts/run-stages.sh validate all
+          scripts/run-stages.sh validate host-prep,blueprint
+          # an unknown stage name must be rejected — `!` would skip -e on a regression here, so check explicitly
+          scripts/run-stages.sh validate not-a-stage 2>/dev/null && { echo "::error::validate accepted an unknown stage name"; exit 1; }
+          [ "$(scripts/run-stages.sh plan platform all | tr '\n' ,)" = "host-prep,platform-install-1,platform-install-2,verify-platform," ]
+          [ -z "$(scripts/run-stages.sh plan bringup blueprint,substrate)" ]   # a site-only selection plans nothing for bringup
+
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: actionlint
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -color

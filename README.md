@@ -128,6 +128,7 @@ stage once the team agrees it is safe.
 ```
 .github/workflows/nvcm-e2e.yml    entry: inputs, concurrency, boot → phases → poweroff → report
 .github/workflows/_phase.yml      reusable: one phase of stages
+.github/workflows/ci.yml          lint on push/PR: shellcheck, syntax, actionlint — no OCI, no secrets
 .github/actions/lab-access/       OCI CLI config + ssh-agent (keys never touch the workspace)
 config/stages.sh                  the stage catalogue (the only POC-specific knowledge here)
 remote/agent.sh                   runs ON the host: preflight, prepare/clone, detached stage runner, diag

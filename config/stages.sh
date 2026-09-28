@@ -14,6 +14,7 @@
 # function (dashes become underscores). Phases map to workflow jobs (platform | site | bringup); keep each
 # phase's timeouts summed under ~340 min — GitHub-hosted jobs are hard-capped at 6 h.
 
+# shellcheck disable=SC2034  # consumed by every file that sources this one (run-stages.sh, build-report.sh, agent.sh)
 LAUNCHPAD_STAGES=(
   host-prep:platform:45
   platform-install-1:platform:150
