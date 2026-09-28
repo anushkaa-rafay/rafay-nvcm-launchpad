@@ -12,6 +12,46 @@ Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settl
         ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/YYYY/MM/DD commit
 ```
 
+## Quick start — what goes where
+
+Two different kinds of configuration, set by two different people at two different times:
+
+- **Secrets & variables** — set **once**, by whoever administers this repo, in GitHub's Settings →
+  Secrets and variables → Actions. Credentials and lab facts that don't change from run to run. Full list
+  and setup steps: [Common setup for both workflows](#common-setup-for-both-workflows).
+- **Input parameters** — chosen **every time** someone clicks **Run workflow** in the Actions tab. What
+  changes per run: which branch, which stages, which site. Full list per workflow:
+  [greenfield](#greenfield-stages) / [brownfield](#brownfield-stages).
+
+**Secrets** (Settings → Secrets and variables → Actions → *Secrets*) — never typed into a workflow run:
+
+| Secret | What |
+|---|---|
+| `OCI_CLI_USER`, `OCI_CLI_TENANCY`, `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION` | OCI API-key auth |
+| `OCI_CLI_KEY_CONTENT` | the API signing private key (PEM) |
+| `OCI_SSH_PRIVATE_KEY` | SSH key authorized on the lab host |
+| `POC_DEPLOY_KEY` | read-only deploy key on `rafay_nvcm_poc` |
+
+**Variables** (same page, *Variables* tab) — also set once, not secret, just repo-wide facts:
+
+| Variable | What |
+|---|---|
+| `OCI_INSTANCE_ID` | the lab instance to start/stop (required) |
+| `OCI_SSH_USER`, `OCI_SSH_HOST`, `OCI_SSH_KNOWN_HOSTS` | how to reach it over SSH |
+| `POC_REPO`, `POC_DEFAULT_BRANCH` | which `rafay_nvcm_poc` repo/branch, if not overridden per run |
+| `LAB_OCI_IP` | optional, for `simulate_dc.sh --oci` |
+
+**Input parameters** — typed in the **Run workflow** form each time, never in Settings:
+
+| Workflow | You choose |
+|---|---|
+| `nvcm-greenfield` | `poc_branch`, `stages`, `blueprint_source`, `tenants`, `shutdown_oci` |
+| `nvcm-brownfield` | `poc_branch`, `stages`, `discover_mode`, `seed`, `site`, `location`, `device_type`, `policy_from`, `tenants`, `shutdown_oci` |
+
+The rule of thumb: if it's a credential or something true about the lab regardless of who runs it or when —
+it's a secret/variable, set once. If it's a choice specific to *this* run — which branch, which site, which
+stages — it's an input, typed fresh every time.
+
 ## Two flows — greenfield and brownfield
 
 `rafay_nvcm_poc` supports onboarding a data center two ways (its `onboarding/README.md` — "the front door" —
