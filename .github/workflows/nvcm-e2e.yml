@@ -1,0 +1,225 @@
+name: nvcm-e2e
+# End-to-end NVCM POC run on the existing OCI lab host:
+#   boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
+#   → platform → site → bringup   (the stages in config/stages.sh, executed ON the host)
+#   → poweroff (always, unless shutdown_oci=false) → report (always: artifact + dated commit under logs/)
+# The installation logic lives in rafay_nvcm_poc; this repo only orchestrates it.
+
+run-name: "nvcm-e2e · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      poc_branch:
+        description: "rafay_nvcm_poc branch to run"
+        required: true
+        default: main
+        type: string
+      stages:
+        description: "Stages: 'all' or a comma list — host-prep,platform-install-1,platform-install-2,verify-platform,blueprint,substrate,dc-bringup"
+        required: true
+        default: all
+        type: string
+      blueprint_source:
+        description: "Blueprint for substrate/dc-bringup: generated (this run's blueprint stage) or committed (stc/blueprint_stc.yaml)"
+        default: generated
+        type: choice
+        options: [generated, committed]
+      tenants:
+        description: "Tenant spec passed to simulate_dc.sh --tenants"
+        default: "3-11,84-100"
+        type: string
+      shutdown_oci:
+        description: "Power the OCI instance off at the end (untick to keep it up for debugging)"
+        default: true
+        type: boolean
+  # Nightly run — uncomment to enable. Uses vars.POC_DEFAULT_BRANCH (default main), all stages, and shuts down.
+  # schedule:
+  #   - cron: "30 20 * * *"   # 02:00 IST
+
+# ONE run at a time against the lab: a new run QUEUES behind the active one (never cancels it).
+# GitHub keeps at most one pending run per group — a third trigger replaces the queued second.
+concurrency:
+  group: nvcm-oci-lab
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  OCI_INSTANCE_ID:     ${{ vars.OCI_INSTANCE_ID }}
+  OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
+  OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
+  OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+
+jobs:
+  boot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      run_key: ${{ steps.opts.outputs.run_key }}
+      stages:  ${{ steps.opts.outputs.stages }}
+    env:
+      OUT: out/boot
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve + validate options
+        id: opts
+        env:
+          BRANCH:   ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
+          STAGES:   ${{ inputs.stages || 'all' }}
+          BP_SRC:   ${{ inputs.blueprint_source || 'generated' }}
+          TENANTS:  ${{ inputs.tenants || '3-11,84-100' }}
+          POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
+          RUN_KEY:  ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          # these values reach a remote shell — accept only plain names
+          [[ "$BRANCH"   =~ ^[A-Za-z0-9._/-]+$ && "$BRANCH" != -* ]] || { echo "::error::invalid branch '$BRANCH'"; exit 1; }
+          [[ "$POC_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]     || { echo "::error::invalid POC_REPO '$POC_REPO'"; exit 1; }
+          [[ "$TENANTS"  =~ ^[0-9,-]+$ ]]                            || { echo "::error::invalid tenants '$TENANTS'"; exit 1; }
+          STAGES="${STAGES// /}"; scripts/run-stages.sh validate "$STAGES"
+          # branch existence is checked by the clone on the host (the repo is private to this runner)
+          mkdir -p "$OUT"
+          {
+            echo "RUN_KEY=$RUN_KEY"; echo "POC_REPO=$POC_REPO"; echo "POC_BRANCH=$BRANCH"; echo "STAGES=$STAGES"
+            echo "BLUEPRINT_SOURCE=$BP_SRC"; echo "TENANTS=$TENANTS"; echo "STARTED_AT=$(date -u +%FT%TZ)"
+          } > "$OUT/meta.env"
+          cat "$OUT/meta.env" >> "$GITHUB_OUTPUT"   # expression property names are case-insensitive
+
+      - name: Lab access
+        uses: ./.github/actions/lab-access
+        with:
+          oci-user:        ${{ secrets.OCI_CLI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
+
+      - name: Start OCI instance
+        id: start
+        run: scripts/lab.sh start 2>&1 | tee -a "$OUT/boot.log"
+
+      - name: Wait until operational
+        id: connect
+        run: |
+          scripts/lab.sh connect 2>&1 | tee -a "$OUT/boot.log"
+          scripts/lab.sh push-agent
+
+      - name: Clean workspace + clone rafay_nvcm_poc
+        env:
+          KEY:      ${{ steps.opts.outputs.run_key }}
+          POC_REPO: ${{ steps.opts.outputs.POC_REPO }}
+          BRANCH:   ${{ steps.opts.outputs.POC_BRANCH }}
+          BP_SRC:   ${{ steps.opts.outputs.BLUEPRINT_SOURCE }}
+          TENANTS:  ${{ steps.opts.outputs.TENANTS }}
+          LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
+        run: |
+          # -A forwards the agent for this one command only: the deploy key never touches the host's disk
+          scripts/lab.sh ssh -A "LAB_OCI_IP='$LAB_OCI_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
+            2>&1 | tee -a "$OUT/boot.log"
+          grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
+
+      - name: Record boot metadata
+        if: always()
+        env:
+          HOST:        ${{ steps.connect.outputs.host }}
+          WAS_RUNNING: ${{ steps.start.outputs.was_running }}
+        run: |
+          mkdir -p "$OUT"
+          { echo "HOST=$HOST"; echo "WAS_RUNNING=$WAS_RUNNING"; } >> "$OUT/meta.env"
+
+      - name: Upload boot logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-boot
+          path: ${{ env.OUT }}
+          if-no-files-found: ignore
+          retention-days: 30
+
+  platform:
+    needs: boot
+    uses: ./.github/workflows/_phase.yml
+    with: { phase: platform, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}" }
+    secrets: inherit
+
+  site:
+    needs: [boot, platform]
+    uses: ./.github/workflows/_phase.yml
+    with: { phase: site, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}" }
+    secrets: inherit
+
+  bringup:
+    needs: [boot, site]
+    uses: ./.github/workflows/_phase.yml
+    with: { phase: bringup, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}" }
+    secrets: inherit
+
+  poweroff:
+    needs: [boot, platform, site, bringup]
+    # always(): also after a failure or cancellation. Non-dispatch triggers (schedule) always shut down.
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.shutdown_oci)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lab-access
+        with:
+          oci-user:        ${{ secrets.OCI_CLI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+      - name: Stop OCI instance
+        run: scripts/lab.sh stop
+
+  report:
+    needs: [boot, platform, site, bringup, poweroff]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write       # the dated log commit — the only write this workflow makes
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true      # nothing to download if boot died before its upload; the report says so
+        with:
+          pattern: logs-*
+          path: collected
+
+      - name: Build report
+        id: report
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TRIGGER: ${{ github.event_name }}
+          ACTOR: ${{ github.triggering_actor }}
+          RESULT_BOOT: ${{ needs.boot.result }}
+          RESULT_PLATFORM: ${{ needs.platform.result }}
+          RESULT_SITE: ${{ needs.site.result }}
+          RESULT_BRINGUP: ${{ needs.bringup.result }}
+          RESULT_POWEROFF: ${{ needs.poweroff.result }}
+        run: |
+          mkdir -p collected
+          scripts/build-report.sh collected report
+          cat report/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload run report
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-report
+          path: report
+          retention-days: 90
+
+      - name: Commit logs to logs/YYYY/MM/DD
+        run: scripts/commit-logs.sh report
+
+      # Future notifiers (email / shared drive / Slack) go here, reading report/summary.json.

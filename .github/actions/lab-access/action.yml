@@ -1,0 +1,70 @@
+name: lab-access
+description: >-
+  OCI CLI with API-key auth, plus an ssh-agent holding the lab SSH key and (optionally) the read-only
+  rafay_nvcm_poc deploy key. Nothing is written to the workspace; keys live in ~/.oci and the agent only.
+
+inputs:
+  oci-user:        { description: "OCI user OCID",                 required: true }
+  oci-tenancy:     { description: "OCI tenancy OCID",              required: true }
+  oci-fingerprint: { description: "API signing key fingerprint",   required: true }
+  oci-private-key: { description: "API signing key (PEM)",         required: true }
+  oci-region:      { description: "OCI region, e.g. ap-mumbai-1",  required: true }
+  ssh-private-key: { description: "SSH key for the lab host",      required: false, default: "" }
+  poc-deploy-key:  { description: "Read-only deploy key for rafay_nvcm_poc (boot job only)", required: false, default: "" }
+
+runs:
+  using: composite
+  steps:
+    - name: Check the required secrets/variables are set
+      shell: bash
+      env:
+        OCI_CLI_USER: ${{ inputs.oci-user }}
+        OCI_CLI_TENANCY: ${{ inputs.oci-tenancy }}
+        OCI_CLI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-private-key }}
+        OCI_CLI_REGION: ${{ inputs.oci-region }}
+      run: |
+        missing=()
+        for v in OCI_CLI_USER OCI_CLI_TENANCY OCI_CLI_FINGERPRINT OCI_CLI_KEY_CONTENT OCI_CLI_REGION OCI_INSTANCE_ID; do
+          [ -n "${!v:-}" ] || missing+=("$v")
+        done
+        [ ${#missing[@]} -eq 0 ] || { echo "::error::not configured: ${missing[*]} (see README → Setup)"; exit 1; }
+
+    - name: Install OCI CLI
+      shell: bash
+      run: pipx install oci-cli >/dev/null && oci --version
+
+    - name: Configure OCI CLI
+      shell: bash
+      env:
+        OCI_CLI_USER: ${{ inputs.oci-user }}
+        OCI_CLI_TENANCY: ${{ inputs.oci-tenancy }}
+        OCI_CLI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-private-key }}
+        OCI_CLI_REGION: ${{ inputs.oci-region }}
+      run: |
+        umask 077; mkdir -p ~/.oci
+        printf '%s\n' "$OCI_CLI_KEY_CONTENT" > ~/.oci/key.pem
+        cat > ~/.oci/config <<EOF
+        [DEFAULT]
+        user=$OCI_CLI_USER
+        tenancy=$OCI_CLI_TENANCY
+        fingerprint=$OCI_CLI_FINGERPRINT
+        region=$OCI_CLI_REGION
+        key_file=$HOME/.oci/key.pem
+        EOF
+        sed -i 's/^ *//' ~/.oci/config
+
+    - name: Load SSH keys into an agent
+      if: inputs.ssh-private-key != ''
+      shell: bash
+      env:
+        LAB_KEY: ${{ inputs.ssh-private-key }}
+        POC_KEY: ${{ inputs.poc-deploy-key }}
+      run: |
+        eval "$(ssh-agent -s)" >/dev/null
+        { echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"; echo "SSH_AGENT_PID=$SSH_AGENT_PID"; } >> "$GITHUB_ENV"
+        # deploy key FIRST: GitHub authenticates with the first key it accepts, so a lab key that happens to be
+        # registered on GitHub elsewhere would otherwise shadow it and the clone would report "repo not found".
+        [ -z "$POC_KEY" ] || ssh-add -q - <<< "$POC_KEY"
+        ssh-add -q - <<< "$LAB_KEY"

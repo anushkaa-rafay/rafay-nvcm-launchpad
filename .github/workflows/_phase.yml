@@ -1,0 +1,65 @@
+name: _phase
+# One PHASE of stages (config/stages.sh) against the lab host. Called by nvcm-e2e.yml once per phase — a phase
+# is its own job so each gets a fresh 6 h GitHub-hosted budget; the work itself runs detached on the host, so
+# nothing is lost between jobs.
+
+on:
+  workflow_call:
+    inputs:
+      phase:           { type: string, required: true }
+      run_key:         { type: string, required: true }
+      stages:          { type: string, required: true }
+      timeout_minutes: { type: number, default: 350 }
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    name: ${{ inputs.phase }}
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    env:
+      OCI_INSTANCE_ID:     ${{ vars.OCI_INSTANCE_ID }}
+      OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
+      OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
+      OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+      OUT: out/${{ inputs.phase }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Plan
+        id: plan
+        env: { PHASE: "${{ inputs.phase }}", SEL: "${{ inputs.stages }}" }
+        run: |
+          s="$(scripts/run-stages.sh plan "$PHASE" "$SEL" | paste -sd, -)"
+          echo "stages=$s" >> "$GITHUB_OUTPUT"
+          echo "phase $PHASE runs: ${s:-<nothing selected>}"
+
+      - name: Lab access
+        if: steps.plan.outputs.stages != ''
+        uses: ./.github/actions/lab-access
+        with:
+          oci-user:        ${{ secrets.OCI_CLI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+
+      - name: Connect
+        if: steps.plan.outputs.stages != ''
+        run: scripts/lab.sh connect && scripts/lab.sh push-agent
+
+      - name: Run stages
+        env: { PHASE: "${{ inputs.phase }}", KEY: "${{ inputs.run_key }}", SEL: "${{ inputs.stages }}" }
+        run: scripts/run-stages.sh run "$PHASE" "$KEY" "$SEL" "$OUT"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ inputs.phase }}
+          path: ${{ env.OUT }}
+          if-no-files-found: ignore
+          retention-days: 30
