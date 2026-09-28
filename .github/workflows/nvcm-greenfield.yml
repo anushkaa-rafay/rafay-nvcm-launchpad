@@ -1,11 +1,14 @@
-name: nvcm-e2e
-# End-to-end NVCM POC run on the existing OCI lab host:
+name: nvcm-greenfield
+# GREENFIELD: nothing to preserve — author intent from scratch and push it to blank switches. Mirrors
+# rafay_nvcm_poc's onboarding/greenfield/greenfield_adoption_plan.md (spreadsheet → blueprint → deploy).
 #   boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
-#   → platform → site → bringup   (the stages in config/stages.sh, executed ON the host)
+#   → platform → site → bringup   (config/stages-greenfield.sh, executed ON the host)
 #   → poweroff (always, unless shutdown_oci=false) → report (always: artifact + dated commit under logs/)
-# The installation logic lives in rafay_nvcm_poc; this repo only orchestrates it.
+# The installation logic lives in rafay_nvcm_poc; this repo only orchestrates it. See also: nvcm-brownfield.yml
+# (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
+# one concurrency group because both drive the SAME physical OCI host.
 
-run-name: "nvcm-e2e · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}"
+run-name: "nvcm-greenfield · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}"
 
 on:
   workflow_dispatch:
@@ -37,8 +40,9 @@ on:
   # schedule:
   #   - cron: "30 20 * * *"   # 02:00 IST
 
-# ONE run at a time against the lab: a new run QUEUES behind the active one (never cancels it).
-# GitHub keeps at most one pending run per group — a third trigger replaces the queued second.
+# ONE run at a time against the lab: a new run QUEUES behind the active one (never cancels it). SHARED with
+# nvcm-brownfield.yml — both drive the same physical OCI host, so a brownfield run and a greenfield run must
+# never overlap either. GitHub keeps at most one pending run per group — a third trigger replaces the queued second.
 concurrency:
   group: nvcm-oci-lab
   cancel-in-progress: false
@@ -51,6 +55,7 @@ env:
   OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
   OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
   OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+  LAUNCHPAD_CATALOGUE: config/stages-greenfield.sh
 
 jobs:
   boot:
@@ -117,7 +122,9 @@ jobs:
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
           LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
         run: |
-          # -A forwards the agent for this one command only: the deploy key never touches the host's disk
+          # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
+          # BP_SRC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
+          # to plain charsets with no spaces (see "Resolve + validate options"), so plain interpolation is safe.
           scripts/lab.sh ssh -A "LAB_OCI_IP='$LAB_OCI_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
             2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
@@ -143,19 +150,19 @@ jobs:
   platform:
     needs: boot
     uses: ./.github/workflows/_phase.yml
-    with: { phase: platform, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}" }
+    with: { phase: platform, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   site:
     needs: [boot, platform]
     uses: ./.github/workflows/_phase.yml
-    with: { phase: site, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}" }
+    with: { phase: site, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   bringup:
     needs: [boot, site]
     uses: ./.github/workflows/_phase.yml
-    with: { phase: bringup, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}" }
+    with: { phase: bringup, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   poweroff:

@@ -1,10 +1,13 @@
 # shellcheck shell=bash
 #
-# stages.sh — the stage catalogue. The ONLY place that knows which rafay_nvcm_poc entry point each stage
-# calls. Sourced in two places:
-#   * on the GitHub runner (scripts/run-stages.sh) — reads LAUNCHPAD_STAGES for order, phase, timeout;
-#   * on the OCI host (remote/agent.sh)            — calls stage_<name> inside the rafay_nvcm_poc checkout,
-#                                                    with run.env sourced and `set -euo pipefail`.
+# stages-greenfield.sh — the GREENFIELD stage catalogue: nothing to preserve; author intent from scratch and
+# push it to blank switches. Mirrors rafay_nvcm_poc's onboarding/greenfield/greenfield_adoption_plan.md — "this
+# path is already built and documented" in deploy_scripts/, via stc/stc_dc_deploy.md's spreadsheet → blueprint
+# → deploy flow. Sourced in two places:
+#   * on the GitHub runner (scripts/run-stages.sh) via $LAUNCHPAD_CATALOGUE — reads LAUNCHPAD_STAGES for
+#     order, phase, timeout;
+#   * on the OCI host (remote/agent.sh), copied there as ~/launchpad/stages.sh — calls stage_<name> inside
+#     the rafay_nvcm_poc checkout, with run.env sourced and `set -euo pipefail`.
 #
 # RULE: a stage body is an INVOCATION of a documented rafay_nvcm_poc command (setup_guide.md §0, Part IV).
 # Installation logic belongs in rafay_nvcm_poc, never here. If a stage needs more than a few lines of glue,
@@ -13,6 +16,8 @@
 # ADDING A STAGE: one "name:phase:timeout_minutes" line below (order = execution order) + a stage_<name>
 # function (dashes become underscores). Phases map to workflow jobs (platform | site | bringup); keep each
 # phase's timeouts summed under ~340 min — GitHub-hosted jobs are hard-capped at 6 h.
+
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 # shellcheck disable=SC2034  # consumed by every file that sources this one (run-stages.sh, build-report.sh, agent.sh)
 LAUNCHPAD_STAGES=(
@@ -25,14 +30,12 @@ LAUNCHPAD_STAGES=(
   dc-bringup:bringup:300
 )
 
-# ── site defaults (the STC reference site shipped in rafay_nvcm_poc/stc) ─────────────────────────────────
-: "${SITE:=blr-dc01}"
+# ── greenfield-only: the STC reference site shipped in rafay_nvcm_poc/stc ────────────────────────────────
 : "${BP_XLSX:=stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx}"
 : "${BP_PROFILE:=stc/sheet_profiles/stcs-v0.3.yaml}"
 : "${BP_FACTS:=stc/site_facts/${SITE}.yaml}"
 : "${BP_COMMITTED:=stc/blueprint_stc.yaml}"
 : "${BLUEPRINT_SOURCE:=generated}"     # generated = this run's blueprint stage output | committed = BP_COMMITTED
-: "${TENANTS:=3-11,84-100}"            # simulate_dc.sh's own default
 
 # The blueprint the DC stages consume. A "generated" run needs the blueprint stage to have run in THIS run.
 lp_blueprint(){
@@ -42,12 +45,7 @@ lp_blueprint(){
   echo "$bp"
 }
 
-# ── stage bodies ─────────────────────────────────────────────────────────────────────────────────────────
-stage_host_prep(){           bash deploy_scripts/platform/nvcm-host-prep.sh; }   # group changes apply from the next stage (new login)
-stage_platform_install_1(){  bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
-stage_platform_install_2(){  bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }
-stage_verify_platform(){     bash deploy_scripts/platform/verify_platform_install.sh all; }
-
+# ── stage bodies (host-prep / platform-install-1 / platform-install-2 / verify-platform: common.sh) ───────
 stage_blueprint(){           # setup_guide.md G2 (toolchain) + G4 (generate, then verify offline)
   [ -x .venv/bin/python3 ] || { sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip && python3 -m venv .venv; }
   .venv/bin/python3 -m pip install -q -r test/render/requirements.txt

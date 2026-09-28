@@ -13,9 +13,10 @@
 #
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# shellcheck source=../config/stages.sh
-. "$ROOT/config/stages.sh"
-IN="$1"; OUT="$2"; mkdir -p "$OUT"
+: "${LAUNCHPAD_CATALOGUE:?LAUNCHPAD_CATALOGUE not set (e.g. config/stages-greenfield.sh) — set by the workflow}"
+# shellcheck source=/dev/null
+. "$ROOT/$LAUNCHPAD_CATALOGUE"
+IN="$1"; OUT="$2"; mkdir -p "$OUT"   # deliberately reassigned after sourcing: the catalogue may export its own OUT (brownfield's host-side discovery dir) — this OUT is this script's own report dir, on the runner, unrelated
 
 # boot metadata (absent if the run died before boot uploaded anything)
 declare -A M=()

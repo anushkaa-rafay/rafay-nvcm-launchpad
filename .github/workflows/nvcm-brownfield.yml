@@ -1,0 +1,273 @@
+name: nvcm-brownfield
+# BROWNFIELD: a live fabric already exists — learn from it, never author over it. Mirrors rafay_nvcm_poc's
+# onboarding/brownfield/brownfield_adoption_plan.md: discover (read-only) → blueprint (read-only, the reuse
+# path) → REVIEW → adopt (the only stage that writes), landing on the SAME provision_site.sh greenfield uses.
+#   boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
+#   → platform → site → bringup   (config/stages-brownfield.sh, executed ON the host)
+#   → poweroff (always, unless shutdown_oci=false) → report (always: artifact + dated commit under logs/)
+#
+# THE REVIEW GATE — read config/stages-brownfield.sh's header before a real DC run. The default `stages`
+# below deliberately stops BEFORE any write: run once to discover+generate the blueprint, read it in that
+# run's log / committed report, then re-run with stages=bf-adopt once satisfied. `stages=all` runs the whole
+# thing unattended — fine for this lab's own simulated fabric, never the first pass on a real production DC.
+#
+# Shares every job/script with nvcm-greenfield.yml except the stage catalogue, and shares one concurrency
+# group with it because both drive the SAME physical OCI host.
+
+run-name: "nvcm-brownfield · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'bf-discover,bf-blueprint' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      poc_branch:
+        description: "rafay_nvcm_poc branch to run"
+        required: true
+        default: main
+        type: string
+      stages:
+        description: "Stages: 'all' or a comma list — host-prep,platform-install-1,platform-install-2,verify-platform,bf-discover,bf-blueprint,bf-adopt. Default stops BEFORE bf-adopt (the review gate) — see the note above."
+        required: true
+        default: "bf-discover,bf-blueprint"
+        type: string
+      discover_mode:
+        description: "virtual: simulated VMs on this host (virsh) | real: physical switches over the network (needs seed below)"
+        default: virtual
+        type: choice
+        options: [virtual, real]
+      seed:
+        description: "real mode only: management IPs/hostnames to discover, one per line"
+        default: ""
+        type: string
+      site:
+        description: "Site name for the discovered blueprint"
+        default: blr-dc01
+        type: string
+      location:
+        description: "Location path override (blank = carry policy_from's own location chain)"
+        default: ""
+        type: string
+      device_type:
+        description: "Device type as modeled in Nautobot"
+        default: "Cumulus VX"
+        type: string
+      policy_from:
+        description: "Reference blueprint to carry tenant_policy/supernets from (a running switch can't reveal design policy). Blank leaves TODO(confirm) markers for a genuinely new DC."
+        default: "stc/blueprint_stc.yaml"
+        type: string
+      tenants:
+        description: "Tenant spec passed to provision_site.sh --tenants at the bf-adopt stage"
+        default: "3-11,84-100"
+        type: string
+      shutdown_oci:
+        description: "Power the OCI instance off at the end (untick to keep it up for debugging)"
+        default: true
+        type: boolean
+
+# ONE run at a time against the lab: a new run QUEUES behind the active one (never cancels it). SHARED with
+# nvcm-greenfield.yml — both drive the same physical OCI host, so a greenfield run and a brownfield run must
+# never overlap either. GitHub keeps at most one pending run per group — a third trigger replaces the queued second.
+concurrency:
+  group: nvcm-oci-lab
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  OCI_INSTANCE_ID:     ${{ vars.OCI_INSTANCE_ID }}
+  OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
+  OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
+  OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+  LAUNCHPAD_CATALOGUE: config/stages-brownfield.sh
+
+jobs:
+  boot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      run_key: ${{ steps.opts.outputs.run_key }}
+      stages:  ${{ steps.opts.outputs.stages }}
+    env:
+      OUT: out/boot
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve + validate options
+        id: opts
+        env:
+          BRANCH:   ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
+          STAGES:   ${{ inputs.stages || 'bf-discover,bf-blueprint' }}
+          MODE:     ${{ inputs.discover_mode || 'virtual' }}
+          SEED:     ${{ inputs.seed }}
+          SITE:     ${{ inputs.site || 'blr-dc01' }}
+          LOCATION: ${{ inputs.location }}
+          DEVTYPE:  ${{ inputs.device_type || 'Cumulus VX' }}
+          POLICY_FROM: ${{ inputs.policy_from }}
+          TENANTS:  ${{ inputs.tenants || '3-11,84-100' }}
+          POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
+          RUN_KEY:  ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          # these values reach a remote shell — accept only plain names (SITE/LOCATION/DEVICE_TYPE/POLICY_FROM
+          # are free text and can contain spaces, e.g. "Cumulus VX" — they are %q-escaped at the SSH step below)
+          [[ "$BRANCH"   =~ ^[A-Za-z0-9._/-]+$ && "$BRANCH" != -* ]] || { echo "::error::invalid branch '$BRANCH'"; exit 1; }
+          [[ "$POC_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]     || { echo "::error::invalid POC_REPO '$POC_REPO'"; exit 1; }
+          [[ "$TENANTS"  =~ ^[0-9,-]+$ ]]                            || { echo "::error::invalid tenants '$TENANTS'"; exit 1; }
+          [[ "$MODE"     =~ ^(virtual|real)$ ]]                      || { echo "::error::invalid discover_mode '$MODE'"; exit 1; }
+          if [ "$MODE" = real ] && [ -z "$SEED" ]; then echo "::error::discover_mode=real needs the seed input (management IPs, one per line)"; exit 1; fi
+          STAGES="${STAGES// /}"; scripts/run-stages.sh validate "$STAGES"
+          # branch existence is checked by the clone on the host (the repo is private to this runner)
+          mkdir -p "$OUT"
+          SEED_B64="$(printf '%s' "$SEED" | base64 -w0)"
+          {
+            echo "RUN_KEY=$RUN_KEY"; echo "POC_REPO=$POC_REPO"; echo "POC_BRANCH=$BRANCH"; echo "STAGES=$STAGES"
+            echo "BF_MODE=$MODE"; echo "SEED_B64=$SEED_B64"; echo "SITE=$SITE"; echo "LOCATION=$LOCATION"
+            echo "DEVICE_TYPE=$DEVTYPE"; echo "POLICY_FROM=$POLICY_FROM"; echo "TENANTS=$TENANTS"
+            echo "STARTED_AT=$(date -u +%FT%TZ)"
+          } > "$OUT/meta.env"
+          cat "$OUT/meta.env" >> "$GITHUB_OUTPUT"   # expression property names are case-insensitive
+
+      - name: Lab access
+        uses: ./.github/actions/lab-access
+        with:
+          oci-user:        ${{ secrets.OCI_CLI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
+
+      - name: Start OCI instance
+        id: start
+        run: scripts/lab.sh start 2>&1 | tee -a "$OUT/boot.log"
+
+      - name: Wait until operational
+        id: connect
+        run: |
+          scripts/lab.sh connect 2>&1 | tee -a "$OUT/boot.log"
+          scripts/lab.sh push-agent
+
+      - name: Clean workspace + clone rafay_nvcm_poc
+        env:
+          KEY:      ${{ steps.opts.outputs.run_key }}
+          POC_REPO: ${{ steps.opts.outputs.POC_REPO }}
+          BRANCH:   ${{ steps.opts.outputs.POC_BRANCH }}
+          SITE:     ${{ steps.opts.outputs.SITE }}
+          LOCATION: ${{ steps.opts.outputs.LOCATION }}
+          DEVICE_TYPE: ${{ steps.opts.outputs.DEVICE_TYPE }}
+          POLICY_FROM: ${{ steps.opts.outputs.POLICY_FROM }}
+          TENANTS:  ${{ steps.opts.outputs.TENANTS }}
+          BF_MODE:  ${{ steps.opts.outputs.BF_MODE }}
+          SEED_B64: ${{ steps.opts.outputs.SEED_B64 }}
+          LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
+        run: |
+          # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
+          # SITE/LOCATION/DEVICE_TYPE/POLICY_FROM can legitimately contain spaces (e.g. "Cumulus VX") — %q-escape
+          # each before it joins the single remote command line, so the remote shell sees one word per K=V pair.
+          args="SITE=$(printf '%q' "$SITE") LOCATION=$(printf '%q' "$LOCATION") DEVICE_TYPE=$(printf '%q' "$DEVICE_TYPE")"
+          args="$args POLICY_FROM=$(printf '%q' "$POLICY_FROM") TENANTS=$(printf '%q' "$TENANTS")"
+          args="$args BF_MODE=$(printf '%q' "$BF_MODE") SEED_B64=$(printf '%q' "$SEED_B64")"
+          scripts/lab.sh ssh -A "LAB_OCI_IP='$LAB_OCI_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH $args" \
+            2>&1 | tee -a "$OUT/boot.log"
+          grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
+
+      - name: Record boot metadata
+        if: always()
+        env:
+          HOST:        ${{ steps.connect.outputs.host }}
+          WAS_RUNNING: ${{ steps.start.outputs.was_running }}
+        run: |
+          mkdir -p "$OUT"
+          { echo "HOST=$HOST"; echo "WAS_RUNNING=$WAS_RUNNING"; } >> "$OUT/meta.env"
+
+      - name: Upload boot logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-boot
+          path: ${{ env.OUT }}
+          if-no-files-found: ignore
+          retention-days: 30
+
+  platform:
+    needs: boot
+    uses: ./.github/workflows/_phase.yml
+    with: { phase: platform, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
+    secrets: inherit
+
+  site:
+    needs: [boot, platform]
+    uses: ./.github/workflows/_phase.yml
+    with: { phase: site, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
+    secrets: inherit
+
+  bringup:
+    needs: [boot, site]
+    uses: ./.github/workflows/_phase.yml
+    with: { phase: bringup, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
+    secrets: inherit
+
+  poweroff:
+    needs: [boot, platform, site, bringup]
+    if: always() && inputs.shutdown_oci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lab-access
+        with:
+          oci-user:        ${{ secrets.OCI_CLI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+      - name: Stop OCI instance
+        run: scripts/lab.sh stop
+
+  report:
+    needs: [boot, platform, site, bringup, poweroff]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write       # the dated log commit — the only write this workflow makes
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true      # nothing to download if boot died before its upload; the report says so
+        with:
+          pattern: logs-*
+          path: collected
+
+      - name: Build report
+        id: report
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TRIGGER: ${{ github.event_name }}
+          ACTOR: ${{ github.triggering_actor }}
+          RESULT_BOOT: ${{ needs.boot.result }}
+          RESULT_PLATFORM: ${{ needs.platform.result }}
+          RESULT_SITE: ${{ needs.site.result }}
+          RESULT_BRINGUP: ${{ needs.bringup.result }}
+          RESULT_POWEROFF: ${{ needs.poweroff.result }}
+        run: |
+          mkdir -p collected
+          scripts/build-report.sh collected report
+          cat report/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload run report
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-report
+          path: report
+          retention-days: 90
+
+      - name: Commit logs to logs/YYYY/MM/DD
+        run: scripts/commit-logs.sh report
+
+      # Future notifiers (email / shared drive / Slack) go here, reading report/summary.json.

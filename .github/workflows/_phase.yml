@@ -1,7 +1,9 @@
 name: _phase
-# One PHASE of stages (config/stages.sh) against the lab host. Called by nvcm-e2e.yml once per phase — a phase
+# One PHASE of stages against the lab host, from the catalogue named by `catalogue` (config/stages-greenfield.sh
+# or config/stages-brownfield.sh). Called once per phase by nvcm-greenfield.yml / nvcm-brownfield.yml — a phase
 # is its own job so each gets a fresh 6 h GitHub-hosted budget; the work itself runs detached on the host, so
-# nothing is lost between jobs.
+# nothing is lost between jobs. Shared by both onboarding modes: identical mechanics either way, only the
+# catalogue differs.
 
 on:
   workflow_call:
@@ -9,6 +11,7 @@ on:
       phase:           { type: string, required: true }
       run_key:         { type: string, required: true }
       stages:          { type: string, required: true }
+      catalogue:       { type: string, required: true }
       timeout_minutes: { type: number, default: 350 }
 
 permissions:
@@ -24,6 +27,7 @@ jobs:
       OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
       OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
       OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+      LAUNCHPAD_CATALOGUE: ${{ inputs.catalogue }}
       OUT: out/${{ inputs.phase }}
     steps:
       - uses: actions/checkout@v4

@@ -6,12 +6,14 @@
 #   lab.sh start          # start (no-op if RUNNING) and wait for RUNNING
 #   lab.sh stop           # SOFTSTOP and wait for STOPPED (hard STOP if the soft stop does not complete)
 #   lab.sh connect        # resolve the SSH address, write the `lab` ssh alias, wait for SSH + boot to settle
-#   lab.sh push-agent     # copy remote/agent.sh + config/stages.sh to ~/launchpad on the host
+#   lab.sh push-agent     # copy remote/agent.sh + config/common.sh + $LAUNCHPAD_CATALOGUE to ~/launchpad
+#                           on the host (the catalogue lands there as ~/launchpad/stages.sh, whichever mode it is)
 #   lab.sh ssh [-A] CMD   # run CMD on the host (-A forwards the agent: used only for the git clone)
 #
 # Env: OCI_INSTANCE_ID (required), OCI_SSH_USER (default ubuntu), OCI_SSH_HOST (optional: fixed address or
 # reserved IP; otherwise the primary VNIC's public IP is looked up each run — ephemeral IPs change on restart),
 # OCI_SSH_KNOWN_HOSTS (optional: pins the host key; otherwise accept-new, logged as a warning).
+# LAUNCHPAD_CATALOGUE (required by push-agent): config/stages-greenfield.sh or config/stages-brownfield.sh.
 #
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -81,8 +83,10 @@ EOF
 }
 
 cmd_push_agent(){
+  : "${LAUNCHPAD_CATALOGUE:?LAUNCHPAD_CATALOGUE not set (e.g. config/stages-greenfield.sh) — set by the workflow}"
   ssh lab 'mkdir -p ~/launchpad'
-  scp -q "$ROOT/remote/agent.sh" "$ROOT/config/stages.sh" lab:launchpad/
+  scp -q "$ROOT/remote/agent.sh" "$ROOT/config/common.sh" lab:launchpad/
+  scp -q "$ROOT/$LAUNCHPAD_CATALOGUE" lab:launchpad/stages.sh   # renamed on the host: agent.sh always sources ~/launchpad/stages.sh
   ssh lab 'chmod +x ~/launchpad/agent.sh'
 }
 

@@ -6,15 +6,18 @@
 #   run-stages.sh plan     <phase> <selection>             # print the stages this phase would run
 #   run-stages.sh run      <phase> <run_key> <selection> <out_dir>
 #
-# <selection> is "all" or a comma list of stage names (config/stages.sh). For each selected stage: start it
-# detached on the host (remote/agent.sh), stream its log into the job output and <out_dir>, poll until it
-# exits, and record one row in <out_dir>/status.tsv. The first failure stops the phase; the remaining
-# stages are recorded as skipped. Exit non-zero iff a stage failed — that is what fails the workflow.
+# <selection> is "all" or a comma list of stage names, from the catalogue named by $LAUNCHPAD_CATALOGUE (one
+# of config/stages-greenfield.sh / config/stages-brownfield.sh — set as a job env by the calling workflow).
+# For each selected stage: start it detached on the host (remote/agent.sh), stream its log into the job
+# output and <out_dir>, poll until it exits, and record one row in <out_dir>/status.tsv. The first failure
+# stops the phase; the remaining stages are recorded as skipped. Exit non-zero iff a stage failed — that is
+# what fails the workflow.
 #
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# shellcheck source=../config/stages.sh
-. "$ROOT/config/stages.sh"
+: "${LAUNCHPAD_CATALOGUE:?LAUNCHPAD_CATALOGUE not set (e.g. config/stages-greenfield.sh) — set by the workflow}"
+# shellcheck source=/dev/null
+. "$ROOT/$LAUNCHPAD_CATALOGUE"
 POLL="${LAB_POLL_SECS:-20}"
 MAX_SSH_FAILS="${LAB_MAX_SSH_FAILS:-30}"     # consecutive failed polls before declaring the host lost (~10 min)
 log(){ echo "[stages] $*" >&2; }

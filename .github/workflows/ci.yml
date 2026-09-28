@@ -32,7 +32,9 @@ jobs:
           command -v shellcheck >/dev/null || { sudo apt-get update -qq && sudo apt-get install -qq -y shellcheck; }
           shellcheck -x --severity=warning scripts/*.sh remote/*.sh config/*.sh
 
-      - name: stage-selection self-test (pure logic, no SSH)
+      - name: stage-selection self-test — greenfield catalogue (pure logic, no SSH)
+        env:
+          LAUNCHPAD_CATALOGUE: config/stages-greenfield.sh
         run: |
           scripts/run-stages.sh validate all
           scripts/run-stages.sh validate host-prep,blueprint
@@ -40,6 +42,19 @@ jobs:
           scripts/run-stages.sh validate not-a-stage 2>/dev/null && { echo "::error::validate accepted an unknown stage name"; exit 1; }
           [ "$(scripts/run-stages.sh plan platform all | tr '\n' ,)" = "host-prep,platform-install-1,platform-install-2,verify-platform," ]
           [ -z "$(scripts/run-stages.sh plan bringup blueprint,substrate)" ]   # a site-only selection plans nothing for bringup
+
+      - name: stage-selection self-test — brownfield catalogue (pure logic, no SSH)
+        env:
+          LAUNCHPAD_CATALOGUE: config/stages-brownfield.sh
+        run: |
+          scripts/run-stages.sh validate all
+          scripts/run-stages.sh validate bf-discover,bf-blueprint
+          scripts/run-stages.sh validate not-a-stage 2>/dev/null && { echo "::error::validate accepted an unknown stage name"; exit 1; }
+          [ "$(scripts/run-stages.sh plan platform all | tr '\n' ,)" = "host-prep,platform-install-1,platform-install-2,verify-platform," ]
+          # the review-gate default (bf-discover,bf-blueprint) must plan NOTHING for bringup — see
+          # config/stages-brownfield.sh's header. A regression here would silently skip the safety stop.
+          [ -z "$(scripts/run-stages.sh plan bringup bf-discover,bf-blueprint)" ]
+          [ "$(scripts/run-stages.sh plan bringup bf-adopt)" = "bf-adopt" ]     # the resume run (stages=bf-adopt) must still find it
 
   actionlint:
     runs-on: ubuntu-latest
