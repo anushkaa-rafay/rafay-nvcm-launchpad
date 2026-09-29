@@ -1,0 +1,100 @@
+{
+  "status": "PASSED",
+  "failed_stage": null,
+  "poc": {
+    "repo": "ramakrishna-rafay/rafay_nvcm_poc",
+    "branch": "aa_prototype_fixes",
+    "sha": "12febd64b1dc7d9bf13ff74655502599be011bfd"
+  },
+  "run": {
+    "id": "36585500700",
+    "attempt": "1",
+    "url": "https://github.com/ramakrishna-rafay/rafay_nvcm_launchpad/actions/runs/36585500700",
+    "trigger": "workflow_dispatch",
+    "actor": "anushkaa-rafay",
+    "started": "2026-09-29T14:49:11Z",
+    "finished": "2026-09-29T14:52:31Z"
+  },
+  "oci": {
+    "instance": "ocid1.instance.oc1.phx.anyhqljtymbj47qcsdqydspyafdjpiymmh737hhddcqmkh2ts4l3nwlbifha",
+    "host": "161.153.73.41",
+    "was_running_before": "true",
+    "poweroff_job": "skipped"
+  },
+  "options": {
+    "blueprint_source": "committed",
+    "tenants": "3-11"
+  },
+  "stages": [
+    {
+      "index": 1,
+      "name": "host-prep",
+      "phase": "platform",
+      "result": "not-selected",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 2,
+      "name": "platform-install-1",
+      "phase": "platform",
+      "result": "not-selected",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 3,
+      "name": "platform-install-2",
+      "phase": "platform",
+      "result": "not-selected",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 4,
+      "name": "verify-platform",
+      "phase": "platform",
+      "result": "not-selected",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 5,
+      "name": "blueprint",
+      "phase": "site",
+      "result": "not-selected",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 6,
+      "name": "substrate",
+      "phase": "site",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-09-29T14:51:27Z",
+      "finished": "2026-09-29T14:52:12Z",
+      "seconds": 45
+    },
+    {
+      "index": 7,
+      "name": "dc-bringup",
+      "phase": "bringup",
+      "result": "not-selected",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    }
+  ]
+}
