@@ -1,0 +1,20 @@
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+[lab] instance state: STOPPED
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+Action completed. Waiting until the resource has entered state: ('RUNNING',)
+[lab] instance RUNNING
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+::warning::OCI_SSH_KNOWN_HOSTS not set — trusting the lab host key on first use
+[lab] lab = ubuntu@161.153.73.41; waiting for SSH
+[lab] systemd: running
+[agent] preflight ok: aa-nvcm-vlab-3 · Ubuntu 24.04.5 LTS · 20 cpu · 48 GiB · 559G free
+[agent] checked out ramakrishna-rafay/rafay_nvcm_poc@aa_prototype_fixes (12febd6 Merge pull request #20 from ramakrishna-rafay/prototype_fixes)
+RUN_KEY=36563651427-1
+RUN_DIR=/home/ubuntu/launchpad/runs/36563651427-1
+POC_DIR=/home/ubuntu/rafay_nvcm_poc
+POC_REPO=ramakrishna-rafay/rafay_nvcm_poc
+POC_BRANCH=aa_prototype_fixes
+POC_SHA=12febd64b1dc7d9bf13ff74655502599be011bfd
+OCI_IP=10.0.0.133
+BLUEPRINT_SOURCE=committed
+TENANTS=1-20
