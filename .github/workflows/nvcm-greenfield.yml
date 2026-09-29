@@ -101,6 +101,7 @@ jobs:
           oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
           oci-region:      ${{ secrets.OCI_CLI_REGION }}
           ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
 
       - name: Start OCI instance
         id: start
@@ -120,15 +121,11 @@ jobs:
           BP_SRC:   ${{ steps.opts.outputs.BLUEPRINT_SOURCE }}
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
           LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
-          POC_TOKEN: ${{ secrets.POC_ACCESS_TOKEN }}
         run: |
-          # POC_TOKEN reaches the remote shell as an env-var PREFIX (POC_TOKEN=... command), never a CLI
-          # argument: that keeps it out of a plain `ps aux` on the host (which shows argv, not env), and
-          # remote/agent.sh unsets it immediately after the one clone command that needs it. GitHub also
-          # masks the literal secret value in this log regardless.
+          # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
           # BP_SRC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
           # to plain charsets with no spaces (see "Resolve + validate options"), so plain interpolation is safe.
-          scripts/lab.sh ssh "LAB_OCI_IP='$LAB_OCI_IP' POC_TOKEN=$(printf '%q' "$POC_TOKEN") launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
+          scripts/lab.sh ssh -A "LAB_OCI_IP='$LAB_OCI_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
             2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
 

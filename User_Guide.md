@@ -40,7 +40,7 @@ host requirement below is shared by both.
 | `OCI_CLI_USER`, `OCI_CLI_TENANCY`, `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION` | OCI API-key auth |
 | `OCI_CLI_KEY_CONTENT` | the API signing private key (PEM) |
 | `OCI_SSH_PRIVATE_KEY` | SSH key authorized on the lab host |
-| `POC_ACCESS_TOKEN` | a **fine-grained PAT**, read-only on `rafay_nvcm_poc` (see step 4) |
+| `POC_DEPLOY_KEY` | private half of a **read-only deploy key** on `rafay_nvcm_poc` (see step 4) |
 
 Give the OCI user the least privilege needed: `use instance-family` (start, stop, read) and `read vnics` on
 the lab compartment only.
@@ -77,36 +77,19 @@ this). To use a different or new key instead, generate a pair and append the **p
 `~/.ssh/authorized_keys` on the host yourself (over your own existing SSH access) — the private half is
 what goes into the secret.
 
-**4. Access to the private POC repo: a fine-grained personal access token**
+**4. Access to the private POC repo: a read-only deploy key**
 
 `GITHUB_TOKEN` cannot be used — it's scoped to the repository whose workflow is running, even when both
-repos have the same owner.
+repos have the same owner. A deploy key is the least-privileged option: read-only and limited to one repo.
 
-If you already have plain read/collaborator access to `rafay_nvcm_poc` under your own GitHub account (not
-necessarily repo-admin — just enough to clone it), this is entirely **self-service**: you don't need
-Ramakrishna, or anyone else who administers that repo, to do anything.
+```bash
+ssh-keygen -t ed25519 -N '' -C rafay_nvcm_launchpad -f poc_deploy_key
+# rafay_nvcm_poc → Settings → Deploy keys → Add: poc_deploy_key.pub, "Allow write access" UNTICKED (needs repo admin)
+# rafay_nvcm_launchpad → secret POC_DEPLOY_KEY = contents of poc_deploy_key
+```
 
-1. GitHub → your profile photo → **Settings** → **Developer settings** → **Personal access tokens** →
-   **Fine-grained tokens** → **Generate new token**.
-2. **Repository access** → **Only select repositories** → `rafay_nvcm_poc`.
-3. **Permissions** → **Repository permissions** → **Contents: Read-only**. Leave everything else at
-   "No access."
-4. Set an **expiration** (GitHub caps fine-grained tokens at 1 year — put a reminder in your calendar to
-   rotate it before then; the workflow will just start failing to clone once it expires, with a clear
-   auth error).
-5. Generate it, copy the token value once (GitHub won't show it again) → `rafay_nvcm_launchpad` → secret
-   `POC_ACCESS_TOKEN` = that value.
-
-The token authenticates over HTTPS for the one clone command only, via a request header set with git's
-`-c http.extraHeader` (a per-command override) rather than embedded in the remote URL — so, like the old
-deploy-key approach, it's never written to the host's disk or left sitting in the checked-out repo's own
-config.
-
-If you *don't* have any access to `rafay_nvcm_poc` yourself, the token route doesn't remove the dependency
-on whoever administers that repo — either they generate a token and hand it to you, or grant you
-collaborator access so you can generate your own, or (equally fine) they add a classic SSH deploy key
-themselves. All three need one small action from them; there's no way around that if you have zero access
-today.
+The key is forwarded to the host over `ssh -A` for the clone command only — it's never written to the
+host's disk.
 
 **5. Lab host requirements**
 

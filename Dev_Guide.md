@@ -199,25 +199,11 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
 - **Values that reach the remote host over SSH are `%q`-escaped, not trusted to be space-free.** The
   brownfield workflow's free-text inputs (`device_type` defaults to `"Cumulus VX"` — a real space) are
   escaped with bash's `printf '%q'` before being joined into the single command string handed to
-  `ssh lab "..."`. SSH sends that string as *one* argument; the remote shell parses it exactly once, so
+  `ssh -A lab "..."`. SSH sends that string as *one* argument; the remote shell parses it exactly once, so
   a value with an unescaped space would silently split into two words. Greenfield's equivalent values
   (`blueprint_source`, `tenants`) don't need this because they're already regex-validated to space-free
   charsets in the `Resolve + validate options` step — pick whichever guarantee is easier to keep true
   (tight validation, or `%q`) rather than assuming plain interpolation is safe.
-- **`rafay_nvcm_poc` access is a fine-grained PAT over HTTPS (`POC_ACCESS_TOKEN`), not an SSH deploy key —
-  and it never touches the host's disk either.** `remote/agent.sh cmd_prepare` authenticates the one clone
-  with `git -c http.extraHeader="Authorization: Basic <base64 x-access-token:$POC_TOKEN>"`; `-c` is a
-  per-invocation override, never written to the resulting checkout's `.git/config` (embedding the token in
-  the clone URL instead — `https://token@github.com/...` — would have persisted it there indefinitely).
-  `POC_TOKEN` itself reaches `agent.sh` as an env-var *prefix* on the remote command
-  (`POC_TOKEN=... agent.sh prepare ...`), never a positional argument, so it doesn't show up in a plain
-  `ps aux` on the host (env vars need `/proc/<pid>/environ`, which argv-based `ps aux` doesn't show); it's
-  `unset` immediately after the clone. Verified against a real authenticated git-over-HTTP server (Gitea,
-  same `x-access-token:<PAT>` Basic-auth scheme GitHub uses): a correct token clones cleanly with the token
-  absent from `.git/` afterward (checked with `grep -r` across the whole directory), and a wrong token fails
-  the clone outright rather than silently succeeding. This replaced an SSH deploy key, which needs
-  repo-admin action to add — a fine-grained PAT is self-service for anyone who already has plain
-  read/collaborator access to the repo, which was the actual blocker for someone without repo-admin rights.
 - **Brownfield's `OUT` directory is `~/launchpad/bf-discover`, overriding `bf-onboard.sh`'s own `/tmp`
   default.** See "Cleanup semantics" above — this is the reason a real brownfield onboarding survives the
   gap between the discover+blueprint run and the reviewed adopt run.
