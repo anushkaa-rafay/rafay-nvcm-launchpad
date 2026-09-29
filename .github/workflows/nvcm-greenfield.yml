@@ -14,9 +14,9 @@ on:
   workflow_dispatch:
     inputs:
       poc_branch:
-        description: "rafay_nvcm_poc branch to run"
-        required: true
-        default: main
+        description: "rafay_nvcm_poc branch to run — blank uses the POC_DEFAULT_BRANCH repository variable (falls back to main if that isn't set either)"
+        required: false
+        default: ""
         type: string
       stages:
         description: "Stages: 'all' or a comma list — host-prep,platform-install-1,platform-install-2,verify-platform,blueprint,substrate,dc-bringup"

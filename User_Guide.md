@@ -116,7 +116,7 @@ below → Run**.
 
 | Input | Default | |
 |---|---|---|
-| `poc_branch` | `main` | the `rafay_nvcm_poc` branch to clone and run |
+| `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
 | `stages` | `all` | or a comma list, for example `blueprint,substrate,dc-bringup` to rerun only the DC part on an installed platform |
 | `blueprint_source` | `generated` | `committed` uses `stc/blueprint_stc.yaml` instead of this run's generated blueprint |
 | `tenants` | `3-11,84-100` | passed to `simulate_dc.sh --tenants` |
@@ -132,7 +132,7 @@ command each stage runs.
 
 | Input | Default | |
 |---|---|---|
-| `poc_branch` | `main` | the `rafay_nvcm_poc` branch to clone and run |
+| `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
 | `stages` | `bf-discover,bf-blueprint` | stops **before** any write — see "The review gate" below. `all` or a comma list, same convention as greenfield |
 | `discover_mode` | `virtual` | `virtual` = the simulated VMs already on this lab host (via `virsh`); `real` = physical switches, needs `seed` |
 | `seed` | *(empty)* | `real` mode only — management IPs/hostnames to discover, one per line |
