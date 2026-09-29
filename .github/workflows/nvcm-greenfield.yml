@@ -105,11 +105,16 @@ jobs:
 
       - name: Start OCI instance
         id: start
-        run: scripts/lab.sh start 2>&1 | tee -a "$OUT/boot.log"
+        # set -o pipefail: a run: step with no explicit `shell:` key is NOT pipefail by default (verified
+        # empirically, not assumed — see Dev_Guide.md's design-decisions section). Without it, a failing
+        # scripts/lab.sh here is masked by tee's own always-zero exit, and this step would report success
+        # even though the instance never actually started.
+        run: set -o pipefail; scripts/lab.sh start 2>&1 | tee -a "$OUT/boot.log"
 
       - name: Wait until operational
         id: connect
         run: |
+          set -o pipefail   # see the note on "Start OCI instance" above
           scripts/lab.sh connect 2>&1 | tee -a "$OUT/boot.log"
           scripts/lab.sh push-agent
 
@@ -122,6 +127,7 @@ jobs:
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
           LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
         run: |
+          set -o pipefail   # see "Start OCI instance" above
           # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
           # BP_SRC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
           # to plain charsets with no spaces (see "Resolve + validate options"), so plain interpolation is safe.
@@ -167,12 +173,8 @@ jobs:
 
   poweroff:
     needs: [boot, platform, site, bringup]
-    # !cancelled(), NOT always(): also after a failure. GitHub Actions has a longstanding, documented quirk
-    # where a job gated by always() can still be skipped if one of its `needs` was itself skipped (which
-    # happens here whenever `boot` fails and platform/site/bringup are skipped as a result) — !cancelled()
-    # is the community-verified fix and behaves identically for the success/failure cases this depends on.
-    # Non-dispatch triggers (schedule) always shut down.
-    if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.shutdown_oci) }}
+    # always(): also after a failure or cancellation. Non-dispatch triggers (schedule) always shut down.
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.shutdown_oci)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -189,8 +191,7 @@ jobs:
 
   report:
     needs: [boot, platform, site, bringup, poweroff]
-    # !cancelled(), not always() — see the note on the poweroff job above.
-    if: ${{ !cancelled() }}
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

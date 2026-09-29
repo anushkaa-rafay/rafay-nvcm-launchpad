@@ -228,13 +228,16 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   address and the connect address differ, no alias) and then the fix (`HostKeyAlias` + rewritten entries →
   connects successfully via a different address than the one the key was captured against) against a real
   sshd in a container — not just reasoned about.
-- **`poweroff` and `report` use `!cancelled()`, not `always()`.** GitHub Actions has a longstanding,
-  widely-reported quirk (see `actions/runner#2205`, `actions/runner#2566`, community discussions #26945 and
-  #45058) where a job gated by `always()` can still be skipped if one of its `needs` was itself *skipped*
-  (as opposed to *failed*) — which is exactly what happens here whenever `boot` fails outright:
-  `platform`/`site`/`bringup` are marked `skipped` (they never ran, since their own `needs: boot` failed),
-  and that skip can then propagate through `poweroff`/`report` despite `always()`, leaving the instance
-  running and no report filed. `!cancelled()` is the community-verified fix — it still runs after a plain
-  failure (only an actual cancellation makes `cancelled()` true), so nothing about the success/failure
-  behavior this design depends on changes; it just doesn't inherit the skip-propagation quirk. Do not
-  "simplify" this back to `always()`.
+- **Every `run:` step that pipes a command through `tee` starts with `set -o pipefail`.** A `run:` step
+  with no explicit `shell:` key is **not** `bash -eo pipefail` by default — empirically confirmed (not
+  assumed from docs, which are themselves inconsistent on this point): under plain `bash -e {0}`, a
+  pipeline's exit status is `tee`'s (always 0), so a failing `scripts/lab.sh connect | tee -a ...` is
+  silently swallowed and the script falls through to the *next* line — which was exactly how a malformed
+  `OCI_CLI_USER` secret once surfaced as a baffling `ssh: Could not resolve hostname lab` from
+  `push-agent`, instead of the real OCI CLI config error one line above it in the same log. Confirmed by
+  running the identical two-line step under both candidate shell invocations against a fake failing `oci`
+  binary: only the no-`pipefail` case reproduced the reported symptom exactly. `scripts/lab.sh start`'s
+  single-line `run:` had the same gap in a worse form — that step would report *success* even though the
+  instance never started. If you add a new `run:` step that pipes anything through `tee` (or any command
+  whose failure matters, not just its last stage), it needs `set -o pipefail` first; don't assume GitHub
+  Actions supplies it.
