@@ -40,12 +40,44 @@ host requirement below is shared by both.
 | `OCI_CLI_USER`, `OCI_CLI_TENANCY`, `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION` | OCI API-key auth |
 | `OCI_CLI_KEY_CONTENT` | the API signing private key (PEM) |
 | `OCI_SSH_PRIVATE_KEY` | SSH key authorized on the lab host |
-| `POC_DEPLOY_KEY` | private half of a **read-only deploy key** on `rafay_nvcm_poc` (see step 3) |
+| `POC_DEPLOY_KEY` | private half of a **read-only deploy key** on `rafay_nvcm_poc` (see step 4) |
 
 Give the OCI user the least privilege needed: `use instance-family` (start, stop, read) and `read vnics` on
 the lab compartment only.
 
-**3. Access to the private POC repo: a read-only deploy key**
+**3. Where to find each value in the OCI Console**
+
+The five API-auth values (`OCI_CLI_USER`, `OCI_CLI_TENANCY`, `OCI_CLI_REGION`, `OCI_CLI_FINGERPRINT`,
+`OCI_CLI_KEY_CONTENT`) come from **one flow**, in one visit to the Console:
+
+1. Console → profile icon (top right) → **My profile**.
+2. That page's header already shows your **user OCID** (`OCI_CLI_USER`) and, further down or via the
+   profile menu's **Tenancy: `<name>`** link, the **tenancy OCID** (`OCI_CLI_TENANCY`) — each with a copy
+   button. The **region** (`OCI_CLI_REGION`, e.g. `ap-mumbai-1`) is shown in the region selector top bar.
+3. On the same profile page, left side → **Resources → API keys** → **Add API key** → **Generate API key
+   pair** → **Download private key** → **Add**.
+4. The Console then shows the **fingerprint** (`OCI_CLI_FINGERPRINT`) and a **Configuration file preview**
+   box that already has all five values assembled together — a good place to sanity-check them as a set
+   before splitting them into separate GitHub secrets.
+5. The private key file you just downloaded — its whole contents, including the `-----BEGIN...`/
+   `-----END...` lines — is `OCI_CLI_KEY_CONTENT`.
+
+The lab-instance values are found on the instance itself, not the profile page:
+
+| Value | Where |
+|---|---|
+| `OCI_INSTANCE_ID` | Console → **Compute → Instances** → click the lab instance → its **OCID** is at the top, with a copy button |
+| `OCI_SSH_HOST` *(optional)* | same instance page → **Public IP Address**. Only set this if you want a fixed address; leave it unset to have the workflow look the current IP up each run |
+| `OCI_SSH_KNOWN_HOSTS` *(recommended)* | not from the Console — run `ssh-keyscan <host>` from your own machine and paste the output in as-is |
+
+`OCI_SSH_PRIVATE_KEY` is **not** obtained from the Console at all, and it's a different kind of key from
+everything above — an SSH key, not an OCI API key. Since the lab instance already exists, use whichever
+private key is already authorized to log into it as `OCI_SSH_USER` (whoever set the lab host up will have
+this). To use a different or new key instead, generate a pair and append the **public** half to
+`~/.ssh/authorized_keys` on the host yourself (over your own existing SSH access) — the private half is
+what goes into the secret.
+
+**4. Access to the private POC repo: a read-only deploy key**
 
 `GITHUB_TOKEN` cannot be used — it's scoped to the repository whose workflow is running, even when both
 repos have the same owner. A deploy key is the least-privileged option: read-only and limited to one repo.
@@ -59,7 +91,7 @@ ssh-keygen -t ed25519 -N '' -C rafay_nvcm_launchpad -f poc_deploy_key
 The key is forwarded to the host over `ssh -A` for the clone command only — it's never written to the
 host's disk.
 
-**4. Lab host requirements**
+**5. Lab host requirements**
 
 - Passwordless `sudo` for `OCI_SSH_USER` (host prep and substrate need it). The preflight step checks this.
 - Port 22 reachable from GitHub-hosted runners. If the security list must stay closed, use a self-hosted
