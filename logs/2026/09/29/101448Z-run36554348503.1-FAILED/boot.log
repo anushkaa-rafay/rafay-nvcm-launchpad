@@ -1,0 +1,16 @@
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+ERROR: The config file at ~/.oci/config is invalid:
+
++Config Errors-----+----------------------+
+| Key  | Error     | Hint                 |
++------+-----------+----------------------+
+| user | malformed | this must be an OCID |
++------+-----------+----------------------+
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+ERROR: The config file at ~/.oci/config is invalid:
+
++Config Errors-----+----------------------+
+| Key  | Error     | Hint                 |
++------+-----------+----------------------+
+| user | malformed | this must be an OCID |
++------+-----------+----------------------+
