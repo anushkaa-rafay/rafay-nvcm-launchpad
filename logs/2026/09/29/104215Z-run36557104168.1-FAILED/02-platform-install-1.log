@@ -1,0 +1,41 @@
+[launchpad] stage=platform-install-1 branch=aa_prototype_fixes sha=12febd64b1dc7d9bf13ff74655502599be011bfd started=2026-09-29T10:44:42Z
+[install] → platform/nvcm-install.sh --yes
+
+══════════════════════════════════════════════════════════════════════
+  Part I — install NVCM + Nautobot (kind cluster 'nv-config-manager', namespace 'nv-config-manager')
+══════════════════════════════════════════════════════════════════════
+[nvcm] toolchain OK (docker/kind/kubectl/helm/uv).
+[nvcm] NVCM release 'nv-config-manager' already installed at commit a6af41250fb2cb1353d0788002aede2d351bd531 — version unchanged, skipping the re-deploy (idempotent).
+[nvcm]    (to re-apply the config anyway, run 'nvcm-installer deploy /home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/nvcm-install-config.yaml …' by hand — see setup_guide.md §8).
+[nvcm] Entering ..checkout_nvcm_version()
+[nvcm] checking out and pointing to NVCM commit a6af41250fb2cb1353d0788002aede2d351bd531 ...
+[nvcm] Leaving..checkout_nvcm_version()
+
+══════════════════════════════════════════════════════════════════════
+  Observability extras — Loki + Alloy log pipeline + durable Prometheus (helm upgrade, --reuse-values)
+══════════════════════════════════════════════════════════════════════
+[nvcm] [INFO] Observability extras are missing from this release; installing version 1.3.0.
+Release "nv-config-manager" has been upgraded. Happy Helming!
+NAME: nv-config-manager
+LAST DEPLOYED: Tue Sep 29 10:44:43 2026
+NAMESPACE: nv-config-manager
+STATUS: deployed
+REVISION: 3
+TEST SUITE: None
+[nvcm] observability extras applied (loki / alloy logs / grafana datasource / prometheus persistence).
+
+══════════════════════════════════════════════════════════════════════
+  Part I — verify NVCM + Nautobot readiness
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [FAIL] 1 pod(s) not Running (kubectl -n nv-config-manager get pods)
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[nvcm] PART I NOT READY — fix the [FAIL] lines above (Appendix A of setup_guide.md), then re-run.
+[install] !! platform/nvcm-install.sh failed — see its output above.
