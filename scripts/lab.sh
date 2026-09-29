@@ -58,11 +58,20 @@ cmd_connect(){
   fi
   mkdir -p ~/.ssh && chmod 700 ~/.ssh
   local strict=accept-new
-  if [ -n "${OCI_SSH_KNOWN_HOSTS:-}" ]; then printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts; strict=yes
+  if [ -n "${OCI_SSH_KNOWN_HOSTS:-}" ]; then
+    # Rewritten keyed to the alias "lab", NOT the literal address ssh-keyscan was run against: OCI's
+    # ephemeral public IP can change on restart (that's exactly why OCI_SSH_HOST is normally left unset,
+    # below), so pinning to that IP literal would silently stop matching the next time it changes — this
+    # host would then fail StrictHostKeyChecking on every run until someone re-ran ssh-keyscan by hand.
+    # HostKeyAlias (below) makes ssh look the key up under "lab" regardless of what IP it resolves to
+    # today. Comment/blank lines from a pasted-as-is `ssh-keyscan` transcript are dropped automatically.
+    awk 'NF && $1 !~ /^#/ { $1="lab"; print }' <<< "$OCI_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    strict=yes
   else echo "::warning::OCI_SSH_KNOWN_HOSTS not set — trusting the lab host key on first use"; fi
   cat > ~/.ssh/config <<EOF
 Host lab
   HostName $host
+  HostKeyAlias lab
   User ${OCI_SSH_USER:-ubuntu}
   BatchMode yes
   StrictHostKeyChecking $strict

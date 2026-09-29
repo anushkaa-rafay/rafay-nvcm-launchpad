@@ -216,3 +216,15 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   intentional — a resume run like `stages=bf-adopt` needs the `platform` and `site` phase jobs to execute
   and do nothing, rather than being skipped outright, so the job graph stays uniform across every stage
   selection.
+- **`OCI_SSH_KNOWN_HOSTS` is rewritten to the alias `lab`, never stored keyed to the literal address it was
+  captured against.** `scripts/lab.sh cmd_connect` sets `HostKeyAlias lab` and pipes the secret's content
+  through `awk 'NF && $1 !~ /^#/ { $1="lab"; print }'` before appending it to `known_hosts`. Without this,
+  pinning the host key to whatever address `ssh-keyscan` was run against would break the moment the
+  instance's public IP changes — which is exactly the case `OCI_SSH_HOST` being left unset is meant to
+  handle, since OCI's ephemeral public IP changes on restart. `HostKeyAlias` makes OpenSSH look the key up
+  by the alias instead of the current connection address, so the pin survives an IP change; the `awk`
+  filter also means a raw pasted `ssh-keyscan` transcript (comment lines included) works without manual
+  cleanup. Verified by actually reproducing the failure (`Host key verification failed` when the known
+  address and the connect address differ, no alias) and then the fix (`HostKeyAlias` + rewritten entries →
+  connects successfully via a different address than the one the key was captured against) against a real
+  sshd in a container — not just reasoned about.

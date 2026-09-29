@@ -28,7 +28,7 @@ host requirement below is shared by both.
 | `OCI_INSTANCE_ID` | `ocid1.instance.oc1...` (required) |
 | `OCI_SSH_USER` | `ubuntu` |
 | `OCI_SSH_HOST` | optional. By default the instance's public IP is looked up each run, because ephemeral IPs change on restart |
-| `OCI_SSH_KNOWN_HOSTS` | recommended: `ssh-keyscan <host>` output. This pins the host key. Without it the key is trusted on first use and the workflow logs a warning |
+| `OCI_SSH_KNOWN_HOSTS` | recommended: `ssh-keyscan <host>` output, pasted in as-is (comment lines are fine — they're stripped automatically). Pins the host key by identity, **not** by the address you happened to run `ssh-keyscan` against, so it keeps working after the instance's public IP changes. Without it the key is trusted on first use and the workflow logs a warning |
 | `POC_REPO` | `ramakrishna-rafay/rafay_nvcm_poc` |
 | `POC_DEFAULT_BRANCH` | `main` (used if `poc_branch` is left blank) |
 | `LAB_OCI_IP` | optional value for `simulate_dc.sh --oci`. Defaults to the host's primary private IP |
