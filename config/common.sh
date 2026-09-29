@@ -11,25 +11,25 @@
 : "${TENANTS:=3-11,84-100}"        # simulate_dc.sh's own default; also what provision_site.sh --tenants reconciles
 
 # platform_install.sh's own internal readiness check runs right after `helm upgrade` returns, before pods
-# necessarily finish starting — its failure message literally says "fix the [FAIL] lines above ... then
-# re-run". This automates exactly that re-run instead of leaving a human to notice and retrigger the stage.
-# Safe because platform_install.sh is documented idempotent (an already-installed release is detected and
-# reconciled, not duplicated), so a retry after "not ready yet" is cheap — it just re-checks. $max_wait must
-# stay comfortably under the stage's own external timeout (config/stages-*.sh), or a genuine hang gets a
-# hard `timeout --kill-after` kill instead of this loop's own clean "giving up" message.
-lp_retry_until_ready(){
-  local desc="$1" max_wait="$2" interval="$3"; shift 3
-  [ "${1:-}" = "--" ] && shift   # cosmetic separator at the call site; harmless if omitted
-  local deadline=$((SECONDS + max_wait)) attempt=0
-  until "$@"; do
-    attempt=$((attempt+1))
-    [ $SECONDS -lt $deadline ] || { echo "[launchpad] $desc still not ready after ${max_wait}s (attempt $attempt) — giving up" >&2; return 1; }
-    echo "[launchpad] $desc not ready yet — retrying in ${interval}s (attempt $attempt, $((deadline-SECONDS))s left)" >&2
-    sleep "$interval"
-  done
+# necessarily finish starting — its failure message says "fix the [FAIL] lines above ... then re-run", but
+# per the operator (2026-09-29) that's expected/transient here, not something to stop the run over: the
+# pods just take a while to come up, and verify-platform (the next real stage) re-checks full readiness
+# once they've had more time. So: NEITHER retry NOR fail on this specific signal — just continue. Any OTHER
+# failure (a real problem) still stops the stage normally.
+lp_continue_if_not_ready(){
+  local desc="$1"; shift
+  local out rc=0
+  out="$(mktemp)"
+  "$@" 2>&1 | tee "$out" || rc=$?
+  if [ "$rc" -ne 0 ] && grep -qE 'NOT READY|pod\(s\) not Running' "$out"; then
+    echo "[launchpad] $desc: not fully ready yet (pods still starting) — not fatal here, continuing" >&2
+    rc=0
+  fi
+  rm -f "$out"
+  return "$rc"
 }
 
 stage_host_prep(){           bash deploy_scripts/platform/nvcm-host-prep.sh; }   # group changes apply from the next stage (new login)
-stage_platform_install_1(){  lp_retry_until_ready "platform-install-1 (NVCM+Nautobot readiness)" 3600 30 -- bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
-stage_platform_install_2(){  lp_retry_until_ready "platform-install-2 (Rafay layer readiness)" 1800 30 -- bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }
+stage_platform_install_1(){  lp_continue_if_not_ready "platform-install-1" bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
+stage_platform_install_2(){  lp_continue_if_not_ready "platform-install-2" bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }
 stage_verify_platform(){     bash deploy_scripts/platform/verify_platform_install.sh all; }

@@ -2,3 +2,5 @@ out/
 collected/
 report/
 .DS_Store
+
+.claude/
