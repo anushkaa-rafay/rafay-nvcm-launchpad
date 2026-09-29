@@ -29,6 +29,31 @@ lp_continue_if_not_ready(){
   return "$rc"
 }
 
+# Wraps EVERY stage (called from remote/agent.sh's generated stage script — see there, not per-stage
+# functions): if a stage fails with the apt/dpkg lock still held, it retries the WHOLE stage rather than
+# failing outright. This is a host-boot race, not a real problem — cloud-init or unattended-upgrades often
+# runs its own apt-get in the background right after boot, and any stage that shells out to apt-get
+# (currently host-prep, blueprint — but this could be any future one too, hence wrapping centrally here
+# rather than teaching each stage_<name> function about it) can lose that race. Re-running the whole stage
+# is safe because every stage here is itself documented idempotent/re-runnable. Any OTHER failure (not
+# matching this exact signature) propagates immediately on the first attempt, unaffected.
+lp_run_stage(){
+  local fn="$1" out rc attempt=0 deadline
+  local max_wait="${LP_RUN_STAGE_MAX_WAIT:-600}" interval="${LP_RUN_STAGE_INTERVAL:-15}"
+  deadline=$((SECONDS + max_wait))
+  while :; do
+    attempt=$((attempt+1)); rc=0
+    out="$(mktemp)"
+    "$fn" 2>&1 | tee "$out" || rc=$?
+    [ "$rc" -eq 0 ] && { rm -f "$out"; return 0; }
+    grep -qE 'Could not get lock|Unable to lock directory|dpkg was interrupted' "$out" || { rm -f "$out"; return "$rc"; }
+    rm -f "$out"
+    [ $SECONDS -lt $deadline ] || { echo "[launchpad] $fn: apt/dpkg still locked after ${max_wait}s (attempt $attempt) — giving up" >&2; return "$rc"; }
+    echo "[launchpad] $fn: apt/dpkg locked (cloud-init/unattended-upgrades likely still finishing after boot) — retrying in ${interval}s (attempt $attempt)" >&2
+    sleep "$interval"
+  done
+}
+
 stage_host_prep(){           bash deploy_scripts/platform/nvcm-host-prep.sh; }   # group changes apply from the next stage (new login)
 stage_platform_install_1(){  lp_continue_if_not_ready "platform-install-1" bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
 stage_platform_install_2(){  lp_continue_if_not_ready "platform-install-2" bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }

@@ -90,7 +90,7 @@ set -a; . '$run/run.env'; set +a
 . '$LP/stages.sh'
 cd "\$POC_DIR"
 echo "[launchpad] stage=$stage branch=\$POC_BRANCH sha=\$POC_SHA started=\$(date -u +%FT%TZ)"
-stage_${stage//-/_}
+lp_run_stage stage_${stage//-/_}
 EOF
   # bash -l: a fresh login profile (PATH ~/.local/bin, docker/libvirt groups from host prep) per stage.
   # timeout: the stage's own ceiling; --kill-after escalates if it ignores SIGTERM.

@@ -116,10 +116,12 @@ them after real runs.
 3. Add a `stage_<name>` function (dashes become underscores) whose body is an **invocation** of a
    documented `rafay_nvcm_poc` command — never new installation logic. If the underlying command's own
    readiness check can transiently fail right after a helm upgrade (pods still starting, not a real
-   error — its own message usually says as much, e.g. "fix the [FAIL] lines above, then re-run"), wrap it
-   in `common.sh`'s `lp_retry_until_ready "<description>" <max_wait_seconds> <interval_seconds> -- <cmd...>`
-   rather than letting the stage fail on a timing fluke. Keep `max_wait_seconds` comfortably under the
-   stage's own declared timeout — see `stage_platform_install_1`/`_2` for the pattern.
+   error — its own message usually says as much, e.g. "fix the [FAIL] lines above, then re-run"), wrap it in
+   `common.sh`'s `lp_continue_if_not_ready "<description>" <cmd...>` rather than letting the stage fail on a
+   timing fluke: it treats a matching "not ready yet" signal as non-fatal and continues (the operator's own
+   call — pods just need more time, and a later stage re-checks full readiness once they've had it), while
+   any other failure from the same command still propagates normally. See `stage_platform_install_1`/`_2`
+   for the pattern.
 4. Update the catalogue table above, and if you also changed a workflow input, its input table in
    `User_Guide.md` too.
 5. Run the local validation below before pushing.
@@ -246,3 +248,22 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   instance never started. If you add a new `run:` step that pipes anything through `tee` (or any command
   whose failure matters, not just its last stage), it needs `set -o pipefail` first; don't assume GitHub
   Actions supplies it.
+- **`platform`/`site`/`bringup` never report a literal `skipped` result, on purpose.** Each carries
+  `if: !cancelled()` and an `upstream_ok` input computed from its own `needs.*.result`; if a prior phase
+  didn't succeed, the phase job runs, does nothing, and reports plain `success`. This works around a
+  confirmed, longstanding GitHub Actions runner bug (`actions/runner#2205`): a job with an
+  `always()`/`!cancelled()` override can still itself be skipped if one of its own *direct* `needs` entries
+  is `skipped` — which defeated `poweroff`/`report`'s own override on a real run (2026-09-29: `site` failed,
+  `bringup` correctly showed `skipped` since it had no override of its own, and that skip alone caused
+  `poweroff` to be skipped too). Removing every literal `skipped` status from the graph removes the bug's
+  trigger condition. The per-stage accuracy in the actual report is unaffected either way — `build-report.sh`
+  determines pass/fail from `status.tsv`, not job results, so a phase that did nothing still shows its
+  catalogue stages as `skipped` there correctly.
+- **Every stage runs through `lp_run_stage` (`config/common.sh`), not called directly**, wired in
+  `remote/agent.sh`'s generated stage script. If a stage fails with the apt/dpkg lock still held — cloud-init
+  or `unattended-upgrades` running their own background `apt-get` right after boot is a common race any
+  stage that shells out to `apt-get` (`host-prep`, `blueprint`, and potentially a future one) can lose — it
+  retries the **whole stage**, up to `LP_RUN_STAGE_MAX_WAIT` seconds (default 600), rather than failing
+  outright. Safe because every stage here is itself documented idempotent/re-runnable. Any other failure
+  (not matching that exact signature) propagates immediately on the first attempt. This is wrapped centrally
+  in the agent, not opt-in per stage like `lp_continue_if_not_ready` above — new stages get it automatically.
