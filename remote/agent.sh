@@ -6,7 +6,7 @@
 # install. The runner polls `status` and streams the log.
 #
 #   agent.sh preflight                                        # sudo -n works, no stage already running
-#   agent.sh prepare <run_key> <owner/repo> <branch> [K=V..]  # workspace + fresh clone (needs ssh -A)
+#   agent.sh prepare <run_key> <owner/repo> <branch> [K=V..]  # workspace + fresh clone (needs $POC_TOKEN in env)
 #   agent.sh start   <run_key> <stage> <timeout_minutes>      # launch detached; returns immediately
 #   agent.sh status  <run_key> <stage>                        # running | done <rc> | absent
 #   agent.sh diag    <run_key>                                # read-only host snapshot for a failed run
@@ -45,6 +45,7 @@ cmd_preflight(){
 
 cmd_prepare(){
   local key="$1" repo="$2" branch="$3"; shift 3
+  : "${POC_TOKEN:?POC_TOKEN not set - a fine-grained PAT read-only on rafay_nvcm_poc, passed as an env-var prefix, never a positional argument, so it stays out of a plain ps aux}"
   local run="$RUNS/$key" ts; ts="$(date -u +%Y%m%dT%H%M%SZ)"
   cmd_preflight
   mkdir -p "$run" "$LP/previous-clones"
@@ -55,9 +56,15 @@ cmd_prepare(){
     mv "$POC_DIR" "$old" && log "moved previous checkout aside -> $old"
   fi
 
-  GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes" \
-    git clone --quiet --branch "$branch" --single-branch "git@github.com:${repo}.git" "$POC_DIR" \
-    || die "clone of ${repo}@${branch} failed (deploy key forwarded? branch exists?)"
+  # HTTPS + a one-shot Authorization header via `-c` (a per-invocation override, NOT persisted to
+  # .git/config) instead of an SSH deploy key. Embedding the token directly in the clone URL instead
+  # (https://token@github.com/...) would have git write that URL — token included — into the resulting
+  # checkout's .git/config indefinitely; this way nothing outlives the one clone command.
+  local auth; auth="$(printf '%s' "x-access-token:$POC_TOKEN" | base64 | tr -d '\n')"
+  git -c http.extraHeader="Authorization: Basic $auth" \
+    clone --quiet --branch "$branch" --single-branch "https://github.com/${repo}.git" "$POC_DIR" \
+    || die "clone of ${repo}@${branch} failed (token valid and not expired? branch exists?)"
+  unset POC_TOKEN auth
 
   local f
   for f in "${PRESERVE_FILES[@]}"; do

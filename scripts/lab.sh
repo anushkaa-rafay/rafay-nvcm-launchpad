@@ -8,7 +8,7 @@
 #   lab.sh connect        # resolve the SSH address, write the `lab` ssh alias, wait for SSH + boot to settle
 #   lab.sh push-agent     # copy remote/agent.sh + config/common.sh + $LAUNCHPAD_CATALOGUE to ~/launchpad
 #                           on the host (the catalogue lands there as ~/launchpad/stages.sh, whichever mode it is)
-#   lab.sh ssh [-A] CMD   # run CMD on the host (-A forwards the agent: used only for the git clone)
+#   lab.sh ssh CMD        # run CMD on the host
 #
 # Env: OCI_INSTANCE_ID (required), OCI_SSH_USER (default ubuntu), OCI_SSH_HOST (optional: fixed address or
 # reserved IP; otherwise the primary VNIC's public IP is looked up each run — ephemeral IPs change on restart),
@@ -103,6 +103,6 @@ sub="${1:-}"; shift || true
 case "$sub" in
   state) state ;; start) cmd_start ;; stop) cmd_stop ;;
   connect) cmd_connect ;; push-agent) cmd_push_agent ;;
-  ssh) if [ "${1:-}" = -A ]; then shift; ssh -A lab "$@"; else ssh lab "$@"; fi ;;
+  ssh) ssh lab "$@" ;;
   *) awk 'NR>2{ if(/^#/){sub(/^# ?/,"");print} else exit }' "$0"; exit 2 ;;
 esac

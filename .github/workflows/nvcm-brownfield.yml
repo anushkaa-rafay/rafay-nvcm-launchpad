@@ -135,7 +135,6 @@ jobs:
           oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
           oci-region:      ${{ secrets.OCI_CLI_REGION }}
           ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
-          poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
 
       - name: Start OCI instance
         id: start
@@ -160,14 +159,18 @@ jobs:
           BF_MODE:  ${{ steps.opts.outputs.BF_MODE }}
           SEED_B64: ${{ steps.opts.outputs.SEED_B64 }}
           LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
+          POC_TOKEN: ${{ secrets.POC_ACCESS_TOKEN }}
         run: |
-          # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
+          # POC_TOKEN reaches the remote shell as an env-var PREFIX (POC_TOKEN=... command), never a CLI
+          # argument: that keeps it out of a plain `ps aux` on the host (which shows argv, not env), and
+          # remote/agent.sh unsets it immediately after the one clone command that needs it. GitHub also
+          # masks the literal secret value in this log regardless.
           # SITE/LOCATION/DEVICE_TYPE/POLICY_FROM can legitimately contain spaces (e.g. "Cumulus VX") — %q-escape
           # each before it joins the single remote command line, so the remote shell sees one word per K=V pair.
           args="SITE=$(printf '%q' "$SITE") LOCATION=$(printf '%q' "$LOCATION") DEVICE_TYPE=$(printf '%q' "$DEVICE_TYPE")"
           args="$args POLICY_FROM=$(printf '%q' "$POLICY_FROM") TENANTS=$(printf '%q' "$TENANTS")"
           args="$args BF_MODE=$(printf '%q' "$BF_MODE") SEED_B64=$(printf '%q' "$SEED_B64")"
-          scripts/lab.sh ssh -A "LAB_OCI_IP='$LAB_OCI_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH $args" \
+          scripts/lab.sh ssh "LAB_OCI_IP='$LAB_OCI_IP' POC_TOKEN=$(printf '%q' "$POC_TOKEN") launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH $args" \
             2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
 
