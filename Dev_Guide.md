@@ -114,7 +114,12 @@ them after real runs.
 2. Add one `name:phase:timeout_minutes` line to that file's `LAUNCHPAD_STAGES` array (order = execution
    order; phase must be `platform`, `site`, or `bringup`).
 3. Add a `stage_<name>` function (dashes become underscores) whose body is an **invocation** of a
-   documented `rafay_nvcm_poc` command — never new installation logic.
+   documented `rafay_nvcm_poc` command — never new installation logic. If the underlying command's own
+   readiness check can transiently fail right after a helm upgrade (pods still starting, not a real
+   error — its own message usually says as much, e.g. "fix the [FAIL] lines above, then re-run"), wrap it
+   in `common.sh`'s `lp_retry_until_ready "<description>" <max_wait_seconds> <interval_seconds> -- <cmd...>`
+   rather than letting the stage fail on a timing fluke. Keep `max_wait_seconds` comfortably under the
+   stage's own declared timeout — see `stage_platform_install_1`/`_2` for the pattern.
 4. Update the catalogue table above, and if you also changed a workflow input, its input table in
    `User_Guide.md` too.
 5. Run the local validation below before pushing.
