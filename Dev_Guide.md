@@ -228,3 +228,13 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   address and the connect address differ, no alias) and then the fix (`HostKeyAlias` + rewritten entries →
   connects successfully via a different address than the one the key was captured against) against a real
   sshd in a container — not just reasoned about.
+- **`poweroff` and `report` use `!cancelled()`, not `always()`.** GitHub Actions has a longstanding,
+  widely-reported quirk (see `actions/runner#2205`, `actions/runner#2566`, community discussions #26945 and
+  #45058) where a job gated by `always()` can still be skipped if one of its `needs` was itself *skipped*
+  (as opposed to *failed*) — which is exactly what happens here whenever `boot` fails outright:
+  `platform`/`site`/`bringup` are marked `skipped` (they never ran, since their own `needs: boot` failed),
+  and that skip can then propagate through `poweroff`/`report` despite `always()`, leaving the instance
+  running and no report filed. `!cancelled()` is the community-verified fix — it still runs after a plain
+  failure (only an actual cancellation makes `cancelled()` true), so nothing about the success/failure
+  behavior this design depends on changes; it just doesn't inherit the skip-propagation quirk. Do not
+  "simplify" this back to `always()`.

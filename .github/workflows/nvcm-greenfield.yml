@@ -167,8 +167,12 @@ jobs:
 
   poweroff:
     needs: [boot, platform, site, bringup]
-    # always(): also after a failure or cancellation. Non-dispatch triggers (schedule) always shut down.
-    if: always() && (github.event_name != 'workflow_dispatch' || inputs.shutdown_oci)
+    # !cancelled(), NOT always(): also after a failure. GitHub Actions has a longstanding, documented quirk
+    # where a job gated by always() can still be skipped if one of its `needs` was itself skipped (which
+    # happens here whenever `boot` fails and platform/site/bringup are skipped as a result) — !cancelled()
+    # is the community-verified fix and behaves identically for the success/failure cases this depends on.
+    # Non-dispatch triggers (schedule) always shut down.
+    if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.shutdown_oci) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -185,7 +189,8 @@ jobs:
 
   report:
     needs: [boot, platform, site, bringup, poweroff]
-    if: always()
+    # !cancelled(), not always() — see the note on the poweroff job above.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
