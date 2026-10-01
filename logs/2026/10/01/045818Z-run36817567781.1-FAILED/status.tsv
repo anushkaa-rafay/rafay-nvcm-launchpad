@@ -1,0 +1,7 @@
+1	host-prep	platform	not-selected				
+2	platform-install-1	platform	not-selected				
+3	platform-install-2	platform	not-selected				
+4	verify-platform	platform	not-selected				
+5	bf-discover	site	failed	2	2026-10-01T05:00:53Z	2026-10-01T05:01:14Z	21
+6	bf-blueprint	site	skipped				
+7	bf-adopt	bringup	skipped				
