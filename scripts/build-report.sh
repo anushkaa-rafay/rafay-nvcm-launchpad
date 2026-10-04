@@ -82,7 +82,7 @@ jq -n \
              | {index:(.[0]|tonumber), name:.[1], phase:.[2], result:.[3], rc:.[4], started:.[5], finished:.[6],
                 seconds:(if .[7]=="" then null else (.[7]|tonumber) end)} ] }' > "$OUT/summary.json"
 
-icon(){ case "$1" in passed) echo "✅";; skipped|not-selected) echo "⏭️";; *) echo "❌";; esac; }
+icon(){ case "$1" in passed) echo "✅";; skipped|not-selected) echo "⚪";; *) echo "❌";; esac; }   # ⚪ = not run
 {
   echo "## NVCM e2e — $( [ "$status" = PASSED ] && echo "✅" || echo "❌") $status"
   echo

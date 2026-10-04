@@ -263,17 +263,17 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   instance never started. If you add a new `run:` step that pipes anything through `tee` (or any command
   whose failure matters, not just its last stage), it needs `set -o pipefail` first; don't assume GitHub
   Actions supplies it.
-- **`platform`/`site`/`bringup` never report a literal `skipped` result, on purpose.** Each carries
-  `if: !cancelled()` and an `upstream_ok` input computed from its own `needs.*.result`; if a prior phase
-  didn't succeed, the phase job runs, does nothing, and reports plain `success`. This works around a
-  confirmed, longstanding GitHub Actions runner bug (`actions/runner#2205`): a job with an
-  `always()`/`!cancelled()` override can still itself be skipped if one of its own *direct* `needs` entries
-  is `skipped` — which defeated `poweroff`/`report`'s own override on a real run (2026-09-29: `site` failed,
-  `bringup` correctly showed `skipped` since it had no override of its own, and that skip alone caused
-  `poweroff` to be skipped too). Removing every literal `skipped` status from the graph removes the bug's
-  trigger condition. The per-stage accuracy in the actual report is unaffected either way — `build-report.sh`
-  determines pass/fail from `status.tsv`, not job results, so a phase that did nothing still shows its
-  catalogue stages as `skipped` there correctly.
+- **Jobs run strictly in sequence, and stop at the first failure.** `platform`/`site`/`bringup` each run
+  only if every earlier phase succeeded (`if: !cancelled() && needs.<each>.result == 'success'`); after a
+  failure (❌) the later phases show **skipped** (grey) in the run graph, and their stages ⚪ in the Step
+  Summary. `poweroff` and `report` still run (`!cancelled()`). Every `if:` spells out its status function
+  and the `needs.*.result` values it needs, on purpose: a job left on the *implicit* `success()` check can be
+  wrongly skipped when any job further upstream was skipped (`actions/runner#2205`), and explicit conditions
+  are that issue's documented workaround. (An earlier version never let a phase show `skipped` — it ran a
+  no-op green job instead — blaming that bug for `poweroff` being skipped on 2026-09-29. The committed
+  reports don't support it: `poweroff` was `skipped` on every run that day, including PASSED run
+  36585500700 where nothing upstream was skipped, i.e. its own `shutdown_oci` condition was false.)
+  Pass/fail per stage comes from `status.tsv`, not job results — a skipped phase's stages show `skipped`.
 - **Every stage runs through `lp_run_stage` (`config/common.sh`), not called directly**, wired in
   `remote/agent.sh`'s generated stage script. If a stage fails with the apt/dpkg lock still held — cloud-init
   or `unattended-upgrades` running their own background `apt-get` right after boot is a common race any

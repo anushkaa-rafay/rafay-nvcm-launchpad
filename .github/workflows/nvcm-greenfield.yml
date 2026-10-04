@@ -153,37 +153,37 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-  # Each phase job below carries `if: !cancelled()` and an explicit `upstream_ok` input, so it NEVER reports
-  # a literal `skipped` result — see _phase.yml's header comment for why: a confirmed GitHub Actions runner
-  # bug (actions/runner#2205) lets a `skipped` dependency defeat poweroff/report's own always()/!cancelled()
-  # override, and this happened for real on 2026-09-29 (site failed, bringup correctly showed `skipped`
-  # since it has no override of its own, and that alone caused poweroff to be skipped too).
+  # Strictly sequential: boot → platform → site → bringup → poweroff → report. A phase runs only if EVERY
+  # phase before it succeeded; after the first failure (❌) the later phases are SKIPPED (grey ⊘ in the run
+  # graph), never run-and-green. Every `if:` below names its status function (!cancelled()) and the exact
+  # needs.*.result it requires, explicitly: a job relying on the implicit success() check can be wrongly
+  # skipped when any job further upstream was skipped (actions/runner#2205) — explicit conditions are that
+  # issue's documented workaround, and are what keeps poweroff/report running after a skipped phase.
   platform:
     needs: boot
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.boot.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
-    with: { phase: platform, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh, upstream_ok: "${{ needs.boot.result == 'success' }}" }
+    with: { phase: platform, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   site:
     needs: [boot, platform]
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.boot.result == 'success' && needs.platform.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
-    with: { phase: site, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh, upstream_ok: "${{ needs.boot.result == 'success' && needs.platform.result == 'success' }}" }
+    with: { phase: site, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   bringup:
     needs: [boot, site]
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.boot.result == 'success' && needs.site.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
-    with: { phase: bringup, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh, upstream_ok: "${{ needs.boot.result == 'success' && needs.site.result == 'success' }}" }
+    with: { phase: bringup, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   poweroff:
     needs: [boot, platform, site, bringup]
-    # !cancelled(), NOT always(): also after a failure. See the note above the `platform` job — always()
-    # does not reliably survive a `skipped` needs entry, which is why every phase job above now guarantees
-    # it never reports `skipped` in the first place. Non-dispatch triggers (schedule) always shut down.
+    # !cancelled(): also after a failure or a skipped phase — see the note above the `platform` job.
+    # Non-dispatch triggers (schedule) always shut down.
     if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.shutdown_oci) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30

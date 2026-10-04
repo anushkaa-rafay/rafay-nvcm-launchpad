@@ -3,18 +3,8 @@ name: _phase
 # or config/stages-brownfield.sh). Called once per phase by nvcm-greenfield.yml / nvcm-brownfield.yml — a phase
 # is its own job so each gets a fresh 6 h GitHub-hosted budget; the work itself runs detached on the host, so
 # nothing is lost between jobs. Shared by both onboarding modes: identical mechanics either way, only the
-# catalogue differs.
-#
-# `upstream_ok` (required): the calling workflow passes whether every phase this one needs actually
-# SUCCEEDED (never just "ran"). If false, this job does nothing and reports a plain success — it does NOT
-# report `skipped`. That distinction matters: GitHub Actions has a confirmed, longstanding runner bug
-# (actions/runner#2205) where a job with an always()/!cancelled() override can still itself be marked
-# `skipped` if one of its OWN direct `needs` entries is `skipped` — and poweroff/report `need` this job
-# directly. A phase job showing `skipped` here would risk poweroff/report being silently skipped in turn
-# (confirmed happening on 2026-09-29: a real run's `site` phase failed, `bringup` — needing `site` with no
-# override — correctly showed `skipped`, and that alone caused `poweroff` to be skipped too, DESPITE its own
-# `!cancelled()` override). Never letting a phase job show literal `skipped` removes the trigger condition
-# entirely, rather than chasing another `if:` phrasing against an unresolved upstream bug.
+# catalogue differs. The caller decides WHETHER a phase runs (its job-level `if:` — skipped unless every
+# earlier phase succeeded); once called, this always runs its selected stages.
 
 on:
   workflow_call:
@@ -23,7 +13,6 @@ on:
       run_key:         { type: string, required: true }
       stages:          { type: string, required: true }
       catalogue:       { type: string, required: true }
-      upstream_ok:     { type: boolean, required: true }
       timeout_minutes: { type: number, default: 350 }
 
 permissions:
@@ -32,7 +21,6 @@ permissions:
 jobs:
   run:
     name: ${{ inputs.phase }}
-    if: ${{ !cancelled() }}   # never implicitly skipped by a needed job's result — see the note above
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout_minutes }}
     env:
@@ -45,13 +33,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Earlier phase failed — nothing to do
-        if: ${{ !inputs.upstream_ok }}
-        run: echo "::notice::an earlier phase did not succeed — ${{ inputs.phase }} does nothing this run"
-
       - name: Plan
         id: plan
-        if: ${{ inputs.upstream_ok }}
         env: { PHASE: "${{ inputs.phase }}", SEL: "${{ inputs.stages }}" }
         run: |
           s="$(scripts/run-stages.sh plan "$PHASE" "$SEL" | paste -sd, -)"
@@ -59,7 +42,7 @@ jobs:
           echo "phase $PHASE runs: ${s:-<nothing selected>}"
 
       - name: Lab access
-        if: ${{ inputs.upstream_ok && steps.plan.outputs.stages != '' }}
+        if: ${{ steps.plan.outputs.stages != '' }}
         uses: ./.github/actions/lab-access
         with:
           oci-user:        ${{ secrets.OCI_CLI_USER }}
@@ -70,11 +53,10 @@ jobs:
           ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
 
       - name: Connect
-        if: ${{ inputs.upstream_ok && steps.plan.outputs.stages != '' }}
+        if: ${{ steps.plan.outputs.stages != '' }}
         run: scripts/lab.sh connect && scripts/lab.sh push-agent
 
       - name: Run stages
-        if: ${{ inputs.upstream_ok }}
         env: { PHASE: "${{ inputs.phase }}", KEY: "${{ inputs.run_key }}", SEL: "${{ inputs.stages }}" }
         run: scripts/run-stages.sh run "$PHASE" "$KEY" "$SEL" "$OUT"
 

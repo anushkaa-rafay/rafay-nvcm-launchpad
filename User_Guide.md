@@ -164,7 +164,8 @@ DC. Use the two-run pattern there.
 
 - Each stage runs on the OCI host, detached from the GitHub runner — an SSH blip doesn't kill it. Progress
   streams into the job's log in the Actions UI as it goes.
-- If a stage fails, the pipeline stops there; later stages show as `skipped`. The OCI instance is still
+- If a stage fails, the pipeline stops there: its job shows ❌, every later phase job is **skipped** (grey) in
+  the run graph — never run — and those stages show ⚪ `skipped` in the Step Summary. The OCI instance is still
   powered off afterward (unless you unticked `shutdown_oci`) and a report is still produced — a failure
   never leaves the lab running or the run unreported.
 - Results land in three places every run:
