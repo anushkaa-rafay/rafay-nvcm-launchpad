@@ -24,13 +24,13 @@ jobs:
           fail=0
           while IFS= read -r -d '' f; do
             bash -n "$f" || fail=1
-          done < <(find scripts remote config -name '*.sh' -print0)
+          done < <(find scripts remote config tests -name '*.sh' -print0)
           exit $fail
 
       - name: shellcheck (warning and above)
         run: |
           command -v shellcheck >/dev/null || { sudo apt-get update -qq && sudo apt-get install -qq -y shellcheck; }
-          shellcheck -x --severity=warning scripts/*.sh remote/*.sh config/*.sh
+          shellcheck -x --severity=warning scripts/*.sh remote/*.sh config/*.sh tests/*.sh
 
       - name: stage-selection self-test — greenfield catalogue (pure logic, no SSH)
         env:
@@ -55,6 +55,9 @@ jobs:
           # config/stages-brownfield.sh's header. A regression here would silently skip the safety stop.
           [ -z "$(scripts/run-stages.sh plan bringup bf-discover,bf-blueprint)" ]
           [ "$(scripts/run-stages.sh plan bringup bf-adopt)" = "bf-adopt" ]     # the resume run (stages=bf-adopt) must still find it
+
+      - name: log layout self-test — run-stages → build-report → commit-logs against a fake lab (no SSH)
+        run: tests/logging.sh
 
   actionlint:
     runs-on: ubuntu-latest

@@ -109,7 +109,7 @@ Once inputs land on the lab host, the run itself follows a fixed pipeline:
 Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settled
         ─ SSH ─────▶ ~/launchpad/agent.sh prepare   (move old checkout aside, clone <branch> → ~/rafay_nvcm_poc)
                      for each stage:  agent.sh start → detached on the host; runner streams the log + polls
-        ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/YYYY/MM/DD commit
+        ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
 
 Major components:
@@ -125,7 +125,7 @@ Major components:
   **detached** (`setsid` + its own `timeout`), so an SSH drop or a hand-off between GitHub jobs never kills
   a multi-hour install.
 - **The report pipeline** (`scripts/build-report.sh`, `scripts/commit-logs.sh`) — merges every job's logs
-  into one pass/fail summary and commits it under `logs/YYYY/MM/DD/`.
+  into one `workflow.log` + pass/fail summary and commits it under `logs/<Mon-YYYY>/<DD-Mon-YYYY>/`.
 
 Full internals, including *why* each of these design choices was made, live in [`Dev_Guide.md`](Dev_Guide.md).
 
@@ -267,12 +267,44 @@ Full step-by-step instructions, including exactly where to find each value in th
 Logs are kept in three places on every run:
 
 - **Live**: streamed into the Actions UI as each stage runs on the host.
-- **Artifacts**: `logs-*` (raw per-stage logs, 30 days) and `run-report` (the merged report, 90 days),
-  downloadable from the run page.
-- **Permanent**: a commit under `logs/<yyyy>/<mm>/<dd>/<HHMMSS>Z-run<id>.<attempt>-<STATUS>/` in this repo —
-  per-stage logs, `summary.md`, and `summary.json`, gzipped if over 20 MB.
+- **Artifacts**: `logs-*` (one per job: `boot.log`, or that phase's `workflow.log` + `status.tsv`, 30 days)
+  and `run-report` (the merged report, 90 days), downloadable from the run page.
+- **Permanent**: a commit in this repo, one directory per run, filed by the month and full date the run
+  **started** (UTC), gzipped if a file is over 20 MB:
 
-Per-stage logs are named for the stage that produced them, in run order. The stage sequence for
+```
+logs/
+└── <Mon-YYYY>/                                    e.g. Oct-2026          — one per month
+    └── <DD-Mon-YYYY>/                             e.g. 04-Oct-2026       — one per day
+        └── <HHMMSS>Z-run<id>.<attempt>-<STATUS>/  e.g. 220415Z-run36606934354.1-FAILED  — one per run
+            ├── workflow.log              every stage's output, in run order (below)
+            ├── boot.log                  start OCI → wait operational → clone
+            ├── diagnostics-<job>.txt     host snapshot, only when a stage in that job failed (e.g. diagnostics-bringup.txt)
+            ├── status.tsv                one row per catalogue stage
+            ├── summary.json              machine-readable result — the contract for notifiers
+            └── summary.md                the Step Summary table
+```
+
+There are **no per-stage log files** (the old `01-host-prep.log`, `02-platform-install-1.log`, …): every
+stage writes into the single `workflow.log`, in execution order, each in its own section that ends with the
+stage's result — `PASSED`, `FAILED`, `TIMED-OUT`, `LOST-CONTACT`, `INTERRUPTED` (its job was cancelled or
+died mid-stage), `SKIPPED` or `NOT-SELECTED`. A stage's stdout and stderr are copied in verbatim:
+
+```
+============================================================
+STAGE 06: substrate (phase: site)
+============================================================
+
+[2026-10-04 22:31:40 UTC] INFO  Starting stage substrate (timeout 120m, run key 36606934354-1)
+<stage output>
+[2026-10-04 22:32:02 UTC] ERROR Stage substrate failed (rc=1, 22s)
+
+------------------------------------------------------------
+STAGE STATUS: FAILED
+------------------------------------------------------------
+```
+
+The file ends with `WORKFLOW STATUS: <PASSED|FAILED|CANCELLED> (failed stage: …)`. The stage sequence for
 greenfield is explicitly documented as:
 
 ```
@@ -285,8 +317,8 @@ host-prep
 → dc-bringup
 ```
 
-To debug a failure: start with the Step Summary's pass/fail table, then the specific failed stage's log
-file in the committed report. Host diagnostics (pods, events, VMs, disk) are captured automatically on any
+To debug a failure: start with the Step Summary's pass/fail table, then search the committed
+`workflow.log` for `STAGE STATUS: FAILED` (or the failed stage's `STAGE NN:` header). Host diagnostics (pods, events, VMs, disk) are captured automatically on any
 failure.
 
 ## 11. Error Handling

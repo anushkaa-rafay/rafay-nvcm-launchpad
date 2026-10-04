@@ -283,7 +283,7 @@ jobs:
           path: report
           retention-days: 90
 
-      - name: Commit logs to logs/YYYY/MM/DD
+      - name: Commit logs to logs/<Mon-YYYY>/<DD-Mon-YYYY>
         run: scripts/commit-logs.sh report
 
       # Future notifiers (email / shared drive / Slack) go here, reading report/summary.json.

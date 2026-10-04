@@ -151,7 +151,7 @@ terminal to pause in:
 
 1. **Run 1** — default `stages=bf-discover,bf-blueprint`. Nothing is written to Nautobot or to any switch.
    The `bf-blueprint` stage prints the full generated blueprint into its own log (and, since logs are
-   committed to `logs/YYYY/MM/DD/`, into the repo). **Read it.** Resolve every `TODO(confirm)` marker — or
+   committed to `logs/<Mon-YYYY>/<DD-Mon-YYYY>/`, into the repo — in that run's `workflow.log`). **Read it.** Resolve every `TODO(confirm)` marker — or
    set `policy_from` to a reference blueprint that already has `tenant_policy` so none appear.
 2. **Run 2** — once satisfied, re-run with `stages=bf-adopt`. It re-finds the same discovered blueprint on
    the host and hands it to `provision_site.sh`.
@@ -170,10 +170,11 @@ DC. Use the two-run pattern there.
 - Results land in three places every run:
   - The **Step Summary** tab on the run itself — a quick pass/fail table.
   - Downloadable **artifacts** (`logs-*`, `run-report`) on the run page, for 30–90 days.
-  - A permanent commit under `logs/<yyyy>/<mm>/<dd>/` in this repo — the durable record, including the
-    brownfield blueprint you need to review before `bf-adopt`.
+  - A permanent commit under `logs/<Mon-YYYY>/<DD-Mon-YYYY>/<time>Z-run<id>.<attempt>-<STATUS>/` in this
+    repo (e.g. `logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED/`) — the durable record,
+    including the brownfield blueprint you need to review before `bf-adopt`.
 - Only one run (of either workflow) is ever active against the lab at a time — a second trigger queues
   behind it rather than clashing.
 
-If something goes wrong and you're not sure why, the per-stage log under `logs/.../<stage>.log` in the
-committed report is the first place to look; `Dev_Guide.md` has the internals if you need to go deeper.
+If something goes wrong and you're not sure why, that run's `workflow.log` is the first place to look —
+every stage is in it, in order, each ending in a `STAGE STATUS:` line (search for `STAGE STATUS: FAILED`); `Dev_Guide.md` has the internals if you need to go deeper.

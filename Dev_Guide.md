@@ -9,7 +9,7 @@ itself. If you just want to run a workflow, see [`User_Guide.md`](User_Guide.md)
 Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settled
         ─ SSH ─────▶ ~/launchpad/agent.sh prepare   (move old checkout aside, clone <branch> → ~/rafay_nvcm_poc)
                      for each stage:  agent.sh start → detached on the host; runner streams the log + polls
-        ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/YYYY/MM/DD commit
+        ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
 
 This repo **orchestrates**; it never contains installation logic. Every stage is an invocation of a
@@ -61,9 +61,11 @@ config/stages-greenfield.sh             greenfield-only stages (blueprint/substr
 config/stages-brownfield.sh             brownfield-only stages (bf-discover/bf-blueprint/bf-adopt) + LAUNCHPAD_STAGES
 remote/agent.sh                         runs ON the host: preflight, prepare/clone, detached stage runner, diag
 scripts/lab.sh                          runner: OCI power (start/stop/state), SSH connect + readiness, pushes the selected catalogue
-scripts/run-stages.sh                   runner: drive a phase (from $LAUNCHPAD_CATALOGUE), stream logs, record status.tsv
-scripts/build-report.sh                 merge job logs → summary.md / summary.json
-scripts/commit-logs.sh                  dated commit of the report
+scripts/run-stages.sh                   runner: drive a phase (from $LAUNCHPAD_CATALOGUE), stream into the phase's workflow.log, record status.tsv
+scripts/build-report.sh                 merge job logs → one workflow.log + summary.md / summary.json
+scripts/commit-logs.sh                  commit the report under logs/<Mon-YYYY>/<DD-Mon-YYYY>/<run>/
+scripts/lib-log.sh                      the log format + committed path, shared by the three above
+tests/logging.sh                        self-test of that pipeline against a fake lab (run by ci.yml)
 ```
 
 ## The stage-catalogue system
@@ -149,10 +151,20 @@ the team agrees it's safe.
 - The first failed stage stops the pipeline; later stages in that run are recorded `skipped`.
 - A stage that was **running** when the job itself died (cancelled, timed out, runner crashed) is recorded
   `interrupted`, not `skipped` — `scripts/build-report.sh` tells the two apart by checking whether that
-  stage's log file was ever created (it is, the instant the stage starts, before any status row exists).
+  stage's `STAGE NN:` header was ever written to its phase's `workflow.log` (it is, the instant the stage
+  starts, before any status row exists). Note an interrupted stage counts as the failed stage, so the run's
+  status is `FAILED`; `CANCELLED` is a run cancelled between stages.
   Treat this distinction as load-bearing if you touch that script: collapsing it back to a blanket
   `skipped` silently hides exactly the stage that was actually running when something went wrong.
 - Host diagnostics (pods, events, VMs, disk) are captured on any failure via `remote/agent.sh diag`.
+- **One `workflow.log` per run, no per-stage log files.** Phases run in separate GitHub jobs, so no single
+  file can stay open across them: each phase job's `run-stages.sh` writes its stages, in order, into that
+  job's own `workflow.log` (header → verbatim output pulled from the host → result line → `STAGE STATUS`
+  footer), and `build-report.sh` concatenates the phase logs in catalogue order. It also writes what a job
+  could not: the footer of a stage the job died inside, and a stub section for every stage never reached.
+  The format and the committed path (`logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-run<id>.<attempt>-<STATUS>/`,
+  English month names whatever the locale) live in `scripts/lib-log.sh` only. `tests/logging.sh` exercises
+  pass / fail / cancel / boot-failure end to end — run it after touching any of these scripts.
 - `poweroff` and `report` jobs use `if: always()` and run after a success, a failure, or a cancellation —
   the instance is stopped even if it was already running before the run started (the report records that),
   and a report is always produced so a failure can never hide behind a job that never ran.
@@ -170,11 +182,11 @@ what `ci.yml` runs on every push/PR. Run it before pushing a change to any scrip
 # from the repo root
 docker run --rm -v "$PWD:/repo" -w /repo ubuntu:24.04 bash -ec '
   # 1) every script parses
-  find scripts remote config -name "*.sh" -print0 | xargs -0 -n1 bash -n
+  find scripts remote config tests -name "*.sh" -print0 | xargs -0 -n1 bash -n
 
   # 2) shellcheck, warning severity and above
-  apt-get update -qq >/dev/null && apt-get install -qq -y shellcheck >/dev/null
-  shellcheck -x --severity=warning scripts/*.sh remote/*.sh config/*.sh
+  apt-get update -qq >/dev/null && apt-get install -qq -y shellcheck jq git >/dev/null
+  shellcheck -x --severity=warning scripts/*.sh remote/*.sh config/*.sh tests/*.sh
 
   # 3) stage-selection logic, both catalogues — pure logic, no SSH
   for cat in config/stages-greenfield.sh config/stages-brownfield.sh; do
@@ -182,9 +194,12 @@ docker run --rm -v "$PWD:/repo" -w /repo ubuntu:24.04 bash -ec '
     LAUNCHPAD_CATALOGUE=$cat scripts/run-stages.sh validate all
     LAUNCHPAD_CATALOGUE=$cat scripts/run-stages.sh plan platform all
   done
+
+  # 4) log layout: run-stages → build-report → commit-logs against a fake lab
+  tests/logging.sh
 '
 
-# 4) workflow YAML itself
+# 5) workflow YAML itself
 docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -color
 ```
 

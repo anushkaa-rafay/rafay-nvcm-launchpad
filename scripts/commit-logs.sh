@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 #
-# commit-logs.sh — file a run report under logs/YYYY/MM/DD/ on this repo's current branch and push.
+# commit-logs.sh — file a run report under logs/<Mon-YYYY>/<DD-Mon-YYYY>/ on this repo's current branch and push.
 #
 #   commit-logs.sh <report_dir>
 #
-# Layout:  logs/<yyyy>/<mm>/<dd>/<HHMMSS>Z-run<id>.<attempt>-<STATUS>/{summary.md,summary.json,status.tsv,*.log}
+# Layout:  logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-run<id>.<attempt>-<STATUS>/
+#            {workflow.log,boot.log,diagnostics-<job>.txt,status.tsv,summary.json,summary.md}
+# e.g.     logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED/   (path built by lp_run_dir, scripts/lib-log.sh)
 # Dated by the run's START (summary.json .run.started), so a run crossing midnight files under its start day.
 # Logs over GZIP_OVER_MB are gzipped in the commit (GitHub rejects files > 100 MB); the workflow artifact
 # always keeps them raw. This script is the one seam to replace when logs move to external storage.
 #
 set -euo pipefail
+# shellcheck source=scripts/lib-log.sh
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib-log.sh"
 REPORT="$1"
 GZIP_OVER_MB="${GZIP_OVER_MB:-20}"
-started="$(jq -r '.run.started // empty' "$REPORT/summary.json")"; started="${started:-$(date -u +%FT%TZ)}"
-dest="logs/$(date -u -d "$started" +%Y/%m/%d)/$(date -u -d "$started" +%H%M%S)Z-run$(jq -r '.run.id' "$REPORT/summary.json").$(jq -r '.run.attempt' "$REPORT/summary.json")-$(jq -r '.status' "$REPORT/summary.json")"
+dest="$(lp_run_dir "$REPORT/summary.json")"
 
 mkdir -p "$dest"
 cp -r "$REPORT"/. "$dest/"

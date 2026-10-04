@@ -5,8 +5,9 @@
 #   build-report.sh <collected_dir> <report_dir>
 #
 # <collected_dir> holds the downloaded logs-* artifacts (one sub-directory per job). Writes to <report_dir>:
-# the flattened logs, status.tsv (every stage, in order), summary.md (human) and summary.json (the stable
-# contract for any future notifier: email / shared drive / Slack read this file, never the workflow).
+# workflow.log (every stage's output, in catalogue order, one section per stage — see scripts/lib-log.sh),
+# boot.log, diagnostics-<job>.txt, status.tsv (every stage, in order), summary.md (human) and summary.json
+# (the stable contract for any future notifier: email / shared drive / Slack read this file, never the workflow).
 #
 # Env (set by the workflow): RUN_ID RUN_ATTEMPT RUN_URL TRIGGER ACTOR
 #   RESULT_BOOT RESULT_PLATFORM RESULT_SITE RESULT_BRINGUP RESULT_POWEROFF   (needs.<job>.result)
@@ -16,6 +17,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 : "${LAUNCHPAD_CATALOGUE:?LAUNCHPAD_CATALOGUE not set (e.g. config/stages-greenfield.sh) — set by the workflow}"
 # shellcheck source=/dev/null
 . "$ROOT/$LAUNCHPAD_CATALOGUE"
+# shellcheck source=scripts/lib-log.sh
+. "$ROOT/scripts/lib-log.sh"
 IN="$1"; OUT="$2"; mkdir -p "$OUT"   # deliberately reassigned after sourcing: the catalogue may export its own OUT (brownfield's host-side discovery dir) — this OUT is this script's own report dir, on the runner, unrelated
 
 # boot metadata (absent if the run died before boot uploaded anything)
@@ -24,19 +27,22 @@ if [ -f "$IN/logs-boot/meta.env" ]; then
   while IFS='=' read -r k v; do [ -n "$k" ] && M[$k]="$v"; done < "$IN/logs-boot/meta.env"
 fi
 
-# flatten logs + merge status rows
+# boot.log + per-job diagnostics as-is (each phase's workflow.log is stitched below) + merge status rows
 shopt -s nullglob
 for d in "$IN"/logs-*/; do
   job="$(basename "$d")"; job="${job#logs-}"
-  for f in "$d"*.log; do cp "$f" "$OUT/"; done
+  [ -f "$d/boot.log" ] && cp "$d/boot.log" "$OUT/"
   [ -f "$d/diagnostics.txt" ] && cp "$d/diagnostics.txt" "$OUT/diagnostics-$job.txt"
 done
 rows="$(cat "$IN"/logs-*/status.tsv 2>/dev/null || true)"
 
-# every catalogue stage gets a row. run-stages.sh creates a stage's log file the moment it starts the
-# stage, before it can write a status.tsv row — so a missing row WITH a log file means the job died
-# mid-stage (cancelled / timed out / crashed): "interrupted", not "skipped". A missing row with no log
-# file at all means the stage was never reached — that one really is "skipped".
+# true iff the phase job wrote this stage's header into its workflow.log: stage_started <idx> <name> <phase>
+stage_started(){ grep -qFx "$(lp_stage_title "$1" "$2" "$3")" "$IN/logs-$3/workflow.log" 2>/dev/null; }
+
+# every catalogue stage gets a row. run-stages.sh writes a stage's header into its phase's workflow.log the
+# moment it starts the stage, before it can write a status.tsv row — so a missing row WITH a header means
+# the job died mid-stage (cancelled / timed out / crashed): "interrupted", not "skipped". A missing row with
+# no header at all means the stage was never reached — that one really is "skipped".
 : > "$OUT/status.tsv"
 idx=0
 for e in "${LAUNCHPAD_STAGES[@]}"; do
@@ -44,7 +50,7 @@ for e in "${LAUNCHPAD_STAGES[@]}"; do
   row="$(awk -F'\t' -v n="$name" '$2==n' <<< "$rows" | tail -n1)"
   if [ -z "$row" ]; then
     label=skipped
-    [ -f "$OUT/$(printf '%02d' "$idx")-$name.log" ] && label=interrupted
+    stage_started "$idx" "$name" "$ph" && label=interrupted
     row="$(printf '%s\t%s\t%s\t%s\t\t\t\t' "$idx" "$name" "$ph" "$label")"
   fi
   printf '%s\n' "$row" >> "$OUT/status.tsv"
@@ -93,6 +99,33 @@ icon(){ case "$1" in passed) echo "✅";; skipped|not-selected) echo "⏭️";; 
     echo "| $i | $n | $p | $(icon "$r") $r | $rc | $d |"
   done < "$OUT/status.tsv"
 } > "$OUT/summary.md"
+
+# workflow.log: each phase job's workflow.log, in phase order, already holds its stages' sections in run
+# order. Close what a job could not write itself: the stage it died inside gets its footer, and every stage
+# it never reached (or every stage of a phase that never ran) gets a stub section.
+{
+  echo "$LP_RULE_STAGE"
+  echo "WORKFLOW RUN ${RUN_ID:-?}.${RUN_ATTEMPT:-?} · ${LAUNCHPAD_CATALOGUE} · ${M[POC_BRANCH]:-?} @ ${sha:0:12}"
+  echo "Started ${started:-?} · ${RUN_URL:-}"
+  echo "$LP_RULE_STAGE"
+  echo
+  phases=" "
+  while IFS=$'\t' read -r i n p r _; do
+    if [[ "$phases" != *" $p "* ]]; then
+      phases+="$p "
+      [ -f "$IN/logs-$p/workflow.log" ] && cat "$IN/logs-$p/workflow.log"
+    fi
+    if [ "$r" = interrupted ]; then
+      echo; lp_line ERROR "Stage $n did not finish: its job ended (cancelled / timed out / crashed) before recording a result"
+      lp_stage_footer "$r"
+    elif ! stage_started "$i" "$n" "$p"; then
+      lp_stage_stub "$i" "$n" "$p" "$r"
+    fi
+  done < "$OUT/status.tsv"
+  echo "$LP_RULE_STAGE"
+  echo "WORKFLOW STATUS: $status${failed_stage:+ (failed stage: $failed_stage)}"
+  echo "$LP_RULE_STAGE"
+} > "$OUT/workflow.log"
 
 echo "status=$status" >> "${GITHUB_OUTPUT:-/dev/null}"
 cat "$OUT/summary.md"
