@@ -40,7 +40,7 @@ LAUNCHPAD_STAGES=(
 
 # Discovery output lives under $HOME, NOT bf-onboard.sh's own /tmp default: a brownfield run spans TWO
 # workflow runs (discover+blueprint, human review, then adopt) with the OCI instance stopped in between by
-# default (shutdown_oci) — /tmp on some cloud images is tmpfs and would not survive that power cycle.
+# default (shutdown) — /tmp on some cloud images is tmpfs and would not survive that power cycle.
 export OUT="$HOME/launchpad/bf-discover"
 BF="onboarding/brownfield/scripts/bf-onboard.sh"
 

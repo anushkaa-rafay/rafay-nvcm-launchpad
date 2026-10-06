@@ -68,7 +68,7 @@ cmd_prepare(){
   {
     printf 'RUN_KEY=%q\nRUN_DIR=%q\nPOC_DIR=%q\nPOC_REPO=%q\nPOC_BRANCH=%q\n' "$key" "$run" "$POC_DIR" "$repo" "$branch"
     printf 'POC_SHA=%q\n' "$(git -C "$POC_DIR" rev-parse HEAD)"
-    printf 'OCI_IP=%q\n' "${LAB_OCI_IP:-$(hostname -I | awk '{print $1}')}"
+    printf 'LAB_IP=%q\n' "${LAB_IP:-$(hostname -I | awk '{print $1}')}"
     local kv; for kv in "$@"; do [ -n "${kv#*=}" ] && printf '%s=%q\n' "${kv%%=*}" "${kv#*=}"; done
   } > "$run/run.env"
   log "checked out ${repo}@${branch} ($(git -C "$POC_DIR" log -1 --format='%h %s'))"

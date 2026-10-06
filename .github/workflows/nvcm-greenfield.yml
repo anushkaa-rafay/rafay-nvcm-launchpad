@@ -4,7 +4,7 @@ name: nvcm-greenfield
 #   lab (resolve the `lab` input → its GitHub Environment: which OCI host, which credentials)
 #   → boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
 #   → platform → site → bringup   (config/stages-greenfield.sh, executed ON the host)
-#   → poweroff (always, unless shutdown_oci=false) → report (always: artifact + dated commit under logs/)
+#   → poweroff (always, unless shutdown=false) → report (always: artifact + dated commit under logs/)
 # The installation logic lives in rafay_nvcm_poc; this repo only orchestrates it. See also: nvcm-brownfield.yml
 # (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
 # one concurrency group PER LAB because, for a given lab, both drive the SAME physical OCI host.
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       lab:
-        description: "OCI lab to run on — the name of a GitHub Environment holding that lab's OCI_INSTANCE_ID, SSH host and any secrets that differ from the repo-level ones (blank uses the DEFAULT_LAB repository variable)"
+        description: "Lab to run on (OCI or AWS) — the name of a GitHub Environment holding that lab's INSTANCE_ID, SSH host and any secrets that differ from the repo-level ones (blank uses the DEFAULT_LAB repository variable)"
         required: false
         default: ""
         type: string
@@ -38,8 +38,8 @@ on:
         description: "Tenant spec passed to simulate_dc.sh --tenants"
         default: "3-11,84-100"
         type: string
-      shutdown_oci:
-        description: "Power the OCI instance off at the end (untick to keep it up for debugging)"
+      shutdown:
+        description: "Power the lab instance off at the end (untick to keep it up for debugging)"
         default: true
         type: boolean
   # Nightly run — uncomment to enable. Runs on vars.DEFAULT_LAB; uses vars.POC_DEFAULT_BRANCH (default main), all stages, and shuts down.
@@ -63,7 +63,7 @@ env:
 jobs:
   # Resolves which lab this run targets and proves its GitHub Environment exists BEFORE any job names it:
   # GitHub silently auto-creates an Environment a job references, so a typo'd lab would otherwise leave an empty
-  # Environment behind and fail later with a confusing "OCI_INSTANCE_ID not configured". Every job that touches
+  # Environment behind and fail later with a confusing "INSTANCE_ID not configured". Every job that touches
   # the lab (boot, the phases, poweroff) runs in this Environment, so vars.* / secrets.* resolve per lab.
   lab:
     runs-on: ubuntu-latest
@@ -96,10 +96,10 @@ jobs:
       stages:  ${{ steps.opts.outputs.stages }}
     env:
       OUT: out/boot
-      OCI_INSTANCE_ID:     ${{ vars.OCI_INSTANCE_ID }}
-      OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
-      OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
-      OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+      INSTANCE_ID:     ${{ vars.INSTANCE_ID }}
+      SSH_USER:        ${{ vars.SSH_USER || 'ubuntu' }}
+      SSH_HOST:        ${{ vars.SSH_HOST }}
+      SSH_KNOWN_HOSTS: ${{ vars.SSH_KNOWN_HOSTS }}
     steps:
       - uses: actions/checkout@v4
 
@@ -130,15 +130,18 @@ jobs:
         uses: ./.github/actions/lab-access
         with:
           lab:             ${{ needs.lab.outputs.name }}
-          oci-user:        ${{ secrets.OCI_USER || vars.OCI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_TENANCY || vars.OCI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_FINGERPRINT || vars.OCI_FINGERPRINT }}
+          oci-user:        ${{ vars.OCI_USER }}
+          oci-tenancy:     ${{ vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
           oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
-          oci-region:      ${{ secrets.OCI_REGION || vars.OCI_REGION }}
-          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          oci-region:      ${{ vars.OCI_REGION }}
+          aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ vars.AWS_REGION }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
 
-      - name: Start OCI instance
+      - name: Start lab instance
         id: start
         # set -o pipefail: a run: step with no explicit `shell:` key is NOT pipefail by default (verified
         # empirically, not assumed — see Dev_Guide.md's design-decisions section). Without it, a failing
@@ -160,13 +163,13 @@ jobs:
           BRANCH:   ${{ steps.opts.outputs.POC_BRANCH }}
           BP_SRC:   ${{ steps.opts.outputs.BLUEPRINT_SOURCE }}
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
-          LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
+          LAB_IP: ${{ vars.LAB_IP }}
         run: |
           set -o pipefail   # see "Start OCI instance" above
           # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
           # BP_SRC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
           # to plain charsets with no spaces (see "Resolve + validate options"), so plain interpolation is safe.
-          scripts/lab.sh ssh -A "LAB_OCI_IP='$LAB_OCI_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
+          scripts/lab.sh ssh -A "LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
             2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
 
@@ -178,7 +181,7 @@ jobs:
           WAS_RUNNING: ${{ steps.start.outputs.was_running }}
         run: |
           mkdir -p "$OUT"
-          { echo "LAB=$LAB"; echo "OCI_INSTANCE_ID=$OCI_INSTANCE_ID"; echo "HOST=$HOST"; echo "WAS_RUNNING=$WAS_RUNNING"; } >> "$OUT/meta.env"
+          { echo "LAB=$LAB"; echo "INSTANCE_ID=$INSTANCE_ID"; echo "HOST=$HOST"; echo "WAS_RUNNING=$WAS_RUNNING"; } >> "$OUT/meta.env"
 
       - name: Upload boot logs
         if: always()
@@ -221,22 +224,25 @@ jobs:
     environment: ${{ needs.lab.outputs.name }}
     # !cancelled(): also after a failure or a skipped phase — see the note above the `platform` job.
     # Non-dispatch triggers (schedule) always shut down.
-    if: ${{ !cancelled() && needs.lab.result == 'success' && (github.event_name != 'workflow_dispatch' || inputs.shutdown_oci) }}
+    if: ${{ !cancelled() && needs.lab.result == 'success' && (github.event_name != 'workflow_dispatch' || inputs.shutdown) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      OCI_INSTANCE_ID: ${{ vars.OCI_INSTANCE_ID }}
+      INSTANCE_ID: ${{ vars.INSTANCE_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lab-access
         with:
           lab:             ${{ needs.lab.outputs.name }}
-          oci-user:        ${{ secrets.OCI_USER || vars.OCI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_TENANCY || vars.OCI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_FINGERPRINT || vars.OCI_FINGERPRINT }}
+          oci-user:        ${{ vars.OCI_USER }}
+          oci-tenancy:     ${{ vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
           oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
-          oci-region:      ${{ secrets.OCI_REGION || vars.OCI_REGION }}
-      - name: Stop OCI instance
+          oci-region:      ${{ vars.OCI_REGION }}
+          aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ vars.AWS_REGION }}
+      - name: Stop lab instance
         run: scripts/lab.sh stop
 
   report:

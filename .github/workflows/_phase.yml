@@ -5,7 +5,7 @@ name: _phase
 # nothing is lost between jobs. Shared by both onboarding modes: identical mechanics either way, only the
 # catalogue differs. The caller decides WHETHER a phase runs (its job-level `if:` — skipped unless every
 # earlier phase succeeded); once called, this always runs its selected stages. Runs in the lab's GitHub
-# Environment (`lab`), so OCI_INSTANCE_ID / SSH host / secrets are that lab's.
+# Environment (`lab`), so INSTANCE_ID / SSH host / secrets are that lab's.
 
 on:
   workflow_call:
@@ -27,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout_minutes }}
     env:
-      OCI_INSTANCE_ID:     ${{ vars.OCI_INSTANCE_ID }}
-      OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
-      OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
-      OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+      INSTANCE_ID:     ${{ vars.INSTANCE_ID }}
+      SSH_USER:        ${{ vars.SSH_USER || 'ubuntu' }}
+      SSH_HOST:        ${{ vars.SSH_HOST }}
+      SSH_KNOWN_HOSTS: ${{ vars.SSH_KNOWN_HOSTS }}
       LAUNCHPAD_CATALOGUE: ${{ inputs.catalogue }}
       OUT: out/${{ inputs.phase }}
     steps:
@@ -49,12 +49,15 @@ jobs:
         uses: ./.github/actions/lab-access
         with:
           lab:             ${{ inputs.lab }}
-          oci-user:        ${{ secrets.OCI_USER || vars.OCI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_TENANCY || vars.OCI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_FINGERPRINT || vars.OCI_FINGERPRINT }}
+          oci-user:        ${{ vars.OCI_USER }}
+          oci-tenancy:     ${{ vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
           oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
-          oci-region:      ${{ secrets.OCI_REGION || vars.OCI_REGION }}
-          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          oci-region:      ${{ vars.OCI_REGION }}
+          aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ vars.AWS_REGION }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Connect
         if: ${{ steps.plan.outputs.stages != '' }}

@@ -9,7 +9,7 @@ itself. If you just want to run a workflow, see [`User_Guide.md`](User_Guide.md)
 Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settled
         ─ SSH ─────▶ ~/launchpad/agent.sh prepare   (move old checkout aside, clone <branch> → ~/rafay_nvcm_poc)
                      for each stage:  agent.sh start → detached on the host; runner streams the log + polls
-        ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
+        ─ always ──▶ SOFTSTOP instance (unless shutdown=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
 
 This repo **orchestrates**; it never contains installation logic. Every stage is an invocation of a
@@ -38,7 +38,7 @@ Environment values, with everything else inherited from repo level. Every job th
 each `_phase.yml` call, `poweroff`) sets `environment:` to the lab; `_phase.yml` sets it itself because
 Environment secrets don't flow through `secrets: inherit`. The leading `lab` job checks the Environment exists
 first, because GitHub silently auto-creates any Environment a job names — a typo would otherwise leave an
-empty one behind. The `report` job runs outside the Environment, so `boot` writes `LAB` and `OCI_INSTANCE_ID`
+empty one behind. The `report` job runs outside the Environment, so `boot` writes `LAB` and `INSTANCE_ID`
 into `meta.env` for it.
 
 ## The four workflows, and which ones you actually run
@@ -148,7 +148,7 @@ into the new clone. Run workspaces are kept under `~/launchpad/runs/<run_id>-<at
 Brownfield's discovered blueprints live separately, under `~/launchpad/bf-discover/` — deliberately **not**
 `bf-onboard.sh`'s own `/tmp` default, and **not** cleaned up by the policy above: a brownfield run spans two
 workflow invocations (discover+blueprint, human review, then adopt) with the OCI instance stopped in
-between by default (`shutdown_oci`), and `/tmp` on some cloud images is tmpfs — it would not survive that
+between by default (`shutdown`), and `/tmp` on some cloud images is tmpfs — it would not survive that
 power cycle. `~/launchpad/bf-discover/` is on the persistent home-directory filesystem.
 
 The installed state is **not** reset by any of this. The kind cluster, NVCM, the Rafay chart, and the lab
@@ -248,11 +248,11 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   intentional — a resume run like `stages=bf-adopt` needs the `platform` and `site` phase jobs to execute
   and do nothing, rather than being skipped outright, so the job graph stays uniform across every stage
   selection.
-- **`OCI_SSH_KNOWN_HOSTS` is rewritten to the alias `lab`, never stored keyed to the literal address it was
+- **`SSH_KNOWN_HOSTS` is rewritten to the alias `lab`, never stored keyed to the literal address it was
   captured against.** `scripts/lab.sh cmd_connect` sets `HostKeyAlias lab` and pipes the secret's content
   through `awk 'NF && $1 !~ /^#/ { $1="lab"; print }'` before appending it to `known_hosts`. Without this,
   pinning the host key to whatever address `ssh-keyscan` was run against would break the moment the
-  instance's public IP changes — which is exactly the case `OCI_SSH_HOST` being left unset is meant to
+  instance's public IP changes — which is exactly the case `SSH_HOST` being left unset is meant to
   handle, since OCI's ephemeral public IP changes on restart. `HostKeyAlias` makes OpenSSH look the key up
   by the alias instead of the current connection address, so the pin survives an IP change; the `awk`
   filter also means a raw pasted `ssh-keyscan` transcript (comment lines included) works without manual
@@ -282,7 +282,7 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   are that issue's documented workaround. (An earlier version never let a phase show `skipped` — it ran a
   no-op green job instead — blaming that bug for `poweroff` being skipped on 2026-09-29. The committed
   reports don't support it: `poweroff` was `skipped` on every run that day, including PASSED run
-  36585500700 where nothing upstream was skipped, i.e. its own `shutdown_oci` condition was false.)
+  36585500700 where nothing upstream was skipped, i.e. its own `shutdown` condition was false.)
   Pass/fail per stage comes from `status.tsv`, not job results — a skipped phase's stages show `skipped`.
 - **Every stage runs through `lp_run_stage` (`config/common.sh`), not called directly**, wired in
   `remote/agent.sh`'s generated stage script. If a stage fails with the apt/dpkg lock still held — cloud-init

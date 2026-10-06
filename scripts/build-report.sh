@@ -11,7 +11,7 @@
 #
 # Env (set by the workflow): RUN_ID RUN_ATTEMPT RUN_URL TRIGGER ACTOR LAB
 #   RESULT_LAB RESULT_BOOT RESULT_PLATFORM RESULT_SITE RESULT_BRINGUP RESULT_POWEROFF   (needs.<job>.result)
-# The lab's OCI_INSTANCE_ID comes from boot's meta.env: the report job runs outside the lab's GitHub Environment.
+# The lab's INSTANCE_ID comes from boot's meta.env: the report job runs outside the lab's GitHub Environment.
 #
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -62,10 +62,10 @@ jobs="${RESULT_LAB:-} ${RESULT_BOOT:-} ${RESULT_PLATFORM:-} ${RESULT_SITE:-} ${R
 if   [ -n "$failed_stage" ] || [[ " $jobs " == *" failure "* ]]; then status=FAILED
 elif [[ " $jobs " == *" cancelled "* ]]; then status=CANCELLED
 else status=PASSED; fi
-[ -z "$failed_stage" ] && [ "${RESULT_BOOT:-}" != success ] && [ "$status" != PASSED ] && failed_stage="boot (OCI start / SSH / clone)"
+[ -z "$failed_stage" ] && [ "${RESULT_BOOT:-}" != success ] && [ "$status" != PASSED ] && failed_stage="boot (instance start / SSH / clone)"
 [ "${RESULT_LAB:-}" = failure ] && failed_stage="lab (no such GitHub Environment: '${LAB:-}')"
 
-lab="${M[LAB]:-${LAB:-}}"; instance="${M[OCI_INSTANCE_ID]:-${OCI_INSTANCE_ID:-}}"
+lab="${M[LAB]:-${LAB:-}}"; instance="${M[INSTANCE_ID]:-${INSTANCE_ID:-}}"
 sha="${M[POC_SHA]:-}"; started="${M[STARTED_AT]:-}"; finished="$(date -u +%FT%TZ)"
 jq -n \
   --arg status "$status" --arg failed_stage "$failed_stage" \
@@ -95,7 +95,7 @@ icon(){ case "$1" in passed) echo "✅";; skipped|not-selected) echo "⚪";; *) 
   echo "| Run | [${RUN_ID:-}#${RUN_ATTEMPT:-}](${RUN_URL:-}) · ${TRIGGER:-} by ${ACTOR:-} |"
   echo "| Started / finished (UTC) | ${started:-?} → $finished |"
   echo "| Lab | \`${lab:-?}\` |"
-  echo "| OCI | \`${instance:-?}\` @ ${M[HOST]:-?} · already running before: ${M[WAS_RUNNING]:-?} · power-off job: ${RESULT_POWEROFF:-?} |"
+  echo "| Instance | \`${instance:-?}\` @ ${M[HOST]:-?} · already running before: ${M[WAS_RUNNING]:-?} · power-off job: ${RESULT_POWEROFF:-?} |"
   echo
   echo "| # | Stage | Phase | Result | rc | Duration |"; echo "|---|---|---|---|---|---|"
   while IFS=$'\t' read -r i n p r rc _ _ s; do

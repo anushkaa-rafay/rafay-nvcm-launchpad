@@ -109,7 +109,7 @@ Once inputs land on the lab host, the run itself follows a fixed pipeline:
 Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settled
         ─ SSH ─────▶ ~/launchpad/agent.sh prepare   (move old checkout aside, clone <branch> → ~/rafay_nvcm_poc)
                      for each stage:  agent.sh start → detached on the host; runner streams the log + polls
-        ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
+        ─ always ──▶ SOFTSTOP instance (unless shutdown=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
 
 Major components:
@@ -227,19 +227,22 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
 
 ## 8. Configuration & Prerequisites
 
-- **Permissions**: an OCI IAM user scoped to least privilege (`use instance-family`, `read vnics` on the lab
-  compartment only) and a **read-only** GitHub deploy key on `rafay_nvcm_poc` (`GITHUB_TOKEN` can't be used
+- **Permissions**: per lab cloud, an OCI IAM user scoped to least privilege (`use instance-family`, `read vnics`
+  on the lab compartment only) or an AWS IAM user limited to `ec2:DescribeInstances` + start/stop of the lab instance, and a **read-only** GitHub deploy key on `rafay_nvcm_poc` (`GITHUB_TOKEN` can't be used
   across repositories, even under the same owner).
-- **Secrets** (GitHub Settings → Secrets and variables → Actions): `OCI_USER`, `OCI_TENANCY`,
-  `OCI_FINGERPRINT`, `OCI_REGION`, `OCI_PRIVATE_KEY` (OCI API-key auth), `OCI_SSH_PRIVATE_KEY`
-  (lab host login), `POC_DEPLOY_KEY` (read-only clone access).
-- **Variables**: `OCI_INSTANCE_ID` (required), `OCI_SSH_USER`, `OCI_SSH_HOST`, `OCI_SSH_KNOWN_HOSTS`,
-  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_OCI_IP`, `DEFAULT_LAB`.
-- **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`OCI_INSTANCE_ID`, SSH host, …)
+- **Secrets** (GitHub Settings → Secrets and variables → Actions) — private keys only: `OCI_PRIVATE_KEY`
+  (OCI labs) or `AWS_SECRET_ACCESS_KEY` (AWS labs), `SSH_PRIVATE_KEY` (lab host login), `POC_DEPLOY_KEY`
+  (read-only clone access).
+- **Variables**: `INSTANCE_ID` (required; an OCI OCID or an EC2 `i-…` ID, which selects the cloud),
+  `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` (OCI labs) or `AWS_ACCESS_KEY_ID`, `AWS_REGION`
+  (AWS labs), `SSH_USER`, `SSH_HOST`, `SSH_KNOWN_HOSTS`,
+  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`.
+- **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`INSTANCE_ID`, SSH host, …)
   live on it, plus any secret that differs for that lab; anything not set there falls back to repo level.
 - **SSH keys**: two distinct ones — a lab-host login key, and the POC repo's read-only deploy key — see
   [Security](#9-security) for why they're kept separate.
-- **Cloud resources**: one existing OCI compute instance per lab; nothing else is provisioned.
+- **Cloud resources**: one existing compute instance per lab — OCI or AWS EC2 (with `/dev/kvm`: bare metal or
+  nested virtualization); nothing else is provisioned.
 - **Dependencies**: `sshpass` and `virsh` (brownfield's virtual-mode discovery) are installed on the host by
   the shared `host-prep` stage itself — no separate setup needed.
 
@@ -262,7 +265,7 @@ Full step-by-step instructions, including exactly where to find each value in th
   does persist for the run's duration.
 - **Access between repositories**: a read-only GitHub deploy key, not a personal access token — the
   least-privileged option available, limited to exactly one repository.
-- **Sensitive data handling**: host-key pinning (`OCI_SSH_KNOWN_HOSTS`) is rewritten to a stable alias so it
+- **Sensitive data handling**: host-key pinning (`SSH_KNOWN_HOSTS`) is rewritten to a stable alias so it
   survives the lab's ephemeral public IP changing, rather than being silently bypassed after a restart.
   OCIDs and key material should never be pasted into a chat session or committed to source — only into the
   GitHub secret/variable fields they belong in.

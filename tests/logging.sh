@@ -137,7 +137,7 @@ DESC="summary.json .oci.lab falls back to the requested lab"; ok [ "$(jq -r .oci
 
 # ── 4c. the lab + its instance come from boot's meta.env (the report job runs outside the lab's Environment) ──
 echo "scenario: lab recorded"
-printf 'LAB=lab-2\nOCI_INSTANCE_ID=ocid1.instance.oc1..lab2\n' > "$T/lab-meta"
+printf 'LAB=lab-2\nINSTANCE_ID=ocid1.instance.oc1..lab2\n' > "$T/lab-meta"
 LAB_META="$T/lab-meta" RESULT_LAB=success RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=success RESULT_BRINGUP=success \
   scenario labrec 0,0,0,0,0,0,0 platform site bringup
 R="$T/labrec/report"
