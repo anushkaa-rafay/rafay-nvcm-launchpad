@@ -28,7 +28,7 @@ runs:
         for v in OCI_CLI_USER OCI_CLI_TENANCY OCI_CLI_FINGERPRINT OCI_CLI_KEY_CONTENT OCI_CLI_REGION OCI_INSTANCE_ID; do
           [ -n "${!v:-}" ] || missing+=("$v")
         done
-        [ ${#missing[@]} -eq 0 ] || { echo "::error::not configured: ${missing[*]} (see README → Setup)"; exit 1; }
+        [ ${#missing[@]} -eq 0 ] || { echo "::error::not configured: ${missing[*]} — set them on the lab's GitHub Environment or at repo level (see README → Setup)"; exit 1; }
 
     - name: Install OCI CLI
       shell: bash

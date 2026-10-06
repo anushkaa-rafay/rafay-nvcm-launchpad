@@ -4,12 +4,14 @@ name: _phase
 # is its own job so each gets a fresh 6 h GitHub-hosted budget; the work itself runs detached on the host, so
 # nothing is lost between jobs. Shared by both onboarding modes: identical mechanics either way, only the
 # catalogue differs. The caller decides WHETHER a phase runs (its job-level `if:` — skipped unless every
-# earlier phase succeeded); once called, this always runs its selected stages.
+# earlier phase succeeded); once called, this always runs its selected stages. Runs in the lab's GitHub
+# Environment (`lab`), so OCI_INSTANCE_ID / SSH host / secrets are that lab's.
 
 on:
   workflow_call:
     inputs:
       phase:           { type: string, required: true }
+      lab:             { type: string, required: true }   # GitHub Environment of the OCI lab (validated by the caller's lab job)
       run_key:         { type: string, required: true }
       stages:          { type: string, required: true }
       catalogue:       { type: string, required: true }
@@ -21,6 +23,7 @@ permissions:
 jobs:
   run:
     name: ${{ inputs.phase }}
+    environment: ${{ inputs.lab }}   # the lab's vars/secrets — environment secrets don't pass through `secrets: inherit`
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout_minutes }}
     env:

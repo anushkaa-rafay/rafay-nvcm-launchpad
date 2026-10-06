@@ -38,12 +38,13 @@ lp_stage_stub(){
   lp_stage_header "$1" "$2" "$3"; lp_line INFO "Stage $2 $why"; lp_stage_footer "$4"
 }
 
-# the committed run dir for a report: logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-run<id>.<attempt>-<STATUS>
-# Dated by the run's START (summary.json .run.started), so a run crossing midnight files under its start day.
-# LC_ALL=C: %b must be the English month on any runner locale.
+# the committed run dir for a report: logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-<lab>-run<id>.<attempt>-<STATUS>
+# (no "<lab>-" part for a report without .oci.lab). Dated by the run's START (summary.json .run.started), so a
+# run crossing midnight files under its start day. LC_ALL=C: %b must be the English month on any runner locale.
 lp_run_dir(){
-  local s="$1" started
+  local s="$1" started lab
   started="$(jq -r '.run.started // empty' "$s")"; started="${started:-$(date -u +%FT%TZ)}"
-  printf 'logs/%s-run%s.%s-%s\n' "$(LC_ALL=C date -u -d "$started" +%b-%Y/%d-%b-%Y/%H%M%SZ)" \
+  lab="$(jq -r '.oci.lab // empty' "$s")"
+  printf 'logs/%s-%srun%s.%s-%s\n' "$(LC_ALL=C date -u -d "$started" +%b-%Y/%d-%b-%Y/%H%M%SZ)" "${lab:+$lab-}" \
       "$(jq -r '.run.id' "$s")" "$(jq -r '.run.attempt' "$s")" "$(jq -r '.status' "$s")"
 }

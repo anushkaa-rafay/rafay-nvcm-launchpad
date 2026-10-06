@@ -27,9 +27,19 @@ jobs are hard-capped at 6 hours. Splitting the pipeline into three jobs gives ea
 budget. Keep each phase's *stage timeouts* summed under ~340 minutes so there's slack left for SSH/connect
 overhead.
 
-**Why one concurrency group across both workflows** (`nvcm-oci-lab`): both drive the *same physical OCI
-host*. A greenfield run and a brownfield run must never execute simultaneously any more than two greenfield
-runs should — a new run queues behind whichever is active, never cancels it.
+**Why one concurrency group per lab, across both workflows** (`nvcm-oci-lab-<lab>`): for a given lab, both
+drive the *same physical OCI host*. A greenfield run and a brownfield run on one lab must never execute
+simultaneously any more than two greenfield runs should — a new run queues behind whichever is active, never
+cancels it. Runs on *different* labs are different hosts, so they run in parallel.
+
+**Why labs are GitHub Environments** (the `lab` input): an Environment scopes both variables *and secrets*,
+so a lab in another tenancy/region or behind another SSH key needs no workflow change — only its own
+Environment values, with everything else inherited from repo level. Every job that touches the host (`boot`,
+each `_phase.yml` call, `poweroff`) sets `environment:` to the lab; `_phase.yml` sets it itself because
+Environment secrets don't flow through `secrets: inherit`. The leading `lab` job checks the Environment exists
+first, because GitHub silently auto-creates any Environment a job names — a typo would otherwise leave an
+empty one behind. The `report` job runs outside the Environment, so `boot` writes `LAB` and `OCI_INSTANCE_ID`
+into `meta.env` for it.
 
 ## The four workflows, and which ones you actually run
 
@@ -162,7 +172,7 @@ the team agrees it's safe.
   job's own `workflow.log` (header → verbatim output pulled from the host → result line → `STAGE STATUS`
   footer), and `build-report.sh` concatenates the phase logs in catalogue order. It also writes what a job
   could not: the footer of a stage the job died inside, and a stub section for every stage never reached.
-  The format and the committed path (`logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-run<id>.<attempt>-<STATUS>/`,
+  The format and the committed path (`logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-<lab>-run<id>.<attempt>-<STATUS>/`,
   English month names whatever the locale) live in `scripts/lib-log.sh` only. `tests/logging.sh` exercises
   pass / fail / cancel / boot-failure end to end — run it after touching any of these scripts.
 - `poweroff` and `report` jobs use `if: always()` and run after a success, a failure, or a cancellation —
