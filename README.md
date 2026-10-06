@@ -115,8 +115,7 @@ Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settl
 Major components:
 
 - **Two entry-point workflows** (`nvcm-greenfield.yml`, `nvcm-brownfield.yml`) — `workflow_dispatch`,
-  sharing one concurrency group *per lab* (GitHub Environment = one OCI instance), so runs on different labs
-  go in parallel while runs on the same host queue.
+  sharing one concurrency group since both drive the same physical host.
 - **A reusable phase workflow** (`_phase.yml`) — one phase (`platform`/`site`/`bringup`) of stages, called
   three times per run by each entry point so the phase logic exists once, not duplicated six times.
 - **The stage-catalogue system** (`config/common.sh` + `config/stages-greenfield.sh` +
@@ -231,12 +230,11 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
 - **Secrets** (GitHub Settings → Secrets and variables → Actions): `OCI_CLI_USER`, `OCI_CLI_TENANCY`,
   `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION`, `OCI_CLI_KEY_CONTENT` (OCI API-key auth), `OCI_SSH_PRIVATE_KEY`
   (lab host login), `POC_DEPLOY_KEY` (read-only clone access).
-- **Per-lab variables** (one GitHub Environment per OCI instance, chosen by the `lab` input):
-  `OCI_INSTANCE_ID` (required), `OCI_SSH_USER`, `OCI_SSH_HOST`, `OCI_SSH_KNOWN_HOSTS`, `LAB_OCI_IP`.
-- **Repository variables**: `DEFAULT_LAB`, `POC_REPO`, `POC_DEFAULT_BRANCH`.
+- **Variables**: `OCI_INSTANCE_ID` (required), `OCI_SSH_USER`, `OCI_SSH_HOST`, `OCI_SSH_KNOWN_HOSTS`,
+  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_OCI_IP`.
 - **SSH keys**: two distinct ones — a lab-host login key, and the POC repo's read-only deploy key — see
   [Security](#9-security) for why they're kept separate.
-- **Cloud resources**: one existing OCI compute instance per lab; nothing else is provisioned.
+- **Cloud resources**: one existing OCI compute instance (the lab host); nothing else is provisioned.
 - **Dependencies**: `sshpass` and `virsh` (brownfield's virtual-mode discovery) are installed on the host by
   the shared `host-prep` stage itself — no separate setup needed.
 
@@ -394,7 +392,7 @@ infrastructure.
 - No automated destructive-reset stage; a deeper environment reset stays a manual `rafay_nvcm_poc` command.
 - No notification integration yet (email / shared drive / Slack) — `summary.json` is a stable contract for
   one, not yet consumed by anything.
-- Concurrency is a soft GitHub Actions queue (one pending run per lab), adequate for the current ~1
+- Concurrency is a soft GitHub Actions queue (one pending run per group), adequate for the current ~1
   run/day scale, not a distributed lock suitable for much higher concurrency.
 - No true end-to-end validation against the real OCI host yet (see [§14](#14-testing)).
 

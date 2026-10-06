@@ -10,14 +10,14 @@
 #                           on the host (the catalogue lands there as ~/launchpad/stages.sh, whichever mode it is)
 #   lab.sh ssh [-A] CMD   # run CMD on the host (-A forwards the agent: used only for the git clone)
 #
-# Env (from the run's lab GitHub Environment): OCI_INSTANCE_ID (required), OCI_SSH_USER (default ubuntu), OCI_SSH_HOST (optional: fixed address or
+# Env: OCI_INSTANCE_ID (required), OCI_SSH_USER (default ubuntu), OCI_SSH_HOST (optional: fixed address or
 # reserved IP; otherwise the primary VNIC's public IP is looked up each run — ephemeral IPs change on restart),
 # OCI_SSH_KNOWN_HOSTS (optional: pins the host key; otherwise accept-new, logged as a warning).
 # LAUNCHPAD_CATALOGUE (required by push-agent): config/stages-greenfield.sh or config/stages-brownfield.sh.
 #
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-: "${OCI_INSTANCE_ID:?OCI_INSTANCE_ID is not set (a variable of the GitHub Environment named by the lab input)}"
+: "${OCI_INSTANCE_ID:?OCI_INSTANCE_ID is not set (repository variable)}"
 WAIT_SECS="${LAB_WAIT_SECS:-900}"
 log(){ echo "[lab] $*" >&2; }
 out(){ [ -n "${GITHUB_OUTPUT:-}" ] && echo "$1" >> "$GITHUB_OUTPUT"; return 0; }

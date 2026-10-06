@@ -70,13 +70,13 @@ jq -n \
   --arg run_id "${RUN_ID:-}" --arg attempt "${RUN_ATTEMPT:-}" --arg run_url "${RUN_URL:-}" \
   --arg trigger "${TRIGGER:-}" --arg actor "${ACTOR:-}" \
   --arg started "$started" --arg finished "$finished" \
-  --arg lab "${M[LAB]:-}" --arg host "${M[HOST]:-}" --arg instance "${M[OCI_INSTANCE_ID]:-${OCI_INSTANCE_ID:-}}" --arg was_running "${M[WAS_RUNNING]:-}" \
+  --arg host "${M[HOST]:-}" --arg instance "${OCI_INSTANCE_ID:-}" --arg was_running "${M[WAS_RUNNING]:-}" \
   --arg poweroff "${RESULT_POWEROFF:-}" --arg blueprint_source "${M[BLUEPRINT_SOURCE]:-}" --arg tenants "${M[TENANTS]:-}" \
   --rawfile tsv "$OUT/status.tsv" '
   { status:$status, failed_stage:($failed_stage|select(.!="") // null),
     poc:{repo:$repo, branch:$branch, sha:$sha},
     run:{id:$run_id, attempt:$attempt, url:$run_url, trigger:$trigger, actor:$actor, started:$started, finished:$finished},
-    oci:{lab:$lab, instance:$instance, host:$host, was_running_before:$was_running, poweroff_job:$poweroff},
+    oci:{instance:$instance, host:$host, was_running_before:$was_running, poweroff_job:$poweroff},
     options:{blueprint_source:$blueprint_source, tenants:$tenants},
     stages:[ $tsv | split("\n")[] | select(length>0) | split("\t")
              | {index:(.[0]|tonumber), name:.[1], phase:.[2], result:.[3], rc:.[4], started:.[5], finished:.[6],
@@ -91,8 +91,7 @@ icon(){ case "$1" in passed) echo "✅";; skipped|not-selected) echo "⚪";; *) 
   echo "| Failed stage | ${failed_stage:-—} |"
   echo "| Run | [${RUN_ID:-}#${RUN_ATTEMPT:-}](${RUN_URL:-}) · ${TRIGGER:-} by ${ACTOR:-} |"
   echo "| Started / finished (UTC) | ${started:-?} → $finished |"
-  echo "| Lab | \`${M[LAB]:-?}\` |"
-  echo "| OCI | \`${M[OCI_INSTANCE_ID]:-${OCI_INSTANCE_ID:-?}}\` @ ${M[HOST]:-?} · already running before: ${M[WAS_RUNNING]:-?} · power-off job: ${RESULT_POWEROFF:-?} |"
+  echo "| OCI | \`${OCI_INSTANCE_ID:-?}\` @ ${M[HOST]:-?} · already running before: ${M[WAS_RUNNING]:-?} · power-off job: ${RESULT_POWEROFF:-?} |"
   echo
   echo "| # | Stage | Phase | Result | rc | Duration |"; echo "|---|---|---|---|---|---|"
   while IFS=$'\t' read -r i n p r rc _ _ s; do

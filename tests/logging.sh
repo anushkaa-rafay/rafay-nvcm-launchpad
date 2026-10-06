@@ -51,7 +51,7 @@ scenario(){
   local i=0 s; for s in host-prep platform-install-1 platform-install-2 verify-platform blueprint substrate dc-bringup; do
     i=$((i+1)); fixture "$s" "$(cut -d, -f$i <<< "$rcs")"
   done
-  printf 'LAB=lab-test\nOCI_INSTANCE_ID=ocid1.instance.test\nPOC_BRANCH=main\nPOC_SHA=0123456789abcdef\nSTARTED_AT=2026-10-04T22:04:15Z\n' > "$T/$name/collected/logs-boot/meta.env"
+  printf 'POC_BRANCH=main\nPOC_SHA=0123456789abcdef\nSTARTED_AT=2026-10-04T22:04:15Z\n' > "$T/$name/collected/logs-boot/meta.env"
   echo "boot-log-line" > "$T/$name/collected/logs-boot/boot.log"
   local p; for p in "$@"; do
     # a phase that never exits is the cancelled job: the runner kills it mid-stage, like GitHub does
@@ -87,8 +87,6 @@ DESC="stage output lands inside its own section"
 ok awk '/^STAGE 05:/{s=1} /^STAGE 06:/{s=0} s&&/out-blueprint line 2/{f=1} END{exit !f}' "$R/workflow.log"
 DESC="run-level status recorded in workflow.log"; ok grep -qx 'WORKFLOW STATUS: PASSED' "$R/workflow.log"
 DESC="summary.json status PASSED"; ok [ "$(jq -r .status "$R/summary.json")" = PASSED ]
-DESC="summary.json records which lab + instance ran"; ok [ "$(jq -r '.oci.lab+"/"+.oci.instance' "$R/summary.json")" = lab-test/ocid1.instance.test ]
-DESC="summary.md names the lab"; ok grep -qF '| Lab | `lab-test` |' "$R/summary.md"
 
 # ── 2. a stage fails (substrate, rc=1) — the bringup phase job is skipped ──────────────────────
 echo "scenario: substrate fails"
