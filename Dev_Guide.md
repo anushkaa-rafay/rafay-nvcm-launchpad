@@ -265,7 +265,7 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
   assumed from docs, which are themselves inconsistent on this point): under plain `bash -e {0}`, a
   pipeline's exit status is `tee`'s (always 0), so a failing `scripts/lab.sh connect | tee -a ...` is
   silently swallowed and the script falls through to the *next* line — which was exactly how a malformed
-  `OCI_CLI_USER` secret once surfaced as a baffling `ssh: Could not resolve hostname lab` from
+  `OCI_USER` secret once surfaced as a baffling `ssh: Could not resolve hostname lab` from
   `push-agent`, instead of the real OCI CLI config error one line above it in the same log. Confirmed by
   running the identical two-line step under both candidate shell invocations against a fake failing `oci`
   binary: only the no-`pipefail` case reproduced the reported symptom exactly. `scripts/lab.sh start`'s

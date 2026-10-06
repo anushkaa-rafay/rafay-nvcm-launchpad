@@ -4,6 +4,7 @@ description: >-
   rafay_nvcm_poc deploy key. Nothing is written to the workspace; keys live in ~/.oci and the agent only.
 
 inputs:
+  lab:             { description: "GitHub Environment of the lab (only used to make errors point at the right place)", required: false, default: "" }
   oci-user:        { description: "OCI user OCID",                 required: true }
   oci-tenancy:     { description: "OCI tenancy OCID",              required: true }
   oci-fingerprint: { description: "API signing key fingerprint",   required: true }
@@ -18,17 +19,35 @@ runs:
     - name: Check the required secrets/variables are set
       shell: bash
       env:
-        OCI_CLI_USER: ${{ inputs.oci-user }}
-        OCI_CLI_TENANCY: ${{ inputs.oci-tenancy }}
-        OCI_CLI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
-        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-private-key }}
-        OCI_CLI_REGION: ${{ inputs.oci-region }}
+        OCI_USER: ${{ inputs.oci-user }}
+        OCI_TENANCY: ${{ inputs.oci-tenancy }}
+        OCI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
+        OCI_PRIVATE_KEY: ${{ inputs.oci-private-key }}
+        OCI_REGION: ${{ inputs.oci-region }}
+        LAB: ${{ inputs.lab }}
+      # Names every problem at once, and says WHERE to fix it. The usual cause of "not configured" is scope, not
+      # absence: a value saved on a different lab's Environment, or (for the key) saved as a variable instead of
+      # a secret. The four non-sensitive IDs are accepted as either a secret or a variable by the callers.
       run: |
-        missing=()
-        for v in OCI_CLI_USER OCI_CLI_TENANCY OCI_CLI_FINGERPRINT OCI_CLI_KEY_CONTENT OCI_CLI_REGION OCI_INSTANCE_ID; do
-          [ -n "${!v:-}" ] || missing+=("$v")
+        where="${LAB:+the '$LAB' Environment or }repository level"
+        problems=()
+        for v in OCI_USER OCI_TENANCY OCI_FINGERPRINT OCI_REGION; do
+          [ -n "${!v:-}" ] || problems+=("$v is not set (secret or variable, at $where)")
         done
-        [ ${#missing[@]} -eq 0 ] || { echo "::error::not configured: ${missing[*]} — set them on the lab's GitHub Environment or at repo level (see README → Setup)"; exit 1; }
+        [ -n "${OCI_INSTANCE_ID:-}" ] || problems+=("OCI_INSTANCE_ID is not set (variable, at $where)")
+        [ -n "$OCI_PRIVATE_KEY" ] || problems+=("OCI_PRIVATE_KEY is not set — it must be a SECRET (at $where), never a variable")
+        # Shape checks catch a value pasted into the wrong slot, or an ID from another cloud, before OCI answers
+        # with an opaque 404 NotAuthorizedOrNotFound.
+        shape() { [ -z "${!1:-}" ] || [[ "${!1}" =~ $2 ]] || problems+=("$1 doesn't look like $3"); }
+        shape OCI_USER         '^ocid1\.user\.'                         'a user OCID (ocid1.user.…)'
+        shape OCI_TENANCY      '^ocid1\.tenancy\.'                      'a tenancy OCID (ocid1.tenancy.…)'
+        shape OCI_FINGERPRINT  '^([0-9a-fA-F]{2}:){15}[0-9a-fA-F]{2}$'  'an API key fingerprint (aa:bb:…, 16 pairs)'
+        shape OCI_REGION       '^[a-z]+(-[a-z]+)+-[0-9]+$'              'a region identifier (e.g. ap-mumbai-1)'
+        shape OCI_INSTANCE_ID  '^ocid1\.instance\.'                     'an instance OCID (ocid1.instance.…)'
+        [ ${#problems[@]} -eq 0 ] && exit 0
+        for p in "${problems[@]}"; do echo "::error::${LAB:+lab '$LAB': }$p"; done
+        echo "Environment values override repository ones; a value on another lab's Environment is invisible here (see README → Setup)."
+        exit 1
 
     - name: Install OCI CLI
       shell: bash
@@ -37,20 +56,20 @@ runs:
     - name: Configure OCI CLI
       shell: bash
       env:
-        OCI_CLI_USER: ${{ inputs.oci-user }}
-        OCI_CLI_TENANCY: ${{ inputs.oci-tenancy }}
-        OCI_CLI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
-        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-private-key }}
-        OCI_CLI_REGION: ${{ inputs.oci-region }}
+        OCI_USER: ${{ inputs.oci-user }}
+        OCI_TENANCY: ${{ inputs.oci-tenancy }}
+        OCI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
+        OCI_PRIVATE_KEY: ${{ inputs.oci-private-key }}
+        OCI_REGION: ${{ inputs.oci-region }}
       run: |
         umask 077; mkdir -p ~/.oci
-        printf '%s\n' "$OCI_CLI_KEY_CONTENT" > ~/.oci/key.pem
+        printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/key.pem
         cat > ~/.oci/config <<EOF
         [DEFAULT]
-        user=$OCI_CLI_USER
-        tenancy=$OCI_CLI_TENANCY
-        fingerprint=$OCI_CLI_FINGERPRINT
-        region=$OCI_CLI_REGION
+        user=$OCI_USER
+        tenancy=$OCI_TENANCY
+        fingerprint=$OCI_FINGERPRINT
+        region=$OCI_REGION
         key_file=$HOME/.oci/key.pem
         EOF
         sed -i 's/^ *//' ~/.oci/config

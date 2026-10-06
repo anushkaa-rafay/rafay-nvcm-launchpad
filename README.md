@@ -230,8 +230,8 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
 - **Permissions**: an OCI IAM user scoped to least privilege (`use instance-family`, `read vnics` on the lab
   compartment only) and a **read-only** GitHub deploy key on `rafay_nvcm_poc` (`GITHUB_TOKEN` can't be used
   across repositories, even under the same owner).
-- **Secrets** (GitHub Settings → Secrets and variables → Actions): `OCI_CLI_USER`, `OCI_CLI_TENANCY`,
-  `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION`, `OCI_CLI_KEY_CONTENT` (OCI API-key auth), `OCI_SSH_PRIVATE_KEY`
+- **Secrets** (GitHub Settings → Secrets and variables → Actions): `OCI_USER`, `OCI_TENANCY`,
+  `OCI_FINGERPRINT`, `OCI_REGION`, `OCI_PRIVATE_KEY` (OCI API-key auth), `OCI_SSH_PRIVATE_KEY`
   (lab host login), `POC_DEPLOY_KEY` (read-only clone access).
 - **Variables**: `OCI_INSTANCE_ID` (required), `OCI_SSH_USER`, `OCI_SSH_HOST`, `OCI_SSH_KNOWN_HOSTS`,
   `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_OCI_IP`, `DEFAULT_LAB`.

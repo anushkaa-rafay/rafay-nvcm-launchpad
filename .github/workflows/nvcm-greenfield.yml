@@ -129,11 +129,12 @@ jobs:
       - name: Lab access
         uses: ./.github/actions/lab-access
         with:
-          oci-user:        ${{ secrets.OCI_CLI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+          lab:             ${{ needs.lab.outputs.name }}
+          oci-user:        ${{ secrets.OCI_USER || vars.OCI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_TENANCY || vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_FINGERPRINT || vars.OCI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
+          oci-region:      ${{ secrets.OCI_REGION || vars.OCI_REGION }}
           ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
           poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
 
@@ -229,11 +230,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lab-access
         with:
-          oci-user:        ${{ secrets.OCI_CLI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+          lab:             ${{ needs.lab.outputs.name }}
+          oci-user:        ${{ secrets.OCI_USER || vars.OCI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_TENANCY || vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_FINGERPRINT || vars.OCI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
+          oci-region:      ${{ secrets.OCI_REGION || vars.OCI_REGION }}
       - name: Stop OCI instance
         run: scripts/lab.sh stop
 

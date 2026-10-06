@@ -48,11 +48,12 @@ jobs:
         if: ${{ steps.plan.outputs.stages != '' }}
         uses: ./.github/actions/lab-access
         with:
-          oci-user:        ${{ secrets.OCI_CLI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-          oci-region:      ${{ secrets.OCI_CLI_REGION }}
+          lab:             ${{ inputs.lab }}
+          oci-user:        ${{ secrets.OCI_USER || vars.OCI_USER }}
+          oci-tenancy:     ${{ secrets.OCI_TENANCY || vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ secrets.OCI_FINGERPRINT || vars.OCI_FINGERPRINT }}
+          oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
+          oci-region:      ${{ secrets.OCI_REGION || vars.OCI_REGION }}
           ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
 
       - name: Connect

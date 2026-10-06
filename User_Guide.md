@@ -55,30 +55,35 @@ the run at its first job, before anything touches OCI.
 
 | Secret | What |
 |---|---|
-| `OCI_CLI_USER`, `OCI_CLI_TENANCY`, `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION` | OCI API-key auth |
-| `OCI_CLI_KEY_CONTENT` | the API signing private key (PEM) |
+| `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` | OCI API-key auth. Not sensitive, so these four may also be **variables** (a secret wins if both exist) |
+| `OCI_PRIVATE_KEY` | the API signing private key (PEM) |
 | `OCI_SSH_PRIVATE_KEY` | SSH key authorized on the lab host |
 | `POC_DEPLOY_KEY` | private half of a **read-only deploy key** on `rafay_nvcm_poc` (see step 4) |
+
+Every run checks these before touching OCI: a missing value is reported by name together with the lab it
+was looked up for, and a value of the wrong shape (e.g. an instance ID that isn't `ocid1.instance.…`) fails
+there instead of as OCI's opaque `404 NotAuthorizedOrNotFound`. A value saved on one lab's Environment is
+invisible to runs on any other lab — put shared values at repository level.
 
 Give the OCI user the least privilege needed: `use instance-family` (start, stop, read) and `read vnics` on
 the lab compartment only.
 
 **3. Where to find each value in the OCI Console**
 
-The five API-auth values (`OCI_CLI_USER`, `OCI_CLI_TENANCY`, `OCI_CLI_REGION`, `OCI_CLI_FINGERPRINT`,
-`OCI_CLI_KEY_CONTENT`) come from **one flow**, in one visit to the Console:
+The five API-auth values (`OCI_USER`, `OCI_TENANCY`, `OCI_REGION`, `OCI_FINGERPRINT`,
+`OCI_PRIVATE_KEY`) come from **one flow**, in one visit to the Console:
 
 1. Console → profile icon (top right) → **My profile**.
-2. That page's header already shows your **user OCID** (`OCI_CLI_USER`) and, further down or via the
-   profile menu's **Tenancy: `<name>`** link, the **tenancy OCID** (`OCI_CLI_TENANCY`) — each with a copy
-   button. The **region** (`OCI_CLI_REGION`, e.g. `ap-mumbai-1`) is shown in the region selector top bar.
+2. That page's header already shows your **user OCID** (`OCI_USER`) and, further down or via the
+   profile menu's **Tenancy: `<name>`** link, the **tenancy OCID** (`OCI_TENANCY`) — each with a copy
+   button. The **region** (`OCI_REGION`, e.g. `ap-mumbai-1`) is shown in the region selector top bar.
 3. On the same profile page, left side → **Resources → API keys** → **Add API key** → **Generate API key
    pair** → **Download private key** → **Add**.
-4. The Console then shows the **fingerprint** (`OCI_CLI_FINGERPRINT`) and a **Configuration file preview**
+4. The Console then shows the **fingerprint** (`OCI_FINGERPRINT`) and a **Configuration file preview**
    box that already has all five values assembled together — a good place to sanity-check them as a set
    before splitting them into separate GitHub secrets.
 5. The private key file you just downloaded — its whole contents, including the `-----BEGIN...`/
-   `-----END...` lines — is `OCI_CLI_KEY_CONTENT`.
+   `-----END...` lines — is `OCI_PRIVATE_KEY`.
 
 The lab-instance values are found on the instance itself, not the profile page:
 

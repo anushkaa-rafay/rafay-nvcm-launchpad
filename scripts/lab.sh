@@ -56,12 +56,12 @@ cmd_connect(){
   if [ -z "$host" ]; then
     # Explicit exit-status check, not just "is the result non-empty": the OCI CLI writes some of its own
     # error output (e.g. "the config file is invalid") to STDOUT, not stderr, on a misconfigured
-    # OCI_CLI_USER/TENANCY/FINGERPRINT/REGION/KEY_CONTENT — that text is non-empty and isn't literally
+    # OCI_USER/TENANCY/FINGERPRINT/REGION/PRIVATE_KEY — that text is non-empty and isn't literally
     # "null", so a bare presence check lets it silently become $host, corrupt the ssh config below with an
     # embedded multi-line value, and surface as a baffling "Could not resolve hostname lab" instead of the
     # real cause. Also reject anything containing whitespace: a real public IP never does.
     host="$(oci compute instance list-vnics --instance-id "$OCI_INSTANCE_ID" --query 'data[0]."public-ip"' --raw-output)" \
-      || { log "OCI CLI call failed (see its output above) — check OCI_CLI_USER/TENANCY/FINGERPRINT/REGION/KEY_CONTENT"; exit 1; }
+      || { log "OCI CLI call failed (see its output above) — check OCI_USER/TENANCY/FINGERPRINT/REGION/PRIVATE_KEY"; exit 1; }
     [ -n "$host" ] && [ "$host" != null ] || { log "instance has no public IP — set OCI_SSH_HOST"; exit 1; }
     case "$host" in *[[:space:]]*) log "unexpected value for the instance's public IP: '$host' (likely an OCI CLI error, not an address)"; exit 1;; esac
   fi
