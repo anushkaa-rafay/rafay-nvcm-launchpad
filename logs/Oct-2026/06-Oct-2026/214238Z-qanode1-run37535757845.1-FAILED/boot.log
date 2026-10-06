@@ -1,0 +1,4 @@
+[lab] instance state: RUNNING
+[lab] already RUNNING — nothing to start
+[lab] instance RUNNING
+[lab] instance has no public IP — set SSH_HOST
