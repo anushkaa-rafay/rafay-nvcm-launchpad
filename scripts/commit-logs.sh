@@ -25,7 +25,7 @@ find "$dest" -type f -size +"${GZIP_OVER_MB}"M -exec gzip -9 {} \;
 git config user.name  "github-actions[bot]"
 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 git add "$dest"
-git commit -q -m "logs: run $(jq -r '"\(.run.id) \(.poc.branch) \(.status)"' "$REPORT/summary.json")"
+git commit -q -m "logs: run $(jq -r '"\(.run.id) \(.oci.lab // "?") \(.poc.branch) \(.status)"' "$REPORT/summary.json")"
 
 branch="$(git rev-parse --abbrev-ref HEAD)"
 for i in 1 2 3 4 5; do

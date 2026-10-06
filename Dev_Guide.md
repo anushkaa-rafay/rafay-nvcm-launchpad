@@ -27,9 +27,15 @@ jobs are hard-capped at 6 hours. Splitting the pipeline into three jobs gives ea
 budget. Keep each phase's *stage timeouts* summed under ~340 minutes so there's slack left for SSH/connect
 overhead.
 
-**Why one concurrency group across both workflows** (`nvcm-oci-lab`): both drive the *same physical OCI
-host*. A greenfield run and a brownfield run must never execute simultaneously any more than two greenfield
-runs should — a new run queues behind whichever is active, never cancels it.
+**Why one concurrency group per lab, across both workflows** (`nvcm-oci-lab-<lab>`): a lab is one GitHub
+Environment = one physical OCI host. A greenfield run and a brownfield run on the same lab must never execute
+simultaneously any more than two greenfield runs should — a new run queues behind whichever is active, never
+cancels it. Runs on *different* labs share nothing on the host side (each has its own `~/launchpad`,
+checkout and discovery dir), so they run in parallel. Every job that touches the host (`boot`, each
+`_phase` job, `poweroff`) declares `environment: <lab>` and reads `OCI_INSTANCE_ID`/`OCI_SSH_*` at job level,
+because environment-scoped variables only resolve in a job that names the environment. `poweroff` takes the
+lab from `needs.boot.outputs.lab`, which is set only after boot validated it — so a bad lab name can never
+fall through to stopping some other instance.
 
 ## The four workflows, and which ones you actually run
 
