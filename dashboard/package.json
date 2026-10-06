@@ -1,0 +1,12 @@
+{
+  "name": "nvcm-launchpad-dashboard",
+  "private": true,
+  "description": "Workflow Operations dashboard for rafay_nvcm_launchpad — static, no dependencies",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "TZ=UTC node --test",
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs"
+  }
+}

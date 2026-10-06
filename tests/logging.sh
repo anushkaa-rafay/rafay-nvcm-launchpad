@@ -88,9 +88,9 @@ ok awk '/^STAGE 05:/{s=1} /^STAGE 06:/{s=0} s&&/out-blueprint line 2/{f=1} END{e
 DESC="run-level status recorded in workflow.log"; ok grep -qx 'WORKFLOW STATUS: PASSED' "$R/workflow.log"
 DESC="summary.json status PASSED"; ok [ "$(jq -r .status "$R/summary.json")" = PASSED ]
 
-# ── 2. a stage fails (substrate, rc=1) — the bringup phase job is skipped ──────────────────────
+# ── 2. a stage fails (substrate, rc=1) — bringup phase never runs (upstream_ok=false) ──────────────────────
 echo "scenario: substrate fails"
-RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=failure RESULT_BRINGUP=skipped \
+RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=failure RESULT_BRINGUP=success \
   scenario fail 0,0,0,0,0,1,0 platform site
 R="$T/fail/report"
 DESC="run-stages.sh exits 1 for the failed phase"; ok [ "$(cat "$T/fail/run-site.rc")" = 1 ]
@@ -120,7 +120,7 @@ DESC="WORKFLOW STATUS: FAILED at blueprint"; ok grep -qx 'WORKFLOW STATUS: FAILE
 
 # ── 4. boot failed — no phase ran at all ─────────────────────────────────────────────────────────────────
 echo "scenario: boot failed"
-RESULT_BOOT=failure RESULT_PLATFORM=skipped RESULT_SITE=skipped RESULT_BRINGUP=skipped scenario boot 0,0,0,0,0,0,0
+RESULT_BOOT=failure RESULT_PLATFORM=success RESULT_SITE=success RESULT_BRINGUP=success scenario boot 0,0,0,0,0,0,0
 R="$T/boot/report"
 DESC="workflow.log still lists every stage"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
 DESC="all SKIPPED"; ok [ "$(status_order "$R/workflow.log")" = "SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED" ]

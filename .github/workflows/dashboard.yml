@@ -1,0 +1,65 @@
+name: dashboard
+# The Workflow Operations dashboard (dashboard/): test on every PR/push that touches it; publish to GitHub
+# Pages from main ONLY once the repository owner opts in (repository variable DASHBOARD_PAGES=true, after
+# setting Settings → Pages → Source = "GitHub Actions"). Entirely separate from the NVCM/OCI workflows: no
+# OCI, no SSH, no secrets, its own concurrency group. The published site is static UI code only — no run
+# data and no credentials; each viewer connects with their own GitHub token (see dashboard/README.md).
+
+on:
+  push:
+    branches: [main]
+    paths: ['dashboard/**', '.github/workflows/dashboard.yml']
+  pull_request:
+    paths: ['dashboard/**', '.github/workflows/dashboard.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests (metrics, filters, status classification, API paging/errors, escaping)
+        run: npm test
+      - name: Build site
+        run: npm run build
+      - name: Published files are page code only — no tests, scripts, or anything token-shaped
+        run: |
+          [ -z "$(find _site -name '*.test.*' -o -name 'package.json' -o -name '*.mjs')" ] || { echo "::error::unexpected files in _site"; exit 1; }
+          if grep -rEn 'gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}' _site; then echo "::error::token-like string in the published site"; exit 1; fi
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.DASHBOARD_PAGES == 'true'
+        with:
+          path: dashboard/_site
+
+  deploy:
+    needs: test
+    # opt-in: without DASHBOARD_PAGES=true this job is skipped (grey), not failed — Pages may not be enabled yet
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.DASHBOARD_PAGES == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write        # publish the site
+      id-token: write     # deploy-pages' OIDC proof of origin
+    concurrency:
+      group: dashboard-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Pages must already be configured (Source = GitHub Actions) — this never enables or overwrites it
+        uses: actions/configure-pages@v5
+        with:
+          enablement: false
+      - id: deploy
+        uses: actions/deploy-pages@v4

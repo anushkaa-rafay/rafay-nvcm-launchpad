@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <!-- defence in depth: scripts only from this site, network only to the GitHub API, images only from GitHub avatars -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://avatars.githubusercontent.com data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+  <title>NVCM Launchpad · Workflow Operations</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="src/theme.js"></script>
+  <script type="module" src="src/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#runs">Skip to recent runs</a>
+
+  <header class="top">
+    <div class="brand">
+      <h1>NVCM Launchpad</h1>
+      <p class="sub">Workflow Operations · <a id="repo-link" href="#" rel="noopener">repository</a></p>
+    </div>
+    <div class="top-actions">
+      <span id="updated" class="muted" aria-live="polite">Not loaded yet</span>
+      <label class="check" title="Refresh every 5 minutes while this tab is visible">
+        <input type="checkbox" id="auto"> Auto-refresh
+      </label>
+      <button type="button" id="refresh" class="btn">
+        <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M8 2.5a5.5 5.5 0 0 0-5.2 3.7.75.75 0 0 1-1.42-.5A7 7 0 0 1 13.5 3.6V2.25a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5h1.69A5.5 5.5 0 0 0 8 2.5Zm-6.25 7h3.5a.75.75 0 0 1 0 1.5H3.56A5.5 5.5 0 0 0 13.2 9.8a.75.75 0 1 1 1.42.5A7 7 0 0 1 2.5 12.4v1.35a.75.75 0 0 1-1.5 0v-3.5a.75.75 0 0 1 .75-.75Z"/></svg>
+        <span>Refresh</span>
+      </button>
+      <button type="button" id="account" class="btn" hidden></button>
+      <button type="button" id="theme" class="btn icon" aria-label="Toggle light/dark theme">
+        <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM8 3v10a5 5 0 0 0 0-10Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="filters" aria-label="Filters">
+      <label>Date range
+        <select id="f-range"></select>
+      </label>
+      <label>Workflow
+        <select id="f-workflow"><option value="">All workflows</option></select>
+      </label>
+      <label>Triggered by
+        <select id="f-actor"><option value="">All users</option></select>
+      </label>
+      <span id="progress" class="muted" aria-live="polite"></span>
+    </section>
+
+    <div id="banners" aria-live="polite"></div>
+
+    <section id="connect" class="panel connect" hidden aria-labelledby="connect-title">
+      <h2 id="connect-title">Connect to GitHub</h2>
+      <p>This repository is private, so its workflow runs are only visible to people with access to it. Paste a
+        GitHub token from <strong>your own</strong> account to load them in this browser.</p>
+      <ul>
+        <li>Recommended: a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a>
+          limited to this one repository, with <strong>Actions: Read-only</strong> (Metadata: Read-only is added automatically), and a short expiry.</li>
+        <li>A collaborator on a repository owned by someone else's <em>personal</em> account can't target it with a
+          fine-grained token — use a <a href="https://github.com/settings/tokens/new?scopes=repo&amp;description=NVCM%20dashboard" target="_blank" rel="noopener">classic token</a>
+          with the <code>repo</code> scope and a short expiry instead.</li>
+        <li>The token is kept in this tab's session storage only — it is sent nowhere except <code>api.github.com</code>,
+          and is forgotten when the tab closes or you click Disconnect.</li>
+      </ul>
+      <form id="connect-form" autocomplete="off">
+        <label for="token">GitHub token</label>
+        <div class="row">
+          <input id="token" type="password" spellcheck="false" placeholder="github_pat_…" required>
+          <button type="submit" class="btn primary">Connect</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="kpis" aria-label="Summary" id="kpis"></section>
+
+    <section class="charts">
+      <article class="panel" aria-labelledby="act-title">
+        <header class="panel-head">
+          <div>
+            <h2 id="act-title">Run activity</h2>
+            <p class="muted" id="act-sub">Runs over time</p>
+          </div>
+          <div id="act-legend" class="legend"></div>
+        </header>
+        <div id="activity" class="chart"></div>
+        <details class="table-view"><summary>View as table</summary><div id="act-table"></div></details>
+      </article>
+      <article class="panel" aria-labelledby="dist-title">
+        <header class="panel-head">
+          <div>
+            <h2 id="dist-title">Workflow distribution</h2>
+            <p class="muted">Runs per workflow</p>
+          </div>
+        </header>
+        <div id="distribution"></div>
+      </article>
+    </section>
+
+    <section class="panel" id="runs" aria-labelledby="runs-title">
+      <header class="panel-head">
+        <div>
+          <h2 id="runs-title">Recent runs</h2>
+          <p class="muted" id="runs-sub"></p>
+        </div>
+        <a class="btn" id="all-runs" href="#" target="_blank" rel="noopener">View all runs →</a>
+      </header>
+      <div class="table-wrap" id="runs-table"></div>
+      <div class="more"><button type="button" class="btn" id="more" hidden>Show more</button></div>
+    </section>
+
+    <footer class="notes muted">
+      <p>Data comes live from the GitHub REST API (<code>/actions/runs</code>, <code>/actions/workflows</code>) and is
+        computed in this browser; nothing is stored server-side. Durations are wall-clock, from the start of the latest
+        attempt → completion. GitHub returns at most 1,000 runs per date-filtered query, and runs deleted by retention
+        policy or by hand are gone from the API — longer history needs the persistence option in
+        <code>dashboard/README.md</code>.</p>
+    </footer>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
+</body>
+</html>

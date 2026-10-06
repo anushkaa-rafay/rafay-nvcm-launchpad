@@ -66,6 +66,8 @@ scripts/build-report.sh                 merge job logs → one workflow.log + su
 scripts/commit-logs.sh                  commit the report under logs/<Mon-YYYY>/<DD-Mon-YYYY>/<run>/
 scripts/lib-log.sh                      the log format + committed path, shared by the three above
 tests/logging.sh                        self-test of that pipeline against a fake lab (run by ci.yml)
+dashboard/                              Workflow Operations dashboard — static page over the Actions API (dashboard/README.md)
+.github/workflows/dashboard.yml         dashboard tests on PR/push; opt-in GitHub Pages publish (no OCI, no secrets)
 ```
 
 ## The stage-catalogue system
