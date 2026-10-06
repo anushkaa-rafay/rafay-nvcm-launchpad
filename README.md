@@ -115,7 +115,10 @@ Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settl
 Major components:
 
 - **Two entry-point workflows** (`nvcm-greenfield.yml`, `nvcm-brownfield.yml`) — `workflow_dispatch`,
-  sharing one concurrency group since both drive the same physical host.
+  sharing one concurrency group **per lab** (`nvcm-oci-lab-<lab>`): runs on different labs go in parallel,
+  runs on the same lab (the same physical host) queue.
+- **One GitHub Environment per OCI lab** — the `lab` input names it; it holds that lab's instance/SSH
+  variables and any secrets that differ from the repository-level ones.
 - **A reusable phase workflow** (`_phase.yml`) — one phase (`platform`/`site`/`bringup`) of stages, called
   three times per run by each entry point so the phase logic exists once, not duplicated six times.
 - **The stage-catalogue system** (`config/common.sh` + `config/stages-greenfield.sh` +
@@ -231,10 +234,12 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
   `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION`, `OCI_CLI_KEY_CONTENT` (OCI API-key auth), `OCI_SSH_PRIVATE_KEY`
   (lab host login), `POC_DEPLOY_KEY` (read-only clone access).
 - **Variables**: `OCI_INSTANCE_ID` (required), `OCI_SSH_USER`, `OCI_SSH_HOST`, `OCI_SSH_KNOWN_HOSTS`,
-  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_OCI_IP`.
+  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_OCI_IP`, `DEFAULT_LAB`.
+- **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`OCI_INSTANCE_ID`, SSH host, …)
+  live on it, plus any secret that differs for that lab; anything not set there falls back to repo level.
 - **SSH keys**: two distinct ones — a lab-host login key, and the POC repo's read-only deploy key — see
   [Security](#9-security) for why they're kept separate.
-- **Cloud resources**: one existing OCI compute instance (the lab host); nothing else is provisioned.
+- **Cloud resources**: one existing OCI compute instance per lab; nothing else is provisioned.
 - **Dependencies**: `sshpass` and `virsh` (brownfield's virtual-mode discovery) are installed on the host by
   the shared `host-prep` stage itself — no separate setup needed.
 
@@ -276,7 +281,7 @@ Logs are kept in three places on every run:
 logs/
 └── <Mon-YYYY>/                                    e.g. Oct-2026          — one per month
     └── <DD-Mon-YYYY>/                             e.g. 04-Oct-2026       — one per day
-        └── <HHMMSS>Z-run<id>.<attempt>-<STATUS>/  e.g. 220415Z-run36606934354.1-FAILED  — one per run
+        └── <HHMMSS>Z-<lab>-run<id>.<attempt>-<STATUS>/  e.g. 220415Z-lab-1-run36606934354.1-FAILED  — one per run
             ├── workflow.log              every stage's output, in run order (below)
             ├── boot.log                  start OCI → wait operational → clone
             ├── diagnostics-<job>.txt     host snapshot, only when a stage in that job failed (e.g. diagnostics-bringup.txt)
@@ -335,7 +340,8 @@ failure.
 ## 12. Deployment / Setup
 
 One-time setup, done once by whoever administers this repo: create the OCI IAM user and API key, add the
-GitHub secrets and variables listed in [§8](#8-configuration--prerequisites), and add the read-only deploy
+GitHub secrets and variables listed in [§8](#8-configuration--prerequisites), create one GitHub Environment
+per OCI lab, and add the read-only deploy
 key to `rafay_nvcm_poc`. Full walkthrough, including exact OCI Console navigation for every value, is in
 [`User_Guide.md`](User_Guide.md).
 
@@ -357,7 +363,7 @@ through the GitHub Actions UI:
    ├── nvcm-greenfield
    └── nvcm-brownfield
 5. Click "Run workflow"
-6. Select the required branch/options
+6. Enter the lab, then select the required branch/options
 7. Click Run
 ```
 
@@ -392,8 +398,10 @@ infrastructure.
 - No automated destructive-reset stage; a deeper environment reset stays a manual `rafay_nvcm_poc` command.
 - No notification integration yet (email / shared drive / Slack) — `summary.json` is a stable contract for
   one, not yet consumed by anything.
-- Concurrency is a soft GitHub Actions queue (one pending run per group), adequate for the current ~1
-  run/day scale, not a distributed lock suitable for much higher concurrency.
+- Concurrency is a soft GitHub Actions queue (one pending run per lab), adequate for the current scale, not
+  a distributed lock suitable for much higher concurrency. A run on another lab never waits.
+- Parallel runs commit their logs to the same branch; `commit-logs.sh` rebases and retries on a rejected
+  push (5 attempts).
 - No true end-to-end validation against the real OCI host yet (see [§14](#14-testing)).
 
 ## 16. Future Improvements

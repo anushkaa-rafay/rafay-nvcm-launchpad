@@ -21,11 +21,29 @@ every time.
 Only one thing differs from repo to repo: which workflow you dispatch. Every credential, variable, and lab
 host requirement below is shared by both.
 
-**1. Repository variables** (Settings → Secrets and variables → Actions → *Variables*)
+**0. One GitHub Environment per OCI lab** (Settings → Environments → *New environment*)
+
+Each OCI lab host is a GitHub Environment, and its name is what users type into the `lab` input (letters,
+digits, `.`, `_`, `-` — e.g. `lab-1`, `blr-lab`). Different users can run on different labs at the same time;
+two runs on the same lab still queue behind each other, greenfield and brownfield alike.
+
+- Put the **lab-specific variables** from step 1 on the Environment — at minimum `OCI_INSTANCE_ID`, plus
+  `OCI_SSH_HOST` / `OCI_SSH_KNOWN_HOSTS` / `OCI_SSH_USER` / `LAB_OCI_IP` as that lab needs.
+- Put any **secret from step 2 that differs for this lab** (another tenancy or region, another SSH key) on
+  the Environment too, under the same name. An Environment value overrides the repository-level one; a
+  lab that sets nothing falls back to the repository secrets.
+- Set the repository variable `DEFAULT_LAB` to the lab used when the `lab` input is left blank (and by the
+  nightly schedule, if enabled).
+
+Adding a lab is just adding an Environment — no workflow change. A `lab` that isn't an Environment fails
+the run at its first job, before anything touches OCI.
+
+**1. Variables** (Settings → Secrets and variables → Actions → *Variables*, or on the lab's Environment)
 
 | Variable | Example / default |
 |---|---|
-| `OCI_INSTANCE_ID` | `ocid1.instance.oc1...` (required) |
+| `DEFAULT_LAB` | repository-level: the lab used when the `lab` input is blank |
+| `OCI_INSTANCE_ID` | `ocid1.instance.oc1...` (required — per lab, on its Environment) |
 | `OCI_SSH_USER` | `ubuntu` |
 | `OCI_SSH_HOST` | optional. By default the instance's public IP is looked up each run, because ephemeral IPs change on restart |
 | `OCI_SSH_KNOWN_HOSTS` | recommended: `ssh-keyscan <host>` output, pasted in as-is (comment lines are fine — they're stripped automatically). Pins the host key by identity, **not** by the address you happened to run `ssh-keyscan` against, so it keeps working after the instance's public IP changes. Without it the key is trusted on first use and the workflow logs a warning |
@@ -33,7 +51,7 @@ host requirement below is shared by both.
 | `POC_DEFAULT_BRANCH` | `main` (used if `poc_branch` is left blank) |
 | `LAB_OCI_IP` | optional value for `simulate_dc.sh --oci`. Defaults to the host's primary private IP |
 
-**2. Repository secrets** (same page, *Secrets* tab) — never typed into a workflow run
+**2. Secrets** (same page, *Secrets* tab; or on a lab's Environment to override for that lab) — never typed into a workflow run
 
 | Secret | What |
 |---|---|
@@ -116,6 +134,7 @@ below → Run**.
 
 | Input | Default | |
 |---|---|---|
+| `lab` | *(blank)* | which OCI lab to run on — the name of a GitHub Environment set up as in [One-time setup](#one-time-setup). Blank uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
 | `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
 | `stages` | `all` | or a comma list, for example `blueprint,substrate,dc-bringup` to rerun only the DC part on an installed platform |
 | `blueprint_source` | `generated` | `committed` uses `stc/blueprint_stc.yaml` instead of this run's generated blueprint |
@@ -132,6 +151,7 @@ command each stage runs.
 
 | Input | Default | |
 |---|---|---|
+| `lab` | *(blank)* | which OCI lab to run on — the name of a GitHub Environment set up as in [One-time setup](#one-time-setup). Blank uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
 | `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
 | `stages` | `bf-discover,bf-blueprint` | stops **before** any write — see "The review gate" below. `all` or a comma list, same convention as greenfield |
 | `discover_mode` | `virtual` | `virtual` = the simulated VMs already on this lab host (via `virsh`); `real` = physical switches, needs `seed` |
@@ -171,7 +191,7 @@ DC. Use the two-run pattern there.
 - Results land in three places every run:
   - The **Step Summary** tab on the run itself — a quick pass/fail table.
   - Downloadable **artifacts** (`logs-*`, `run-report`) on the run page, for 30–90 days.
-  - A permanent commit under `logs/<Mon-YYYY>/<DD-Mon-YYYY>/<time>Z-run<id>.<attempt>-<STATUS>/` in this
+  - A permanent commit under `logs/<Mon-YYYY>/<DD-Mon-YYYY>/<time>Z-<lab>-run<id>.<attempt>-<STATUS>/` in this
     repo (e.g. `logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED/`) — the durable record,
     including the brownfield blueprint you need to review before `bf-adopt`.
 - Only one run (of either workflow) is ever active against the lab at a time — a second trigger queues
