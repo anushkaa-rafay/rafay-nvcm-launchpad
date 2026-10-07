@@ -30,10 +30,10 @@ on:
         default: all
         type: string
       blueprint_source:
-        description: "Blueprint for substrate/dc-bringup: generated (this run's blueprint stage) or committed (stc/blueprint_stc.yaml)"
-        default: generated
+        description: "Blueprint for substrate/dc-bringup: generate (this run's blueprint stage builds it) or existing (stc/blueprint_stc.yaml in rafay_nvcm_poc)"
+        default: generate
         type: choice
-        options: [existing, generate]
+        options: [generate, existing]
       tenants:
         description: "Tenant spec passed to simulate_dc.sh --tenants"
         default: "3-11,84-100"
@@ -108,7 +108,7 @@ jobs:
         env:
           BRANCH:   ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
           STAGES:   ${{ inputs.stages || 'all' }}
-          BP_SRC:   ${{ inputs.blueprint_source || 'generated' }}
+          BP_SRC:   ${{ inputs.blueprint_source || 'generate' }}
           TENANTS:  ${{ inputs.tenants || '3-11,84-100' }}
           POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
           RUN_KEY:  ${{ github.run_id }}-${{ github.run_attempt }}
@@ -116,6 +116,7 @@ jobs:
           # these values reach a remote shell — accept only plain names
           [[ "$BRANCH"   =~ ^[A-Za-z0-9._/-]+$ && "$BRANCH" != -* ]] || { echo "::error::invalid branch '$BRANCH'"; exit 1; }
           [[ "$POC_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]     || { echo "::error::invalid POC_REPO '$POC_REPO'"; exit 1; }
+          [[ "$BP_SRC"   =~ ^(generate|existing)$ ]]                   || { echo "::error::invalid blueprint_source '$BP_SRC' (generate | existing)"; exit 1; }
           [[ "$TENANTS"  =~ ^[0-9,-]+$ ]]                            || { echo "::error::invalid tenants '$TENANTS'"; exit 1; }
           STAGES="${STAGES// /}"; scripts/run-stages.sh validate "$STAGES"
           # branch existence is checked by the clone on the host (the repo is private to this runner)

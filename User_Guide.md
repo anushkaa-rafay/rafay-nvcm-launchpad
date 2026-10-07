@@ -149,7 +149,7 @@ below → Run**.
 | `lab` | *(blank)* | which OCI lab to run on — the name of a GitHub Environment set up as in [One-time setup](#one-time-setup). Blank uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
 | `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
 | `stages` | `all` | or a comma list, for example `blueprint,substrate,dc-bringup` to rerun only the DC part on an installed platform |
-| `blueprint_source` | `generated` | `committed` uses `stc/blueprint_stc.yaml` instead of this run's generated blueprint |
+| `blueprint_source` | `generate` | `generate` builds the blueprint in this run's `blueprint` stage; `existing` uses `stc/blueprint_stc.yaml` from `rafay_nvcm_poc` instead |
 | `tenants` | `3-11,84-100` | passed to `simulate_dc.sh --tenants` |
 | `shutdown` | ✔ | untick to leave the instance up for debugging |
 
