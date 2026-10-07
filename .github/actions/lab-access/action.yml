@@ -10,7 +10,7 @@ inputs:
   oci-user:              { description: "OCI user OCID",                 required: false, default: "" }
   oci-tenancy:           { description: "OCI tenancy OCID",              required: false, default: "" }
   oci-fingerprint:       { description: "API signing key fingerprint",   required: false, default: "" }
-  oci-private-key:       { description: "API signing key (PEM)",         required: false, default: "" }
+  oci-api-key:           { description: "API signing key (PEM)",         required: false, default: "" }
   oci-region:            { description: "OCI region, e.g. ap-mumbai-1",  required: false, default: "" }
   # AWS labs (INSTANCE_ID = i-…)
   aws-access-key-id:     { description: "IAM access key ID",             required: false, default: "" }
@@ -29,7 +29,7 @@ runs:
         OCI_USER: ${{ inputs.oci-user }}
         OCI_TENANCY: ${{ inputs.oci-tenancy }}
         OCI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
-        OCI_PRIVATE_KEY: ${{ inputs.oci-private-key }}
+        OCI_API_KEY: ${{ inputs.oci-api-key }}
         OCI_REGION: ${{ inputs.oci-region }}
         AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
@@ -54,7 +54,7 @@ runs:
         esac
         if [ "$provider" = oci ]; then
           for v in OCI_USER OCI_TENANCY OCI_FINGERPRINT OCI_REGION; do need_var "$v"; done
-          need_secret OCI_PRIVATE_KEY
+          need_secret OCI_API_KEY
           shape OCI_USER         '^ocid1\.user\.'                         'a user OCID (ocid1.user.…)'
           shape OCI_TENANCY      '^ocid1\.tenancy\.'                      'a tenancy OCID (ocid1.tenancy.…)'
           shape OCI_FINGERPRINT  '^([0-9a-fA-F]{2}:){15}[0-9a-fA-F]{2}$'  'an API key fingerprint (aa:bb:…, 16 pairs)'
@@ -64,7 +64,10 @@ runs:
           need_secret AWS_SECRET_ACCESS_KEY
           shape INSTANCE_ID    '^i-([0-9a-f]{8}|[0-9a-f]{17})$'  'an EC2 instance ID (i- + 8 or 17 hex)'
           shape AWS_ACCESS_KEY_ID  '^(AKIA|ASIA)[A-Z0-9]{16}$'       'an IAM access key ID (AKIA…, 20 chars)'
-          shape AWS_REGION         '^[a-z]{2}(-[a-z]+)+-[0-9]+$'     'an AWS region (e.g. ap-south-1)'
+          # AWS regions are named geo-direction-N (ap-south-1, us-gov-west-1); OCI's are named after cities
+          # (us-phoenix-1, ap-mumbai-1) — which the AWS CLI accepts and then fails on as an unreachable endpoint.
+          shape AWS_REGION         '^[a-z]{2}(-gov|-iso[a-z]?)?-(north|south|east|west|central)(east|west)?-[0-9]+$' \
+                'an AWS region (e.g. ap-south-1, us-west-2 — OCI region names like us-phoenix-1 are not valid on AWS)'
         fi
         echo "provider=$provider" >> "$GITHUB_OUTPUT"
         [ ${#problems[@]} -eq 0 ] && { echo "lab ${LAB:-?}: $provider instance $INSTANCE_ID"; exit 0; }
@@ -84,11 +87,11 @@ runs:
         OCI_USER: ${{ inputs.oci-user }}
         OCI_TENANCY: ${{ inputs.oci-tenancy }}
         OCI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
-        OCI_PRIVATE_KEY: ${{ inputs.oci-private-key }}
+        OCI_API_KEY: ${{ inputs.oci-api-key }}
         OCI_REGION: ${{ inputs.oci-region }}
       run: |
         umask 077; mkdir -p ~/.oci
-        printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/key.pem
+        printf '%s\n' "$OCI_API_KEY" > ~/.oci/key.pem
         cat > ~/.oci/config <<EOF
         [DEFAULT]
         user=$OCI_USER

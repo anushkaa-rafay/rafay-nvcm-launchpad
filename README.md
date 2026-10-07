@@ -112,6 +112,63 @@ Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settl
         ─ always ──▶ SOFTSTOP instance (unless shutdown=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
 
+### How the pieces talk to each other
+
+Four parties take part in a run: the two GitHub repositories, the GitHub-hosted runner executing the
+workflow, the cloud provider's API, and the lab instance. **The runner starts every connection.** The
+instance never calls back into GitHub Actions, and nothing listens on the runner.
+
+```
+ ┌──────────────────────────────────── GitHub ─────────────────────────────────────┐
+ │                                                                                 │
+ │  rafay_nvcm_launchpad repo            GitHub Actions                            │
+ │  ┌──────────────────────────┐        ┌──────────────────────────────────────┐   │
+ │  │ workflows, scripts,      │  ①     │ workflow_dispatch (user picks `lab`  │   │
+ │  │ config, remote/agent.sh  │───────▶│ + inputs) → jobs on ubuntu-latest    │   │
+ │  │                          │checkout│                                      │   │
+ │  │ logs/<Mon>/<Day>/…       │◀───────│ Environment `<lab>` + repo level:    │   │
+ │  └──────────────────────────┘   ⑦    │   vars (INSTANCE_ID, SSH_*, OCI_*/   │   │
+ │                              git push│   AWS_*)  ·  secrets (private keys)  │   │
+ │  rafay_nvcm_poc repo                 │                                      │   │
+ │  ┌──────────────────────────┐        │ jobs: lab → boot → platform → site → │   │
+ │  │ installer + deploy       │        │       bringup → poweroff → report    │   │
+ │  │ scripts (read-only       │        │ hand-off between jobs: artifacts ⑥   │   │
+ │  │ deploy key)              │        └───────┬──────────────────┬───────────┘   │
+ │  └────────────▲─────────────┘                │                  │               │
+ └───────────────┼──────────────────────────────┼──────────────────┼───────────────┘
+                 │                     ② HTTPS  │                  │ ③ SSH :22
+                 │                  OCI / AWS   │                  │ (SSH_PRIVATE_KEY,
+                 │                  CLI         ▼                  │  host key pinned by
+                 │              ┌──────────────────────────┐       │  SSH_KNOWN_HOSTS)
+                 │              │ Cloud API (OCI or AWS)   │       │
+                 │              │ start · state · public IP│       │
+                 │              │ · stop                   │       │
+                 │              └────────────┬─────────────┘       │
+                 │                           │ power on/off        │
+                 │                           ▼                     ▼
+                 │              ┌───────────────────────────────────────────────┐
+                 │  ④ git clone │ Lab instance  (INSTANCE_ID)                   │
+                 └──────────────│   ~/launchpad/agent.sh + stages.sh  (scp'd ③) │
+                    over SSH,   │   stages run DETACHED (setsid + timeout)      │
+                    deploy key  │   ~/rafay_nvcm_poc  (fresh clone per run)     │
+                    forwarded   │   run logs ──────────── ⑤ polled over SSH ──▶ │
+                    from runner └───────────────────────────────────────────────┘
+```
+
+| # | From → To | Channel | Credentials | What flows |
+|---|---|---|---|---|
+| ① | launchpad repo → runner | `actions/checkout` (HTTPS) | `GITHUB_TOKEN` | This repo's workflows, scripts and stage catalogue, checked out by every job |
+| ② | runner → cloud API | HTTPS, via OCI CLI or AWS CLI (picked by the shape of `INSTANCE_ID`) | `OCI_*` (API key) or `AWS_*` (access key), written to `~/.oci` / `~/.aws` on the runner only | Start the instance, wait for it to run, look up its public IP (unless `SSH_HOST` is set), stop it at the end |
+| ③ | runner → instance | SSH, port 22 | `SSH_PRIVATE_KEY` in an ssh-agent; host key checked against `SSH_KNOWN_HOSTS` | `scp` of `agent.sh`, `common.sh` and the stage catalogue; `agent.sh prepare` / `start` / `status` commands |
+| ④ | instance → `rafay_nvcm_poc` repo | `git clone git@github.com:…` (SSH) | `POC_DEPLOY_KEY`, **forwarded** from the runner's agent (`ssh -A`) for the clone only; it is never written to the instance | The selected POC branch into `~/rafay_nvcm_poc` |
+| ⑤ | instance → runner | The same SSH connection as ③, opened by the runner: `tail -c +N` of the stage log, plus a status poll | as ③ | Live stage output into the job log, and each stage's exit code |
+| ⑥ | job → job | `actions/upload-artifact` / `download-artifact` | `GITHUB_TOKEN` | Each job's logs and metadata (`meta.env`, `status.tsv`), collected by the report job. Work in progress needs no hand-off: it keeps running on the instance between jobs |
+| ⑦ | runner → launchpad repo | `git push` from the report job | `GITHUB_TOKEN` with `contents: write` (that job only) | The dated `logs/<Mon-YYYY>/<DD-Mon-YYYY>/…` commit for the run |
+
+Network needs that follow from this: the instance must accept **inbound SSH (22) from GitHub-hosted
+runners** and reach **github.com:22 outbound** for the clone. The cloud API is called only from the
+runner, never from the instance.
+
 Major components:
 
 - **Two entry-point workflows** (`nvcm-greenfield.yml`, `nvcm-brownfield.yml`) — `workflow_dispatch`,
@@ -230,7 +287,7 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
 - **Permissions**: per lab cloud, an OCI IAM user scoped to least privilege (`use instance-family`, `read vnics`
   on the lab compartment only) or an AWS IAM user limited to `ec2:DescribeInstances` + start/stop of the lab instance, and a **read-only** GitHub deploy key on `rafay_nvcm_poc` (`GITHUB_TOKEN` can't be used
   across repositories, even under the same owner).
-- **Secrets** (GitHub Settings → Secrets and variables → Actions) — private keys only: `OCI_PRIVATE_KEY`
+- **Secrets** (GitHub Settings → Secrets and variables → Actions) — private keys only: `OCI_API_KEY`
   (OCI labs) or `AWS_SECRET_ACCESS_KEY` (AWS labs), `SSH_PRIVATE_KEY` (lab host login), `POC_DEPLOY_KEY`
   (read-only clone access).
 - **Variables**: `INSTANCE_ID` (required; an OCI OCID or an EC2 `i-…` ID, which selects the cloud),

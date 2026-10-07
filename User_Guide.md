@@ -58,7 +58,7 @@ the run at its first job, before anything touches OCI.
 | Secret | Level | What |
 |---|---|---|
 | `POC_DEPLOY_KEY` | Repo only | private half of a **read-only deploy key** on `rafay_nvcm_poc` (see step 4) |
-| `OCI_PRIVATE_KEY` | Repo (lab may override) | **OCI labs**: the API signing private key (PEM) |
+| `OCI_API_KEY` | Repo (lab may override) | **OCI labs**: the API signing private key (PEM) |
 | `AWS_SECRET_ACCESS_KEY` | Repo (lab may override) | **AWS labs**: the IAM access key's secret |
 | `SSH_PRIVATE_KEY` | Repo (lab may override) | SSH key authorized on the lab host |
 
@@ -78,7 +78,7 @@ a bare-metal (`*.metal`) type, or one with nested virtualization enabled. Check 
 **3. Where to find each value in the OCI Console**
 
 The five API-auth values (`OCI_USER`, `OCI_TENANCY`, `OCI_REGION`, `OCI_FINGERPRINT`,
-`OCI_PRIVATE_KEY`) come from **one flow**, in one visit to the Console:
+`OCI_API_KEY`) come from **one flow**, in one visit to the Console:
 
 1. Console → profile icon (top right) → **My profile**.
 2. That page's header already shows your **user OCID** (`OCI_USER`) and, further down or via the
@@ -90,7 +90,7 @@ The five API-auth values (`OCI_USER`, `OCI_TENANCY`, `OCI_REGION`, `OCI_FINGERPR
    box that already has all five values assembled together — a good place to sanity-check them as a set
    before splitting them into separate GitHub variables (and the key into a secret).
 5. The private key file you just downloaded — its whole contents, including the `-----BEGIN...`/
-   `-----END...` lines — is `OCI_PRIVATE_KEY`.
+   `-----END...` lines — is `OCI_API_KEY`.
 
 The lab-instance values are found on the instance itself, not the profile page:
 

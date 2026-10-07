@@ -93,7 +93,7 @@ cmd_connect(){
   if [ -z "$host" ]; then
     # Explicit exit-status check, not just "is the result non-empty": the OCI CLI writes some of its own
     # error output (e.g. "the config file is invalid") to STDOUT, not stderr, on a misconfigured
-    # OCI_USER/TENANCY/FINGERPRINT/REGION/PRIVATE_KEY — that text is non-empty and isn't literally
+    # OCI_USER/TENANCY/FINGERPRINT/REGION/API_KEY — that text is non-empty and isn't literally
     # "null", so a bare presence check lets it silently become $host, corrupt the ssh config below with an
     # embedded multi-line value, and surface as a baffling "Could not resolve hostname lab" instead of the
     # real cause. Also reject anything containing whitespace: a real public IP never does.

@@ -33,7 +33,7 @@ on:
         description: "Blueprint for substrate/dc-bringup: generated (this run's blueprint stage) or committed (stc/blueprint_stc.yaml)"
         default: generated
         type: choice
-        options: [generated, committed]
+        options: [existing, generate]
       tenants:
         description: "Tenant spec passed to simulate_dc.sh --tenants"
         default: "3-11,84-100"
@@ -133,7 +133,7 @@ jobs:
           oci-user:        ${{ vars.OCI_USER }}
           oci-tenancy:     ${{ vars.OCI_TENANCY }}
           oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
+          oci-api-key:     ${{ secrets.OCI_API_KEY }}
           oci-region:      ${{ vars.OCI_REGION }}
           aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -237,7 +237,7 @@ jobs:
           oci-user:        ${{ vars.OCI_USER }}
           oci-tenancy:     ${{ vars.OCI_TENANCY }}
           oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
+          oci-api-key:     ${{ secrets.OCI_API_KEY }}
           oci-region:      ${{ vars.OCI_REGION }}
           aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

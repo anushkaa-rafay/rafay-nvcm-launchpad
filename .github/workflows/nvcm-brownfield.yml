@@ -167,7 +167,7 @@ jobs:
           oci-user:        ${{ vars.OCI_USER }}
           oci-tenancy:     ${{ vars.OCI_TENANCY }}
           oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
+          oci-api-key:     ${{ secrets.OCI_API_KEY }}
           oci-region:      ${{ vars.OCI_REGION }}
           aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -278,7 +278,7 @@ jobs:
           oci-user:        ${{ vars.OCI_USER }}
           oci-tenancy:     ${{ vars.OCI_TENANCY }}
           oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_PRIVATE_KEY }}
+          oci-api-key:     ${{ secrets.OCI_API_KEY }}
           oci-region:      ${{ vars.OCI_REGION }}
           aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
