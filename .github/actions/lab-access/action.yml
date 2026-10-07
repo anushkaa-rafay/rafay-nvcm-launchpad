@@ -128,5 +128,30 @@ runs:
         { echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"; echo "SSH_AGENT_PID=$SSH_AGENT_PID"; } >> "$GITHUB_ENV"
         # deploy key FIRST: GitHub authenticates with the first key it accepts, so a lab key that happens to be
         # registered on GitHub elsewhere would otherwise shadow it and the clone would report "repo not found".
-        [ -z "$POC_KEY" ] || ssh-add -q - <<< "$POC_KEY"
-        ssh-add -q - <<< "$LAB_KEY"
+        # ssh-add's own failure is just "error in libcrypto" for any unreadable key, without saying which one —
+        # so name the secret and the usual causes. CRLF line endings (a key pasted from Windows) are stripped.
+        add_key(){
+          local name="$1" key="${2//$'\r'/}"
+          case "$key" in
+            *"PuTTY-User-Key-File"*) echo "::error::$name is a PuTTY .ppk key — export it in OpenSSH format (PuTTYgen → Conversions → Export OpenSSH key)"; return 1 ;;
+            ssh-rsa\ *|ssh-ed25519\ *|ecdsa-sha2-*) echo "::error::$name holds a PUBLIC key — it must be the private half"; return 1 ;;
+            *"-----BEGIN "*"PRIVATE KEY-----"*"-----END "*"PRIVATE KEY-----"*) ;;
+            *) echo "::error::$name is not a PEM/OpenSSH private key — paste the whole file, including the -----BEGIN …----- and -----END …----- lines, with its line breaks"; return 1 ;;
+          esac
+          [ "$(wc -l <<< "$key")" -ge 3 ] || { echo "::error::$name has lost its line breaks (the whole key is on one line) — paste the file as-is"; return 1; }
+          # Validate on a private temp copy: ssh-keygen -y tells "needs a passphrase" apart from "malformed" and never
+          # prompts (ssh-add would ask for a passphrase on stdin, which here is the key itself).
+          local f err; f="$(umask 077; mktemp)"; printf '%s\n' "$key" > "$f"
+          if ! err="$(ssh-keygen -y -P '' -f "$f" 2>&1 >/dev/null)"; then
+            rm -f "$f"
+            case "$err" in
+              *passphrase*) echo "::error::$name is passphrase-protected — the workflow can't type a passphrase; store an unencrypted copy (ssh-keygen -p -N '' -f <file>)" ;;
+              *) echo "::error::$name could not be read as a private key ($err) — re-paste the whole file" ;;
+            esac
+            return 1
+          fi
+          local rc=0; ssh-add -q "$f" 2>/dev/null || rc=$?; rm -f "$f"
+          [ $rc -eq 0 ] || { echo "::error::$name could not be loaded into ssh-agent"; return 1; }
+        }
+        [ -z "$POC_KEY" ] || add_key POC_DEPLOY_KEY "$POC_KEY"
+        add_key SSH_PRIVATE_KEY "$LAB_KEY"

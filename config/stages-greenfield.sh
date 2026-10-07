@@ -57,6 +57,7 @@ stage_blueprint(){           # setup_guide.md G2 (toolchain) + G4 (generate, the
 stage_substrate(){           # setup_guide.md G6 + the substrate slice of G8
   local bp; bp="$(lp_blueprint)"
   sudo bash deploy_scripts/substrate/vm_image_operations.sh fetch
+  sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh
   bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
       --tenants "$TENANTS" --from substrate --to substrate
 }
