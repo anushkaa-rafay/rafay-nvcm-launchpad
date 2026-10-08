@@ -52,6 +52,7 @@ scenario(){
     i=$((i+1)); fixture "$s" "$(cut -d, -f$i <<< "$rcs")"
   done
   printf 'POC_BRANCH=main\nPOC_SHA=0123456789abcdef\nSTARTED_AT=2026-10-04T22:04:15Z\n' > "$T/$name/collected/logs-boot/meta.env"
+  [ -z "${LAB_META:-}" ] || cat "$LAB_META" >> "$T/$name/collected/logs-boot/meta.env"
   echo "boot-log-line" > "$T/$name/collected/logs-boot/boot.log"
   local p; for p in "$@"; do
     # a phase that never exits is the cancelled job: the runner kills it mid-stage, like GitHub does
@@ -125,17 +126,41 @@ R="$T/boot/report"
 DESC="workflow.log still lists every stage"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
 DESC="all SKIPPED"; ok [ "$(status_order "$R/workflow.log")" = "SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED" ]
 
-# ── 5. committed path: logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-run<id>.<attempt>-<STATUS>/ ───────────────────
+# ── 4b. unknown lab — the lab job failed, so boot and every phase were skipped ───────────────────────────────
+echo "scenario: unknown lab"
+LAB=no-such-lab RESULT_LAB=failure RESULT_BOOT=skipped RESULT_PLATFORM=skipped RESULT_SITE=skipped RESULT_BRINGUP=skipped \
+  scenario nolab 0,0,0,0,0,0,0
+R="$T/nolab/report"
+DESC="summary.json: FAILED at the lab, naming it (not PASSED, though every job after it was only skipped)"
+ok [ "$(jq -r '.status+"/"+.failed_stage' "$R/summary.json")" = "FAILED/lab (no such GitHub Environment: 'no-such-lab')" ]
+DESC="summary.json .oci.lab falls back to the requested lab"; ok [ "$(jq -r .oci.lab "$R/summary.json")" = no-such-lab ]
+
+# ── 4c. the lab + its instance come from boot's meta.env (the report job runs outside the lab's Environment) ──
+echo "scenario: lab recorded"
+printf 'LAB=lab-2\nINSTANCE_ID=ocid1.instance.oc1..lab2\n' > "$T/lab-meta"
+LAB_META="$T/lab-meta" RESULT_LAB=success RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=success RESULT_BRINGUP=success \
+  scenario labrec 0,0,0,0,0,0,0 platform site bringup
+R="$T/labrec/report"
+DESC="summary.json .oci.lab/.oci.instance from meta.env"
+ok [ "$(jq -r '.oci.lab+"/"+.oci.instance' "$R/summary.json")" = lab-2/ocid1.instance.oc1..lab2 ]
+DESC="summary.md names the lab"; ok grep -q '^| Lab | `lab-2` |$' "$R/summary.md"
+DESC="workflow.log header names the lab"; ok grep -q '^WORKFLOW RUN .* · lab lab-2 · ' "$R/workflow.log"
+
+# ── 5. committed path: logs/<Mon-YYYY>/<DD-Mon-YYYY>/<HHMMSS>Z-[<lab>-]run<id>.<attempt>-<STATUS>/ ───────────────────
 echo "scenario: commit-logs.sh"
 # shellcheck source=scripts/lib-log.sh
 . "$ROOT/scripts/lib-log.sh"
-sj(){ jq -n --arg s "$1" --arg st "$2" '{status:$st, run:{id:"36606934354", attempt:"1", started:$s}, poc:{branch:"main"}}' > "$T/s.json"; }
+sj(){ jq -n --arg s "$1" --arg st "$2" --arg lab "${3:-}" '{status:$st, run:{id:"36606934354", attempt:"1", started:$s}, poc:{branch:"main"}}
+       + (if $lab == "" then {} else {oci:{lab:$lab}} end)' > "$T/s.json"; }
 sj 2026-10-04T22:04:15Z FAILED
 DESC="Oct run → logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED"
 ok [ "$(lp_run_dir "$T/s.json")" = logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED ]
 sj 2026-09-01T09:46:26Z PASSED
 DESC="zero-padded day: logs/Sep-2026/01-Sep-2026/094626Z-…-PASSED"
 ok [ "$(lp_run_dir "$T/s.json")" = logs/Sep-2026/01-Sep-2026/094626Z-run36606934354.1-PASSED ]
+sj 2026-10-04T22:04:15Z PASSED lab-2
+DESC="lab in the run dir: …/220415Z-lab-2-run36606934354.1-PASSED"
+ok [ "$(lp_run_dir "$T/s.json")" = logs/Oct-2026/04-Oct-2026/220415Z-lab-2-run36606934354.1-PASSED ]
 
 git init -q --bare "$T/origin.git"; git clone -q "$T/origin.git" "$T/repo" 2>/dev/null
 ( cd "$T/repo" && git -c user.name=t -c user.email=t@t commit -q --allow-empty -m init && git push -q origin HEAD 2>/dev/null

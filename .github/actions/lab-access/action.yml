@@ -1,59 +1,121 @@
 name: lab-access
 description: >-
-  OCI CLI with API-key auth, plus an ssh-agent holding the lab SSH key and (optionally) the read-only
-  rafay_nvcm_poc deploy key. Nothing is written to the workspace; keys live in ~/.oci and the agent only.
+  Cloud CLI access to the lab instance — OCI (API key) or AWS (access key), picked from the shape of
+  INSTANCE_ID — plus an ssh-agent holding the lab SSH key and (optionally) the read-only rafay_nvcm_poc deploy
+  key. Nothing is written to the workspace; keys live in ~/.oci or ~/.aws and the agent only.
 
 inputs:
-  oci-user:        { description: "OCI user OCID",                 required: true }
-  oci-tenancy:     { description: "OCI tenancy OCID",              required: true }
-  oci-fingerprint: { description: "API signing key fingerprint",   required: true }
-  oci-private-key: { description: "API signing key (PEM)",         required: true }
-  oci-region:      { description: "OCI region, e.g. ap-mumbai-1",  required: true }
-  ssh-private-key: { description: "SSH key for the lab host",      required: false, default: "" }
-  poc-deploy-key:  { description: "Read-only deploy key for rafay_nvcm_poc (boot job only)", required: false, default: "" }
+  lab:                   { description: "GitHub Environment of the lab (only used to make errors point at the right place)", required: false, default: "" }
+  # OCI labs (INSTANCE_ID = ocid1.instance.…)
+  oci-user:              { description: "OCI user OCID",                 required: false, default: "" }
+  oci-tenancy:           { description: "OCI tenancy OCID",              required: false, default: "" }
+  oci-fingerprint:       { description: "API signing key fingerprint",   required: false, default: "" }
+  oci-api-key:           { description: "API signing key (PEM)",         required: false, default: "" }
+  oci-region:            { description: "OCI region, e.g. ap-mumbai-1",  required: false, default: "" }
+  # AWS labs (INSTANCE_ID = i-…)
+  aws-access-key-id:     { description: "IAM access key ID",             required: false, default: "" }
+  aws-secret-access-key: { description: "IAM secret access key",         required: false, default: "" }
+  aws-region:            { description: "AWS region, e.g. ap-south-1",   required: false, default: "" }
+  ssh-private-key:       { description: "SSH key for the lab host",      required: false, default: "" }
+  poc-deploy-key:        { description: "Read-only deploy key for rafay_nvcm_poc (boot job only)", required: false, default: "" }
 
 runs:
   using: composite
   steps:
     - name: Check the required secrets/variables are set
+      id: check
       shell: bash
       env:
-        OCI_CLI_USER: ${{ inputs.oci-user }}
-        OCI_CLI_TENANCY: ${{ inputs.oci-tenancy }}
-        OCI_CLI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
-        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-private-key }}
-        OCI_CLI_REGION: ${{ inputs.oci-region }}
+        OCI_USER: ${{ inputs.oci-user }}
+        OCI_TENANCY: ${{ inputs.oci-tenancy }}
+        OCI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
+        OCI_API_KEY: ${{ inputs.oci-api-key }}
+        OCI_REGION: ${{ inputs.oci-region }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        LAB: ${{ inputs.lab }}
+      # Names every problem at once, and says WHERE to fix it. The usual cause of "not configured" is scope, not
+      # absence: a value saved on a different lab's Environment, or a private key saved as a variable instead of a
+      # secret. Only the lab's own cloud is checked — an AWS lab needs no OCI values and vice versa.
       run: |
-        missing=()
-        for v in OCI_CLI_USER OCI_CLI_TENANCY OCI_CLI_FINGERPRINT OCI_CLI_KEY_CONTENT OCI_CLI_REGION OCI_INSTANCE_ID; do
-          [ -n "${!v:-}" ] || missing+=("$v")
-        done
-        [ ${#missing[@]} -eq 0 ] || { echo "::error::not configured: ${missing[*]} (see README → Setup)"; exit 1; }
+        where="${LAB:+the '$LAB' Environment or }repository level"
+        problems=()
+        need_var(){ [ -n "${!1:-}" ] || problems+=("$1 is not set (variable, at $where)"); }
+        need_secret(){ [ -n "${!1:-}" ] || problems+=("$1 is not set — it must be a SECRET (at $where), never a variable"); }
+        # Shape checks catch a value pasted into the wrong slot, or an ID from another cloud, before the cloud
+        # answers with an opaque 404 / InvalidInstanceID.
+        shape(){ [ -z "${!1:-}" ] || [[ "${!1}" =~ $2 ]] || problems+=("$1 doesn't look like $3"); }
+        case "${INSTANCE_ID:-}" in
+          "")               provider=none; problems+=("INSTANCE_ID is not set (variable, at $where)") ;;
+          ocid1.instance.*) provider=oci ;;
+          i-*)              provider=aws ;;
+          *)                provider=none; problems+=("INSTANCE_ID is neither an OCI instance OCID (ocid1.instance.…) nor an EC2 instance ID (i-…)") ;;
+        esac
+        if [ "$provider" = oci ]; then
+          for v in OCI_USER OCI_TENANCY OCI_FINGERPRINT OCI_REGION; do need_var "$v"; done
+          need_secret OCI_API_KEY
+          shape OCI_USER         '^ocid1\.user\.'                         'a user OCID (ocid1.user.…)'
+          shape OCI_TENANCY      '^ocid1\.tenancy\.'                      'a tenancy OCID (ocid1.tenancy.…)'
+          shape OCI_FINGERPRINT  '^([0-9a-fA-F]{2}:){15}[0-9a-fA-F]{2}$'  'an API key fingerprint (aa:bb:…, 16 pairs)'
+          shape OCI_REGION       '^[a-z]+(-[a-z]+)+-[0-9]+$'              'an OCI region identifier (e.g. ap-mumbai-1)'
+        elif [ "$provider" = aws ]; then
+          need_var AWS_ACCESS_KEY_ID; need_var AWS_REGION
+          need_secret AWS_SECRET_ACCESS_KEY
+          shape INSTANCE_ID    '^i-([0-9a-f]{8}|[0-9a-f]{17})$'  'an EC2 instance ID (i- + 8 or 17 hex)'
+          shape AWS_ACCESS_KEY_ID  '^(AKIA|ASIA)[A-Z0-9]{16}$'       'an IAM access key ID (AKIA…, 20 chars)'
+          # AWS regions are named geo-direction-N (ap-south-1, us-gov-west-1); OCI's are named after cities
+          # (us-phoenix-1, ap-mumbai-1) — which the AWS CLI accepts and then fails on as an unreachable endpoint.
+          shape AWS_REGION         '^[a-z]{2}(-gov|-iso[a-z]?)?-(north|south|east|west|central)(east|west)?-[0-9]+$' \
+                'an AWS region (e.g. ap-south-1, us-west-2 — OCI region names like us-phoenix-1 are not valid on AWS)'
+        fi
+        echo "provider=$provider" >> "$GITHUB_OUTPUT"
+        [ ${#problems[@]} -eq 0 ] && { echo "lab ${LAB:-?}: $provider instance $INSTANCE_ID"; exit 0; }
+        for p in "${problems[@]}"; do echo "::error::${LAB:+lab '$LAB': }$p"; done
+        echo "Environment values override repository ones; a value on another lab's Environment is invisible here (see README → Setup)."
+        exit 1
 
     - name: Install OCI CLI
+      if: steps.check.outputs.provider == 'oci'
       shell: bash
       run: pipx install oci-cli >/dev/null && oci --version
 
     - name: Configure OCI CLI
+      if: steps.check.outputs.provider == 'oci'
       shell: bash
       env:
-        OCI_CLI_USER: ${{ inputs.oci-user }}
-        OCI_CLI_TENANCY: ${{ inputs.oci-tenancy }}
-        OCI_CLI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
-        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-private-key }}
-        OCI_CLI_REGION: ${{ inputs.oci-region }}
+        OCI_USER: ${{ inputs.oci-user }}
+        OCI_TENANCY: ${{ inputs.oci-tenancy }}
+        OCI_FINGERPRINT: ${{ inputs.oci-fingerprint }}
+        OCI_API_KEY: ${{ inputs.oci-api-key }}
+        OCI_REGION: ${{ inputs.oci-region }}
       run: |
         umask 077; mkdir -p ~/.oci
-        printf '%s\n' "$OCI_CLI_KEY_CONTENT" > ~/.oci/key.pem
+        printf '%s\n' "$OCI_API_KEY" > ~/.oci/key.pem
         cat > ~/.oci/config <<EOF
         [DEFAULT]
-        user=$OCI_CLI_USER
-        tenancy=$OCI_CLI_TENANCY
-        fingerprint=$OCI_CLI_FINGERPRINT
-        region=$OCI_CLI_REGION
+        user=$OCI_USER
+        tenancy=$OCI_TENANCY
+        fingerprint=$OCI_FINGERPRINT
+        region=$OCI_REGION
         key_file=$HOME/.oci/key.pem
         EOF
         sed -i 's/^ *//' ~/.oci/config
+
+    # AWS CLI v2 is preinstalled on GitHub's ubuntu runners. Credentials go to ~/.aws (read by later steps' `aws`
+    # calls in scripts/lab.sh), not $GITHUB_ENV, so the secret never becomes an environment variable of every step.
+    - name: Configure AWS CLI
+      if: steps.check.outputs.provider == 'aws'
+      shell: bash
+      env:
+        AWS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET: ${{ inputs.aws-secret-access-key }}
+        AWS_REGION_NAME: ${{ inputs.aws-region }}
+      run: |
+        aws --version
+        umask 077; mkdir -p ~/.aws
+        printf '[default]\naws_access_key_id = %s\naws_secret_access_key = %s\n' "$AWS_KEY_ID" "$AWS_SECRET" > ~/.aws/credentials
+        printf '[default]\nregion = %s\noutput = text\n' "$AWS_REGION_NAME" > ~/.aws/config
 
     - name: Load SSH keys into an agent
       if: inputs.ssh-private-key != ''
@@ -66,5 +128,30 @@ runs:
         { echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"; echo "SSH_AGENT_PID=$SSH_AGENT_PID"; } >> "$GITHUB_ENV"
         # deploy key FIRST: GitHub authenticates with the first key it accepts, so a lab key that happens to be
         # registered on GitHub elsewhere would otherwise shadow it and the clone would report "repo not found".
-        [ -z "$POC_KEY" ] || ssh-add -q - <<< "$POC_KEY"
-        ssh-add -q - <<< "$LAB_KEY"
+        # ssh-add's own failure is just "error in libcrypto" for any unreadable key, without saying which one —
+        # so name the secret and the usual causes. CRLF line endings (a key pasted from Windows) are stripped.
+        add_key(){
+          local name="$1" key="${2//$'\r'/}"
+          case "$key" in
+            *"PuTTY-User-Key-File"*) echo "::error::$name is a PuTTY .ppk key — export it in OpenSSH format (PuTTYgen → Conversions → Export OpenSSH key)"; return 1 ;;
+            ssh-rsa\ *|ssh-ed25519\ *|ecdsa-sha2-*) echo "::error::$name holds a PUBLIC key — it must be the private half"; return 1 ;;
+            *"-----BEGIN "*"PRIVATE KEY-----"*"-----END "*"PRIVATE KEY-----"*) ;;
+            *) echo "::error::$name is not a PEM/OpenSSH private key — paste the whole file, including the -----BEGIN …----- and -----END …----- lines, with its line breaks"; return 1 ;;
+          esac
+          [ "$(wc -l <<< "$key")" -ge 3 ] || { echo "::error::$name has lost its line breaks (the whole key is on one line) — paste the file as-is"; return 1; }
+          # Validate on a private temp copy: ssh-keygen -y tells "needs a passphrase" apart from "malformed" and never
+          # prompts (ssh-add would ask for a passphrase on stdin, which here is the key itself).
+          local f err; f="$(umask 077; mktemp)"; printf '%s\n' "$key" > "$f"
+          if ! err="$(ssh-keygen -y -P '' -f "$f" 2>&1 >/dev/null)"; then
+            rm -f "$f"
+            case "$err" in
+              *passphrase*) echo "::error::$name is passphrase-protected — the workflow can't type a passphrase; store an unencrypted copy (ssh-keygen -p -N '' -f <file>)" ;;
+              *) echo "::error::$name could not be read as a private key ($err) — re-paste the whole file" ;;
+            esac
+            return 1
+          fi
+          local rc=0; ssh-add -q "$f" 2>/dev/null || rc=$?; rm -f "$f"
+          [ $rc -eq 0 ] || { echo "::error::$name could not be loaded into ssh-agent"; return 1; }
+        }
+        [ -z "$POC_KEY" ] || add_key POC_DEPLOY_KEY "$POC_KEY"
+        add_key SSH_PRIVATE_KEY "$LAB_KEY"

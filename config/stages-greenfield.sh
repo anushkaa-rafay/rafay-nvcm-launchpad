@@ -35,13 +35,17 @@ LAUNCHPAD_STAGES=(
 : "${BP_PROFILE:=stc/sheet_profiles/stcs-v0.3.yaml}"
 : "${BP_FACTS:=stc/site_facts/${SITE}.yaml}"
 : "${BP_COMMITTED:=stc/blueprint_stc.yaml}"
-: "${BLUEPRINT_SOURCE:=generated}"     # generated = this run's blueprint stage output | committed = BP_COMMITTED
+: "${BLUEPRINT_SOURCE:=generate}"      # generate = this run's blueprint stage output | existing = BP_COMMITTED
 
-# The blueprint the DC stages consume. A "generated" run needs the blueprint stage to have run in THIS run.
+# The blueprint the DC stages consume. A "generate" run needs the blueprint stage to have run in THIS run.
 lp_blueprint(){
-  if [ "$BLUEPRINT_SOURCE" = committed ]; then echo "$POC_DIR/$BP_COMMITTED"; return; fi
+  case "$BLUEPRINT_SOURCE" in
+    existing) echo "$POC_DIR/$BP_COMMITTED"; return ;;
+    generate) ;;
+    *) echo "unknown BLUEPRINT_SOURCE '$BLUEPRINT_SOURCE' (generate | existing)" >&2; return 1 ;;
+  esac
   local bp="$RUN_DIR/blueprint_${SITE}.yaml"
-  [ -f "$bp" ] || { echo "no generated blueprint at $bp — run the 'blueprint' stage in this run, or use blueprint_source=committed" >&2; return 1; }
+  [ -f "$bp" ] || { echo "no generated blueprint at $bp — run the 'blueprint' stage in this run, or use blueprint_source=existing" >&2; return 1; }
   echo "$bp"
 }
 
@@ -57,12 +61,13 @@ stage_blueprint(){           # setup_guide.md G2 (toolchain) + G4 (generate, the
 stage_substrate(){           # setup_guide.md G6 + the substrate slice of G8
   local bp; bp="$(lp_blueprint)"
   sudo bash deploy_scripts/substrate/vm_image_operations.sh fetch
-  bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$OCI_IP" --apply --auto-approve \
+  sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh
+  bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
       --tenants "$TENANTS" --from substrate --to substrate
 }
 
 stage_dc_bringup(){          # the rest of G8: underlay → overlay → servers → accept, each behind a hard gate
   local bp; bp="$(lp_blueprint)"
-  bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$OCI_IP" --apply --auto-approve \
+  bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
       --tenants "$TENANTS" --from underlay --to accept
 }

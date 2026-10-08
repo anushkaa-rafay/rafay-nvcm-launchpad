@@ -109,13 +109,73 @@ Once inputs land on the lab host, the run itself follows a fixed pipeline:
 Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settled
         ─ SSH ─────▶ ~/launchpad/agent.sh prepare   (move old checkout aside, clone <branch> → ~/rafay_nvcm_poc)
                      for each stage:  agent.sh start → detached on the host; runner streams the log + polls
-        ─ always ──▶ SOFTSTOP instance (unless shutdown_oci=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
+        ─ always ──▶ SOFTSTOP instance (unless shutdown=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
+
+### How the pieces talk to each other
+
+Four parties take part in a run: the two GitHub repositories, the GitHub-hosted runner executing the
+workflow, the cloud provider's API, and the lab instance. **The runner starts every connection.** The
+instance never calls back into GitHub Actions, and nothing listens on the runner.
+
+```
+ ┌──────────────────────────────────── GitHub ─────────────────────────────────────┐
+ │                                                                                 │
+ │  rafay_nvcm_launchpad repo            GitHub Actions                            │
+ │  ┌──────────────────────────┐        ┌──────────────────────────────────────┐   │
+ │  │ workflows, scripts,      │  ①     │ workflow_dispatch (user picks `lab`  │   │
+ │  │ config, remote/agent.sh  │───────▶│ + inputs) → jobs on ubuntu-latest    │   │
+ │  │                          │checkout│                                      │   │
+ │  │ logs/<Mon>/<Day>/…       │◀───────│ Environment `<lab>` + repo level:    │   │
+ │  └──────────────────────────┘   ⑦    │   vars (INSTANCE_ID, SSH_*, OCI_*/   │   │
+ │                              git push│   AWS_*)  ·  secrets (private keys)  │   │
+ │  rafay_nvcm_poc repo                 │                                      │   │
+ │  ┌──────────────────────────┐        │ jobs: lab → boot → platform → site → │   │
+ │  │ installer + deploy       │        │       bringup → poweroff → report    │   │
+ │  │ scripts (read-only       │        │ hand-off between jobs: artifacts ⑥   │   │
+ │  │ deploy key)              │        └───────┬──────────────────┬───────────┘   │
+ │  └────────────▲─────────────┘                │                  │               │
+ └───────────────┼──────────────────────────────┼──────────────────┼───────────────┘
+                 │                     ② HTTPS  │                  │ ③ SSH :22
+                 │                  OCI / AWS   │                  │ (SSH_PRIVATE_KEY,
+                 │                  CLI         ▼                  │  host key pinned by
+                 │              ┌──────────────────────────┐       │  SSH_KNOWN_HOSTS)
+                 │              │ Cloud API (OCI or AWS)   │       │
+                 │              │ start · state · public IP│       │
+                 │              │ · stop                   │       │
+                 │              └────────────┬─────────────┘       │
+                 │                           │ power on/off        │
+                 │                           ▼                     ▼
+                 │              ┌───────────────────────────────────────────────┐
+                 │  ④ git clone │ Lab instance  (INSTANCE_ID)                   │
+                 └──────────────│   ~/launchpad/agent.sh + stages.sh  (scp'd ③) │
+                    over SSH,   │   stages run DETACHED (setsid + timeout)      │
+                    deploy key  │   ~/rafay_nvcm_poc  (fresh clone per run)     │
+                    forwarded   │   run logs ──────────── ⑤ polled over SSH ──▶ │
+                    from runner └───────────────────────────────────────────────┘
+```
+
+| # | From → To | Channel | Credentials | What flows |
+|---|---|---|---|---|
+| ① | launchpad repo → runner | `actions/checkout` (HTTPS) | `GITHUB_TOKEN` | This repo's workflows, scripts and stage catalogue, checked out by every job |
+| ② | runner → cloud API | HTTPS, via OCI CLI or AWS CLI (picked by the shape of `INSTANCE_ID`) | `OCI_*` (API key) or `AWS_*` (access key), written to `~/.oci` / `~/.aws` on the runner only | Start the instance, wait for it to run, look up its public IP (unless `SSH_HOST` is set), stop it at the end |
+| ③ | runner → instance | SSH, port 22 | `SSH_PRIVATE_KEY` in an ssh-agent; host key checked against `SSH_KNOWN_HOSTS` | `scp` of `agent.sh`, `common.sh` and the stage catalogue; `agent.sh prepare` / `start` / `status` commands |
+| ④ | instance → `rafay_nvcm_poc` repo | `git clone git@github.com:…` (SSH) | `POC_DEPLOY_KEY`, **forwarded** from the runner's agent (`ssh -A`) for the clone only; it is never written to the instance | The selected POC branch into `~/rafay_nvcm_poc` |
+| ⑤ | instance → runner | The same SSH connection as ③, opened by the runner: `tail -c +N` of the stage log, plus a status poll | as ③ | Live stage output into the job log, and each stage's exit code |
+| ⑥ | job → job | `actions/upload-artifact` / `download-artifact` | `GITHUB_TOKEN` | Each job's logs and metadata (`meta.env`, `status.tsv`), collected by the report job. Work in progress needs no hand-off: it keeps running on the instance between jobs |
+| ⑦ | runner → launchpad repo | `git push` from the report job | `GITHUB_TOKEN` with `contents: write` (that job only) | The dated `logs/<Mon-YYYY>/<DD-Mon-YYYY>/…` commit for the run |
+
+Network needs that follow from this: the instance must accept **inbound SSH (22) from GitHub-hosted
+runners** and reach **github.com:22 outbound** for the clone. The cloud API is called only from the
+runner, never from the instance.
 
 Major components:
 
 - **Two entry-point workflows** (`nvcm-greenfield.yml`, `nvcm-brownfield.yml`) — `workflow_dispatch`,
-  sharing one concurrency group since both drive the same physical host.
+  sharing one concurrency group **per lab** (`nvcm-oci-lab-<lab>`): runs on different labs go in parallel,
+  runs on the same lab (the same physical host) queue.
+- **One GitHub Environment per OCI lab** — the `lab` input names it; it holds that lab's instance/SSH
+  variables and any secrets that differ from the repository-level ones.
 - **A reusable phase workflow** (`_phase.yml`) — one phase (`platform`/`site`/`bringup`) of stages, called
   three times per run by each entry point so the phase logic exists once, not duplicated six times.
 - **The stage-catalogue system** (`config/common.sh` + `config/stages-greenfield.sh` +
@@ -228,17 +288,22 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
 
 ## 8. Configuration & Prerequisites
 
-- **Permissions**: an OCI IAM user scoped to least privilege (`use instance-family`, `read vnics` on the lab
-  compartment only) and a **read-only** GitHub deploy key on `rafay_nvcm_poc` (`GITHUB_TOKEN` can't be used
+- **Permissions**: per lab cloud, an OCI IAM user scoped to least privilege (`use instance-family`, `read vnics`
+  on the lab compartment only) or an AWS IAM user limited to `ec2:DescribeInstances` + start/stop of the lab instance, and a **read-only** GitHub deploy key on `rafay_nvcm_poc` (`GITHUB_TOKEN` can't be used
   across repositories, even under the same owner).
-- **Secrets** (GitHub Settings → Secrets and variables → Actions): `OCI_CLI_USER`, `OCI_CLI_TENANCY`,
-  `OCI_CLI_FINGERPRINT`, `OCI_CLI_REGION`, `OCI_CLI_KEY_CONTENT` (OCI API-key auth), `OCI_SSH_PRIVATE_KEY`
-  (lab host login), `POC_DEPLOY_KEY` (read-only clone access).
-- **Variables**: `OCI_INSTANCE_ID` (required), `OCI_SSH_USER`, `OCI_SSH_HOST`, `OCI_SSH_KNOWN_HOSTS`,
-  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_OCI_IP`.
+- **Secrets** (GitHub Settings → Secrets and variables → Actions) — private keys only: `OCI_API_KEY`
+  (OCI labs) or `AWS_SECRET_ACCESS_KEY` (AWS labs), `SSH_PRIVATE_KEY` (lab host login), `POC_DEPLOY_KEY`
+  (read-only clone access).
+- **Variables**: `INSTANCE_ID` (required; an OCI OCID or an EC2 `i-…` ID, which selects the cloud),
+  `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` (OCI labs) or `AWS_ACCESS_KEY_ID`, `AWS_REGION`
+  (AWS labs), `SSH_USER`, `SSH_HOST`, `SSH_KNOWN_HOSTS`,
+  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`.
+- **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`INSTANCE_ID`, SSH host, …)
+  live on it, plus any secret that differs for that lab; anything not set there falls back to repo level.
 - **SSH keys**: two distinct ones — a lab-host login key, and the POC repo's read-only deploy key — see
   [Security](#9-security) for why they're kept separate.
-- **Cloud resources**: one existing OCI compute instance (the lab host); nothing else is provisioned.
+- **Cloud resources**: one existing compute instance per lab — OCI or AWS EC2 (with `/dev/kvm`: bare metal or
+  nested virtualization); nothing else is provisioned.
 - **Dependencies**: `sshpass` and `virsh` (brownfield's virtual-mode discovery) are installed on the host by
   the shared `host-prep` stage itself — no separate setup needed.
 
@@ -261,7 +326,7 @@ Full step-by-step instructions, including exactly where to find each value in th
   does persist for the run's duration.
 - **Access between repositories**: a read-only GitHub deploy key, not a personal access token — the
   least-privileged option available, limited to exactly one repository.
-- **Sensitive data handling**: host-key pinning (`OCI_SSH_KNOWN_HOSTS`) is rewritten to a stable alias so it
+- **Sensitive data handling**: host-key pinning (`SSH_KNOWN_HOSTS`) is rewritten to a stable alias so it
   survives the lab's ephemeral public IP changing, rather than being silently bypassed after a restart.
   OCIDs and key material should never be pasted into a chat session or committed to source — only into the
   GitHub secret/variable fields they belong in.
@@ -280,7 +345,7 @@ Logs are kept in three places on every run:
 logs/
 └── <Mon-YYYY>/                                    e.g. Oct-2026          — one per month
     └── <DD-Mon-YYYY>/                             e.g. 04-Oct-2026       — one per day
-        └── <HHMMSS>Z-run<id>.<attempt>-<STATUS>/  e.g. 220415Z-run36606934354.1-FAILED  — one per run
+        └── <HHMMSS>Z-<lab>-run<id>.<attempt>-<STATUS>/  e.g. 220415Z-lab-1-run36606934354.1-FAILED  — one per run
             ├── workflow.log              every stage's output, in run order (below)
             ├── boot.log                  start OCI → wait operational → clone
             ├── diagnostics-<job>.txt     host snapshot, only when a stage in that job failed (e.g. diagnostics-bringup.txt)
@@ -339,7 +404,8 @@ failure.
 ## 12. Deployment / Setup
 
 One-time setup, done once by whoever administers this repo: create the OCI IAM user and API key, add the
-GitHub secrets and variables listed in [§8](#8-configuration--prerequisites), and add the read-only deploy
+GitHub secrets and variables listed in [§8](#8-configuration--prerequisites), create one GitHub Environment
+per OCI lab, and add the read-only deploy
 key to `rafay_nvcm_poc`. Full walkthrough, including exact OCI Console navigation for every value, is in
 [`User_Guide.md`](User_Guide.md).
 
@@ -361,7 +427,7 @@ through the GitHub Actions UI:
    ├── nvcm-greenfield
    └── nvcm-brownfield
 5. Click "Run workflow"
-6. Select the required branch/options
+6. Enter the lab, then select the required branch/options
 7. Click Run
 ```
 
@@ -396,8 +462,10 @@ infrastructure.
 - No automated destructive-reset stage; a deeper environment reset stays a manual `rafay_nvcm_poc` command.
 - No notification integration yet (email / shared drive / Slack) — `summary.json` is a stable contract for
   one, not yet consumed by anything.
-- Concurrency is a soft GitHub Actions queue (one pending run per group), adequate for the current ~1
-  run/day scale, not a distributed lock suitable for much higher concurrency.
+- Concurrency is a soft GitHub Actions queue (one pending run per lab), adequate for the current scale, not
+  a distributed lock suitable for much higher concurrency. A run on another lab never waits.
+- Parallel runs commit their logs to the same branch; `commit-logs.sh` rebases and retries on a rejected
+  push (5 attempts).
 - No true end-to-end validation against the real OCI host yet (see [§14](#14-testing)).
 
 ## 16. Future Improvements

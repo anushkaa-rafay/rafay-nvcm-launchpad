@@ -2,9 +2,10 @@ name: nvcm-brownfield
 # BROWNFIELD: a live fabric already exists — learn from it, never author over it. Mirrors rafay_nvcm_poc's
 # onboarding/brownfield/brownfield_adoption_plan.md: discover (read-only) → blueprint (read-only, the reuse
 # path) → REVIEW → adopt (the only stage that writes), landing on the SAME provision_site.sh greenfield uses.
-#   boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
+#   lab (resolve the `lab` input → its GitHub Environment: which OCI host, which credentials)
+#   → boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
 #   → platform → site → bringup   (config/stages-brownfield.sh, executed ON the host)
-#   → poweroff (always, unless shutdown_oci=false) → report (always: artifact + dated commit under logs/)
+#   → poweroff (always, unless shutdown=false) → report (always: artifact + dated commit under logs/)
 #
 # THE REVIEW GATE — read config/stages-brownfield.sh's header before a real DC run. The default `stages`
 # below deliberately stops BEFORE any write: run once to discover+generate the blueprint, read it in that
@@ -12,13 +13,18 @@ name: nvcm-brownfield
 # thing unattended — fine for this lab's own simulated fabric, never the first pass on a real production DC.
 #
 # Shares every job/script with nvcm-greenfield.yml except the stage catalogue, and shares one concurrency
-# group with it because both drive the SAME physical OCI host.
+# group PER LAB with it because, for a given lab, both drive the SAME physical OCI host.
 
-run-name: "nvcm-brownfield · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'bf-discover,bf-blueprint' }}"
+run-name: "nvcm-brownfield · ${{ inputs.lab || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'bf-discover,bf-blueprint' }}"
 
 on:
   workflow_dispatch:
     inputs:
+      lab:
+        description: "Lab to run on (OCI or AWS) — the name of a GitHub Environment holding that lab's INSTANCE_ID, SSH host and any secrets that differ from the repo-level ones (blank uses the DEFAULT_LAB repository variable)"
+        required: false
+        default: ""
+        type: string
       poc_branch:
         description: "rafay_nvcm_poc branch to run — blank uses the POC_DEFAULT_BRANCH repository variable (falls back to main if that isn't set either)"
         required: false
@@ -58,30 +64,54 @@ on:
         description: "Tenant spec passed to provision_site.sh --tenants at the bf-adopt stage"
         default: "3-11,84-100"
         type: string
-      shutdown_oci:
-        description: "Power the OCI instance off at the end (untick to keep it up for debugging)"
+      shutdown:
+        description: "Power the lab instance off at the end (untick to keep it up for debugging)"
         default: true
         type: boolean
 
-# ONE run at a time against the lab: a new run QUEUES behind the active one (never cancels it). SHARED with
-# nvcm-greenfield.yml — both drive the same physical OCI host, so a greenfield run and a brownfield run must
-# never overlap either. GitHub keeps at most one pending run per group — a third trigger replaces the queued second.
+# ONE run at a time PER LAB: a new run QUEUES behind the active one on the same lab (never cancels it); runs on
+# different labs (different OCI hosts) go in parallel. SHARED with nvcm-greenfield.yml — both drive the same
+# physical host for a given lab, so a greenfield run and a brownfield run on one lab must never overlap either.
+# GitHub keeps at most one pending run per group — a third trigger on the same lab replaces the queued second.
 concurrency:
-  group: nvcm-oci-lab
+  group: nvcm-oci-lab-${{ inputs.lab || vars.DEFAULT_LAB }}
   cancel-in-progress: false
 
 permissions:
   contents: read
 
 env:
-  OCI_INSTANCE_ID:     ${{ vars.OCI_INSTANCE_ID }}
-  OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
-  OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
-  OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
   LAUNCHPAD_CATALOGUE: config/stages-brownfield.sh
 
 jobs:
+  # Resolves which lab this run targets and proves its GitHub Environment exists BEFORE any job names it:
+  # GitHub silently auto-creates an Environment a job references, so a typo'd lab would otherwise leave an empty
+  # Environment behind and fail later with a confusing "INSTANCE_ID not configured". Every job that touches
+  # the lab (boot, the phases, poweroff) runs in this Environment, so vars.* / secrets.* resolve per lab.
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read         # GET /repos/{repo}/environments/{name}
+    outputs:
+      name: ${{ steps.lab.outputs.name }}
+    steps:
+      - name: Resolve + check lab
+        id: lab
+        env:
+          LAB: ${{ inputs.lab || vars.DEFAULT_LAB }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -n "$LAB" ] || { echo "::error::no lab given — set the 'lab' input (or the DEFAULT_LAB repository variable)"; exit 1; }
+          [[ "$LAB" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "::error::invalid lab '$LAB' (letters, digits, . _ - only)"; exit 1; }
+          gh api "repos/$GITHUB_REPOSITORY/environments/$LAB" --silent 2>/dev/null \
+            || { echo "::error::lab '$LAB' is not a GitHub Environment of this repo (Settings → Environments; see README → Setup)"; exit 1; }
+          echo "name=$LAB" >> "$GITHUB_OUTPUT"
+          echo "lab: $LAB"
+
   boot:
+    needs: lab
+    environment: ${{ needs.lab.outputs.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     outputs:
@@ -89,6 +119,10 @@ jobs:
       stages:  ${{ steps.opts.outputs.stages }}
     env:
       OUT: out/boot
+      INSTANCE_ID:     ${{ vars.INSTANCE_ID }}
+      SSH_USER:        ${{ vars.SSH_USER || 'ubuntu' }}
+      SSH_HOST:        ${{ vars.SSH_HOST }}
+      SSH_KNOWN_HOSTS: ${{ vars.SSH_KNOWN_HOSTS }}
     steps:
       - uses: actions/checkout@v4
 
@@ -129,15 +163,19 @@ jobs:
       - name: Lab access
         uses: ./.github/actions/lab-access
         with:
-          oci-user:        ${{ secrets.OCI_CLI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-          oci-region:      ${{ secrets.OCI_CLI_REGION }}
-          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          lab:             ${{ needs.lab.outputs.name }}
+          oci-user:        ${{ vars.OCI_USER }}
+          oci-tenancy:     ${{ vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
+          oci-api-key:     ${{ secrets.OCI_API_KEY }}
+          oci-region:      ${{ vars.OCI_REGION }}
+          aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ vars.AWS_REGION }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
 
-      - name: Start OCI instance
+      - name: Start lab instance
         id: start
         # set -o pipefail: a run: step with no explicit `shell:` key is NOT pipefail by default (verified
         # empirically, not assumed — see Dev_Guide.md's design-decisions section). Without it, a failing
@@ -164,7 +202,7 @@ jobs:
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
           BF_MODE:  ${{ steps.opts.outputs.BF_MODE }}
           SEED_B64: ${{ steps.opts.outputs.SEED_B64 }}
-          LAB_OCI_IP: ${{ vars.LAB_OCI_IP }}
+          LAB_IP: ${{ vars.LAB_IP }}
         run: |
           set -o pipefail   # see "Start OCI instance" above
           # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
@@ -173,18 +211,19 @@ jobs:
           args="SITE=$(printf '%q' "$SITE") LOCATION=$(printf '%q' "$LOCATION") DEVICE_TYPE=$(printf '%q' "$DEVICE_TYPE")"
           args="$args POLICY_FROM=$(printf '%q' "$POLICY_FROM") TENANTS=$(printf '%q' "$TENANTS")"
           args="$args BF_MODE=$(printf '%q' "$BF_MODE") SEED_B64=$(printf '%q' "$SEED_B64")"
-          scripts/lab.sh ssh -A "LAB_OCI_IP='$LAB_OCI_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH $args" \
+          scripts/lab.sh ssh -A "LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH $args" \
             2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
 
       - name: Record boot metadata
         if: always()
         env:
+          LAB:         ${{ needs.lab.outputs.name }}
           HOST:        ${{ steps.connect.outputs.host }}
           WAS_RUNNING: ${{ steps.start.outputs.was_running }}
         run: |
           mkdir -p "$OUT"
-          { echo "HOST=$HOST"; echo "WAS_RUNNING=$WAS_RUNNING"; } >> "$OUT/meta.env"
+          { echo "LAB=$LAB"; echo "INSTANCE_ID=$INSTANCE_ID"; echo "HOST=$HOST"; echo "WAS_RUNNING=$WAS_RUNNING"; } >> "$OUT/meta.env"
 
       - name: Upload boot logs
         if: always()
@@ -202,46 +241,53 @@ jobs:
   # skipped when any job further upstream was skipped (actions/runner#2205) — explicit conditions are that
   # issue's documented workaround, and are what keeps poweroff/report running after a skipped phase.
   platform:
-    needs: boot
+    needs: [lab, boot]
     if: ${{ !cancelled() && needs.boot.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
-    with: { phase: platform, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
+    with: { phase: platform, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
     secrets: inherit
 
   site:
-    needs: [boot, platform]
+    needs: [lab, boot, platform]
     if: ${{ !cancelled() && needs.boot.result == 'success' && needs.platform.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
-    with: { phase: site, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
+    with: { phase: site, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
     secrets: inherit
 
   bringup:
-    needs: [boot, site]
+    needs: [lab, boot, site]
     if: ${{ !cancelled() && needs.boot.result == 'success' && needs.site.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
-    with: { phase: bringup, run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
+    with: { phase: bringup, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-brownfield.sh }
     secrets: inherit
 
   poweroff:
-    needs: [boot, platform, site, bringup]
+    needs: [lab, boot, platform, site, bringup]
+    environment: ${{ needs.lab.outputs.name }}
     # !cancelled(): also after a failure or a skipped phase — see the note above the `platform` job.
-    if: ${{ !cancelled() && inputs.shutdown_oci }}
+    if: ${{ !cancelled() && needs.lab.result == 'success' && inputs.shutdown }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      INSTANCE_ID: ${{ vars.INSTANCE_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lab-access
         with:
-          oci-user:        ${{ secrets.OCI_CLI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-          oci-region:      ${{ secrets.OCI_CLI_REGION }}
-      - name: Stop OCI instance
+          lab:             ${{ needs.lab.outputs.name }}
+          oci-user:        ${{ vars.OCI_USER }}
+          oci-tenancy:     ${{ vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
+          oci-api-key:     ${{ secrets.OCI_API_KEY }}
+          oci-region:      ${{ vars.OCI_REGION }}
+          aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ vars.AWS_REGION }}
+      - name: Stop lab instance
         run: scripts/lab.sh stop
 
   report:
-    needs: [boot, platform, site, bringup, poweroff]
+    needs: [lab, boot, platform, site, bringup, poweroff]
     # !cancelled(), not always() — see the note on the poweroff job above.
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
@@ -267,6 +313,8 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           TRIGGER: ${{ github.event_name }}
           ACTOR: ${{ github.triggering_actor }}
+          LAB: ${{ needs.lab.outputs.name || inputs.lab || vars.DEFAULT_LAB }}
+          RESULT_LAB: ${{ needs.lab.result }}
           RESULT_BOOT: ${{ needs.boot.result }}
           RESULT_PLATFORM: ${{ needs.platform.result }}
           RESULT_SITE: ${{ needs.site.result }}

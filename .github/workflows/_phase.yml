@@ -4,12 +4,14 @@ name: _phase
 # is its own job so each gets a fresh 6 h GitHub-hosted budget; the work itself runs detached on the host, so
 # nothing is lost between jobs. Shared by both onboarding modes: identical mechanics either way, only the
 # catalogue differs. The caller decides WHETHER a phase runs (its job-level `if:` — skipped unless every
-# earlier phase succeeded); once called, this always runs its selected stages.
+# earlier phase succeeded); once called, this always runs its selected stages. Runs in the lab's GitHub
+# Environment (`lab`), so INSTANCE_ID / SSH host / secrets are that lab's.
 
 on:
   workflow_call:
     inputs:
       phase:           { type: string, required: true }
+      lab:             { type: string, required: true }   # GitHub Environment of the OCI lab (validated by the caller's lab job)
       run_key:         { type: string, required: true }
       stages:          { type: string, required: true }
       catalogue:       { type: string, required: true }
@@ -21,13 +23,14 @@ permissions:
 jobs:
   run:
     name: ${{ inputs.phase }}
+    environment: ${{ inputs.lab }}   # the lab's vars/secrets — environment secrets don't pass through `secrets: inherit`
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout_minutes }}
     env:
-      OCI_INSTANCE_ID:     ${{ vars.OCI_INSTANCE_ID }}
-      OCI_SSH_USER:        ${{ vars.OCI_SSH_USER || 'ubuntu' }}
-      OCI_SSH_HOST:        ${{ vars.OCI_SSH_HOST }}
-      OCI_SSH_KNOWN_HOSTS: ${{ vars.OCI_SSH_KNOWN_HOSTS }}
+      INSTANCE_ID:     ${{ vars.INSTANCE_ID }}
+      SSH_USER:        ${{ vars.SSH_USER || 'ubuntu' }}
+      SSH_HOST:        ${{ vars.SSH_HOST }}
+      SSH_KNOWN_HOSTS: ${{ vars.SSH_KNOWN_HOSTS }}
       LAUNCHPAD_CATALOGUE: ${{ inputs.catalogue }}
       OUT: out/${{ inputs.phase }}
     steps:
@@ -45,12 +48,16 @@ jobs:
         if: ${{ steps.plan.outputs.stages != '' }}
         uses: ./.github/actions/lab-access
         with:
-          oci-user:        ${{ secrets.OCI_CLI_USER }}
-          oci-tenancy:     ${{ secrets.OCI_CLI_TENANCY }}
-          oci-fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
-          oci-private-key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-          oci-region:      ${{ secrets.OCI_CLI_REGION }}
-          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          lab:             ${{ inputs.lab }}
+          oci-user:        ${{ vars.OCI_USER }}
+          oci-tenancy:     ${{ vars.OCI_TENANCY }}
+          oci-fingerprint: ${{ vars.OCI_FINGERPRINT }}
+          oci-api-key:     ${{ secrets.OCI_API_KEY }}
+          oci-region:      ${{ vars.OCI_REGION }}
+          aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ vars.AWS_REGION }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Connect
         if: ${{ steps.plan.outputs.stages != '' }}

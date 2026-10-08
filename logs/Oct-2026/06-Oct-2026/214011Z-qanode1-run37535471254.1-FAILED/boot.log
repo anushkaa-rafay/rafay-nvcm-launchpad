@@ -1,0 +1,2 @@
+
+aws: [ERROR]: An error occurred (InvalidInstanceID.NotFound) when calling the DescribeInstances operation: The instance ID 'i-0365c57bfb2f82d6a' does not exist
