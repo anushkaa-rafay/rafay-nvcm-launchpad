@@ -31,10 +31,14 @@ jobs:
       - name: Unit tests (metrics, filters, status classification, API paging/errors, escaping)
         run: npm test
       - name: Build site
+        # reports on this repository (GITHUB_REPOSITORY) unless the DASHBOARD_REPOSITORY variable names another
+        env:
+          DASHBOARD_REPOSITORY: ${{ vars.DASHBOARD_REPOSITORY }}
         run: npm run build
       - name: Published files are page code only — no tests, scripts, or anything token-shaped
         run: |
           [ -z "$(find _site -name '*.test.*' -o -name 'package.json' -o -name '*.mjs')" ] || { echo "::error::unexpected files in _site"; exit 1; }
+          if grep -rn '__GITHUB_REPOSITORY__' _site; then echo "::error::repository placeholder left in the published site"; exit 1; fi
           if grep -rEn 'gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}' _site; then echo "::error::token-like string in the published site"; exit 1; fi
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.DASHBOARD_PAGES == 'true'

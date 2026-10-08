@@ -114,7 +114,9 @@ function renderBanners() {
     if (e.kind === 'rate_limit' && e.resetAt) text += ` It resets at ${e.resetAt.toLocaleTimeString()}.`;
     if (e.kind === 'not_found' && state.token) text = 'This token cannot see the repository. A fine-grained token must list this repository and grant Actions: Read-only.';
     if (d) text += ' Showing the data from the last successful load.';
-    out.push(banner({ kind: 'error', title, text, action: { id: 'retry', label: 'Retry' } }));
+    // a public repo loads without a token until the shared 60/hour anonymous limit runs out — offer one then
+    const action = e.kind === 'rate_limit' && !state.token ? { id: 'connect', label: 'Connect a token' } : { id: 'retry', label: 'Retry' };
+    out.push(banner({ kind: 'error', title, text, action }));
   }
   if (d && !d.complete) {
     const n = d.runs.length;
@@ -201,7 +203,10 @@ function bind() {
   $('f-actor').addEventListener('change', e => { state.actor = e.target.value || null; state.shown = CONFIG.tableStep; writeUrl(); render(); });
   $('refresh').addEventListener('click', () => load({ force: true }));
   $('more').addEventListener('click', () => { state.shown += CONFIG.tableStep; render(); });
-  $('banners').addEventListener('click', e => { if (e.target.closest('[data-action="retry"]')) load({ force: true }); });
+  $('banners').addEventListener('click', e => {
+    if (e.target.closest('[data-action="retry"]')) load({ force: true });
+    if (e.target.closest('[data-action="connect"]')) { state.needsToken = true; render(); $('token').focus(); }
+  });
 
   $('connect-form').addEventListener('submit', e => {
     e.preventDefault();

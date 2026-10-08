@@ -41,7 +41,7 @@ first, because GitHub silently auto-creates any Environment a job names — a ty
 empty one behind. The `report` job runs outside the Environment, so `boot` writes `LAB` and `INSTANCE_ID`
 into `meta.env` for it.
 
-## The four workflows, and which ones you actually run
+## The workflows, and which ones you actually run
 
 | Workflow | Triggered how | Purpose |
 |---|---|---|
@@ -49,6 +49,7 @@ into `meta.env` for it.
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
 | `_phase.yml` | `workflow_call` **only** — called by the two above, three times each | one phase (platform/site/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of duplicated 3×2 times |
 | `ci.yml` | `push`/`pull_request`/manual | **not part of the OCI automation at all** — lints this repo's own scripts (shellcheck, `bash -n`, actionlint) and runs the stage-catalogue self-tests below. Never touches OCI, SSH, or any secret |
+| `dashboard.yml` | `push`/`pull_request` touching `dashboard/`, or manual | **not part of the OCI automation either** — tests and builds the Workflow Operations dashboard, and publishes it to GitHub Pages from `main` once opted in (see [Deploying the dashboard](#deploying-the-dashboard)). No OCI, SSH or secrets |
 
 `_phase.yml` shows up in the Actions tab because GitHub lists every workflow file regardless of trigger
 type — it has no meaningful "Run workflow" button of its own (its inputs are only meaningful when supplied
@@ -227,6 +228,88 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
 ```
 
 `ci.yml` runs all of this automatically; the commands above are for iterating locally before you push.
+
+## Deploying the dashboard
+
+`dashboard/` is a static page that reads this repository's Actions runs from the GitHub API in the
+viewer's browser: run counts, success/failure, durations, who triggered what, each row linking to its run.
+`.github/workflows/dashboard.yml` tests it, builds it and publishes it to GitHub Pages. The site holds only
+page code — no run data and no token. How the page works, its metrics and its token model are in
+[`dashboard/README.md`](dashboard/README.md).
+
+**Which repository it reports on** is set at build time, never hardcoded: the repository the workflow runs in
+(`GITHUB_REPOSITORY`), or the repository variable `DASHBOARD_REPOSITORY` (`owner/repo`) if set. On a public
+repository the page needs no token; on a private one each viewer pastes their own read-only token.
+
+### 1. Check it locally first
+
+Needs Node ≥ 20; nothing to install.
+
+```bash
+cd dashboard
+npm test          # unit tests — the same ones dashboard.yml runs
+npm start         # http://localhost:8080, reporting on this checkout's origin repo
+                  # (DASHBOARD_REPOSITORY=owner/repo npm start for another one)
+npm run build     # writes _site/ — exactly what Pages will serve (git-ignored)
+```
+
+The page must show the repository name in the header, filled KPI cards and recent runs. "Repository not
+accessible" means the repository name is wrong or, for a private repo, the token can't see it.
+
+### 2. One-time setup (repository admin)
+
+1. **Get the code onto `main`.** Pages is published from `main` only, and GitHub shows the dashboard
+   workflow's *Run workflow* button only once `dashboard.yml` is on the default branch.
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions.** Skip this if Pages already serves
+   something else from this repository; the workflow never enables or overwrites a Pages setup
+   (`configure-pages` with `enablement: false`). This also creates the `github-pages` Environment the deploy
+   job uses. Leave its deployment-branch rule allowing `main`. It's separate from the lab Environments and
+   needs no values.
+3. **Settings → Secrets and variables → Actions → Variables (repository level):**
+
+   | Variable | Value | Required |
+   |---|---|---|
+   | `DASHBOARD_PAGES` | `true`: the opt-in. Until it's set, the deploy job is skipped (grey), not failed | yes |
+   | `DASHBOARD_REPOSITORY` | `owner/repo`, only to report on a repository other than this one | no |
+
+   No secrets are involved.
+4. **Plan check.** Pages is free for a public repository. A private repository needs GitHub Pro, Team or
+   Enterprise, and outside Enterprise Cloud the site itself is publicly reachable. That's acceptable because
+   it holds no data, but it does reveal the repository's name.
+
+### 3. Deploy
+
+**Actions → dashboard → Run workflow → Branch: main → Run workflow.** The run has two jobs:
+
+- **test:** `npm test`, `npm run build`, then a check that `_site/` contains only page code, nothing
+  token-shaped and no unfilled repository placeholder. It then uploads `_site/` as the Pages artifact.
+- **deploy:** publishes the artifact. The job summary links the site, normally
+  `https://<owner>.github.io/<repo>/`; for this repository that's
+  `https://anushkaa-rafay.github.io/rafay-nvcm-launchpad/`.
+
+Open the link and run the same check as step 1. A just-published site can take a minute to appear.
+
+### 4. Keeping it up to date
+
+| Change | What happens |
+|---|---|
+| Push to `main` touching `dashboard/**` or `dashboard.yml` | tests + redeploy, automatically |
+| PR touching them | tests and build only; never deploys |
+| `DASHBOARD_REPOSITORY` changed | variables don't trigger runs: **Run workflow** once to rebuild |
+| New workflow runs (NVCM, lint…) | nothing to deploy: the page reads runs live (Refresh, or auto-refresh every 5 min) |
+| Pause publishing | set `DASHBOARD_PAGES` to anything but `true`; the live site stays as last published |
+| Take the site down | Settings → Pages → **Unpublish site** |
+
+### 5. When the deploy fails
+
+| Symptom | Cause / fix |
+|---|---|
+| deploy job **skipped** | `DASHBOARD_PAGES` isn't `true`, or the run wasn't on `main` (PRs never deploy) |
+| fails at "Pages must already be configured" | Pages Source isn't *GitHub Actions* (setup step 2), or the plan doesn't offer Pages for a private repo |
+| deploy rejected by Environment protection rules | the `github-pages` Environment's deployment branches don't include `main` |
+| test job: "no repository to report on" | `DASHBOARD_REPOSITORY` isn't in `owner/repo` form |
+| site loads but shows "Repository not accessible" | wrong `DASHBOARD_REPOSITORY`, or a private repo and the viewer's token lacks Actions: Read-only on it |
+| "Rate limited" on a public repo | the anonymous 60 requests/hour per network ran out: **Connect a token** in the banner, or turn off auto-refresh in idle tabs |
 
 ## Design decisions worth knowing before you touch these files
 

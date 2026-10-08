@@ -24,7 +24,8 @@ dependencies.
 | `src/components.js` | Markup for KPI cards, status badges, the runs table, distribution rows, banners. Escapes every API string |
 | `src/charts.js` | The Run Activity chart as plain SVG, with hover/keyboard tooltips and a table view |
 | `src/app.js` | State, filters ⇄ URL, loading/refresh, token handling, rendering |
-| `src/config.js` | Repository owner/name and limits. **Never put a credential here**: this file is published |
+| `src/config.js` | Limits, and a `__GITHUB_REPOSITORY__` placeholder for the repository. **Never put a credential here**: this file is published |
+| `scripts/repo.mjs` | Picks the repository at build/serve time: `DASHBOARD_REPOSITORY` → `GITHUB_REPOSITORY` → the checkout's `origin` |
 | `test/*.test.mjs` | `node:test` unit tests with fixtures shaped like real API responses |
 | `scripts/serve.mjs`, `scripts/build.mjs` | Zero-dependency local server; assembles `_site/` for Pages |
 
@@ -35,7 +36,7 @@ disagree with each other.
 
 The data comes live from the GitHub REST API, fetched in the viewer's browser:
 
-- `GET /repos/ramakrishna-rafay/rafay_nvcm_launchpad/actions/runs?per_page=100&created=>=<range start>`:
+- `GET /repos/{owner}/{repo}/actions/runs?per_page=100&created=>=<range start>`:
   all pages. "All time" omits `created`.
 - `GET /repos/…/actions/workflows`: names the workflows. Workflows with no runs in the selection still
   show up as zero rows.
@@ -67,7 +68,16 @@ why. A partial load shows a banner saying how many runs were counted.
 
 ## Authentication and security
 
-This repository is **private**, which shapes the whole design:
+Which repository the page reports on is decided when it's built, never hardcoded: the repository the
+dashboard workflow runs in (`GITHUB_REPOSITORY`), unless the repository variable `DASHBOARD_REPOSITORY`
+(`owner/repo`) names another one. Locally, `npm start` / `npm run build` use `DASHBOARD_REPOSITORY` or
+`GITHUB_REPOSITORY` from the environment, else this checkout's `origin` remote.
+
+- **Public repository:** the page loads with no token. Anonymous calls share a limit of 60 requests/hour per
+  network (IP); when it runs out, the "Rate limited" banner offers **Connect a token**.
+- **Private repository:** every viewer needs a token, as below.
+
+Either way:
 
 - GitHub Pages serves static files and can't keep a secret, so **the published site contains no token and
   no run data**. It's only the code that draws the page.
@@ -77,7 +87,7 @@ This repository is **private**, which shapes the whole design:
 - Recommended token: a **fine-grained personal access token** limited to *only this repository*, with
   permission **Actions: Read-only** (Metadata: Read-only is added automatically), and a short expiry.
   Nothing broader is needed.
-- **Collaborators:** this repository is owned by a *personal* account (`ramakrishna-rafay`). A fine-grained
+- **Collaborators:** when the repository is owned by a *personal* account, a fine-grained
   token can only target repositories owned by its own account or by an organization the user belongs to,
   so only the owner can create one for it. Collaborators need a **classic** token with the `repo` scope.
   That scope is broad (read *and write* to every repository the user can access), so give it a short expiry,
@@ -88,7 +98,6 @@ This repository is **private**, which shapes the whole design:
   on **Disconnect**, and is cleared automatically if GitHub rejects it (401).
 - API strings such as branch, workflow and user names are HTML-escaped before rendering. Only `http(s)`
   links are allowed in `href`s. The page sends `no-referrer`.
-- If the repository is ever made public, the page also works with no token at all (60 requests/hour per IP).
 
 ## Local development
 
@@ -121,11 +130,11 @@ One-time setup by a repository **admin**:
 2. **Settings → Secrets and variables → Actions → Variables → New repository variable**:
    `DASHBOARD_PAGES` = `true`.
 3. **Actions → dashboard → Run workflow** on `main`, or push a change under `dashboard/`. The deploy job
-   prints the site URL, normally `https://ramakrishna-rafay.github.io/rafay_nvcm_launchpad/`.
+   prints the site URL, normally `https://<owner>.github.io/<repo>/`.
 
 Things to know:
 
-- **Plan:** Pages for a *private* repository needs GitHub Pro, Team or Enterprise. On plans other than
+- **Plan:** Pages is free for a *public* repository. For a *private* one it needs GitHub Pro, Team or Enterprise. On plans other than
   Enterprise Cloud the Pages site is **publicly reachable**. That's acceptable here because the page holds
   no data, but it does reveal that the repository exists, and its name. Enterprise Cloud can restrict
   Pages to organization members (Settings → Pages → Visibility).
@@ -165,7 +174,7 @@ The NVCM workflows already keep a durable per-run record: `logs/<Mon-YYYY>/<DD-M
 
 | Symptom | Cause / fix |
 |---|---|
-| "Connect to GitHub" panel on first load | Expected: the repo is private and this tab has no token |
+| "Connect to GitHub" panel on first load | Expected for a private repo: this tab has no token. On a public repo it means the repository name is wrong — check `DASHBOARD_REPOSITORY` |
 | "Repository not accessible" with a token | A fine-grained token must list *this* repository under "Repository access", with Actions: Read-only. Organization-owned repos may need an admin to approve the token |
 | "Access denied", then asked to reconnect | Token expired or revoked (401). Create a new one |
 | "Rate limited" | Wait until the reset time shown, or turn off auto-refresh in idle tabs |

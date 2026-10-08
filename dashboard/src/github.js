@@ -48,7 +48,7 @@ async function request(url, { token, fetchImpl, signal }) {
     return { body, link: res.headers.get('link'), rateLimit: remaining == null ? null : { remaining: Number(remaining), resetAt } };
   }
   if (res.status === 401) throw new GitHubError('auth', 'GitHub rejected the token (expired or revoked).', { status: 401 });
-  if (res.status === 404) throw new GitHubError('not_found', 'Repository not found — it is private and this browser has no token with access to it, or the name is wrong.', { status: 404 });
+  if (res.status === 404) throw new GitHubError('not_found', 'Repository not found — it is private and this browser has no token with access to it, or the name is wrong (DASHBOARD_REPOSITORY).', { status: 404 });
   if ((res.status === 403 || res.status === 429) && (remaining === '0' || res.headers.get('retry-after'))) {
     const retry = res.headers.get('retry-after');
     throw new GitHubError('rate_limit', 'GitHub API rate limit reached.',
