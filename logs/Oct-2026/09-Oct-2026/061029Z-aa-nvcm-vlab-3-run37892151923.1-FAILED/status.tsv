@@ -1,0 +1,7 @@
+1	host-prep	platform	passed	0	2026-10-09T06:13:04Z	2026-10-09T06:13:26Z	22
+2	platform-install-1	platform	passed	0	2026-10-09T06:13:26Z	2026-10-09T06:23:35Z	609
+3	platform-install-2	platform	passed	0	2026-10-09T06:23:35Z	2026-10-09T06:27:27Z	232
+4	verify-platform	platform	passed	0	2026-10-09T06:27:27Z	2026-10-09T06:28:31Z	64
+5	blueprint	site	passed	0	2026-10-09T06:29:30Z	2026-10-09T06:29:53Z	23
+6	substrate	site	passed	0	2026-10-09T06:29:53Z	2026-10-09T06:30:38Z	45
+7	dc-bringup	bringup	failed	1	2026-10-09T06:31:33Z	2026-10-09T06:35:49Z	256
