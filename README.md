@@ -187,6 +187,11 @@ Major components:
 - **The report pipeline** (`scripts/build-report.sh`, `scripts/commit-logs.sh`) — merges every job's logs
   into one `workflow.log` + pass/fail summary and commits it under `logs/<Mon-YYYY>/<DD-Mon-YYYY>/`.
 
+- **The Workflow Operations dashboard** (`dashboard/`) — a separate, read-only static page over the GitHub
+  Actions API: run counts, success/failure, durations, who triggered what, with links to each run. It needs
+  no token on a public repo; on a private one viewers connect their own read-only token. See
+  [`dashboard/README.md`](dashboard/README.md), and Dev_Guide → Deploying the dashboard to publish it.
+
 Full internals, including *why* each of these design choices was made, live in [`Dev_Guide.md`](Dev_Guide.md).
 
 ## 6. Workflow
