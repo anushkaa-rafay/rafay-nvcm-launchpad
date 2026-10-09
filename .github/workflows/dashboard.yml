@@ -1,0 +1,50 @@
+name: dashboard
+# The Workflow Operations dashboard. This branch holds only the dashboard; GitHub Pages serves its docs/
+# folder directly (Settings → Pages → Deploy from a branch → dashboard, /docs), so nothing here deploys.
+# This workflow keeps that folder honest: unit tests, a build, and a check that the committed docs/ is exactly
+# what `npm run pages` builds from dashboard/. No OCI, no SSH, no secrets.
+
+on:
+  push:
+    branches: [dashboard]
+  pull_request:
+    branches: [dashboard]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dashboard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: dashboard
+    env:
+      # reports on this repository (GITHUB_REPOSITORY) unless the DASHBOARD_REPOSITORY variable names another
+      DASHBOARD_REPOSITORY: ${{ vars.DASHBOARD_REPOSITORY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests (metrics, filters, status classification, API paging/errors, escaping, repo resolution)
+        run: npm test
+      - name: Committed docs/ is the current build (Pages serves it as-is)
+        run: |
+          npm run pages >/dev/null
+          if [ -n "$(git status --porcelain -- ../docs)" ]; then
+            git status --short -- ../docs
+            echo "::error::docs/ is out of date with dashboard/ — run 'npm run pages' in dashboard/ and commit docs/"
+            exit 1
+          fi
+      - name: Published files are page code only — no tests, scripts, or anything token-shaped
+        run: |
+          [ -z "$(find ../docs -name '*.test.*' -o -name 'package.json' -o -name '*.mjs')" ] || { echo "::error::unexpected files in docs/"; exit 1; }
+          if grep -rEn 'gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}' ../docs; then echo "::error::token-like string in docs/"; exit 1; fi
+          if grep -rn '__GITHUB_REPOSITORY__' ../docs; then echo "::error::repository placeholder left in docs/"; exit 1; fi
