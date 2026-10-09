@@ -1,7 +1,0 @@
-1	host-prep	platform	failed	100	2026-09-29T17:36:36Z	2026-09-29T17:36:59Z	23
-2	platform-install-1	platform	skipped				
-3	platform-install-2	platform	skipped				
-4	verify-platform	platform	skipped				
-5	blueprint	site	skipped				
-6	substrate	site	skipped				
-7	dc-bringup	bringup	skipped				

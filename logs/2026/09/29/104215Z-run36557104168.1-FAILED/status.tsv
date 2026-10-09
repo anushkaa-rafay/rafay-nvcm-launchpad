@@ -1,7 +1,0 @@
-1	host-prep	platform	passed	0	2026-09-29T10:44:18Z	2026-09-29T10:44:41Z	23
-2	platform-install-1	platform	failed	1	2026-09-29T10:44:41Z	2026-09-29T10:46:10Z	89
-3	platform-install-2	platform	skipped				
-4	verify-platform	platform	skipped				
-5	blueprint	site	skipped				
-6	substrate	site	skipped				
-7	dc-bringup	bringup	skipped				
