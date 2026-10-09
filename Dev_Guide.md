@@ -226,6 +226,20 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
 
 `ci.yml` runs all of this automatically; the commands above are for iterating locally before you push.
 
+## The dashboard (separate `dashboard` branch)
+
+The Workflow Operations dashboard — run counts, success/failure, durations and who triggered what, read live
+from the GitHub Actions API — is **not on this branch**. It lives alone on the `dashboard` branch
+(`dashboard/` source, `docs/` built page, its own `dashboard.yml`), and GitHub Pages serves that branch's
+`/docs` folder: Settings → Pages → Deploy from a branch → `dashboard`, `/docs`.
+
+- To work on it: `git switch dashboard`. Local development, the deployment steps and troubleshooting are in
+  [`dashboard/README.md` on that branch](../../blob/dashboard/dashboard/README.md).
+- **Never merge `dashboard` into `main`, or the reverse.** The two branches share no history; a forced merge
+  would mix the dashboard into the automation, or delete it.
+- Nothing on `main` needs changing for the dashboard to see new runs. It reads every workflow's runs live, so
+  workflow changes here never require a dashboard redeploy.
+
 ## Design decisions worth knowing before you touch these files
 
 - **Values that reach the remote host over SSH are `%q`-escaped, not trusted to be space-free.** The
