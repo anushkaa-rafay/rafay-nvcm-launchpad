@@ -2,7 +2,7 @@
 // metrics.js, every piece of markup in components.js / charts.js.
 import { CONFIG, repoUrl, actionsUrl } from './config.js';
 import { fetchRuns, fetchWorkflows } from './github.js';
-import { RANGES, rangeStart, filterRuns, kpis, activity, distribution, actors, chartGroup, classify, formatRelative } from './metrics.js';
+import { RANGES, rangeStart, filterRuns, withoutHidden, kpis, activity, distribution, actors, chartGroup, classify, formatRelative } from './metrics.js';
 import { kpiCards, legend, distributionView, runsTable, banner, esc } from './components.js';
 import { renderActivity, activityTable, tooltipHtml } from './charts.js';
 
@@ -16,7 +16,7 @@ const store = {   // storage can throw (private mode, blocked site data) — the
 const state = {
   token: store.get(sessionStorage, TOKEN_KEY),   // the VIEWER's own token, this tab only — never logged or sent elsewhere
   range: '7d', workflowId: null, actor: null,
-  data: null,        // { runs, workflows, coveredSince, fetchedAt, complete, reason, totalCount, error }
+  data: null,        // { runs, workflows (both minus hidden), allWorkflows, hiddenNames, loaded, coveredSince, fetchedAt, complete, reason, totalCount, error }
   loading: false, error: null, needsToken: false,
   shown: CONFIG.tableStep,
   controller: null,
@@ -50,12 +50,15 @@ async function load({ force = false } = {}) {
   const base = { owner: CONFIG.owner, repo: CONFIG.repo, token: state.token, signal: controller.signal };
   try {
     const [workflows, res] = await Promise.all([
-      state.data?.workflows && !force ? state.data.workflows : fetchWorkflows(base),
+      state.data?.allWorkflows && !force ? state.data.allWorkflows : fetchWorkflows(base),
       fetchRuns({ ...base, since, pageSize: CONFIG.pageSize, maxPages: CONFIG.maxPages,
                   onProgress: ({ loaded, totalCount }) => { $('progress').textContent = `Loading runs… ${loaded}${totalCount != null ? ` of ${totalCount}` : ''}`; } }),
     ]);
     if (controller !== state.controller) return;   // superseded by a newer load
-    state.data = { ...res, workflows, coveredSince: since, fetchedAt: new Date() };
+    const hidden = CONFIG.hiddenWorkflows;
+    state.data = { ...res, loaded: res.runs.length, allWorkflows: workflows, runs: withoutHidden(res.runs, hidden), workflows: withoutHidden(workflows, hidden),
+                   hiddenNames: workflows.filter(w => !withoutHidden([w], hidden).length).map(w => w.name),
+                   coveredSince: since, fetchedAt: new Date() };
     state.needsToken = false;
   } catch (e) {
     if (e?.name === 'AbortError' || controller !== state.controller) return;
@@ -119,7 +122,7 @@ function renderBanners() {
     out.push(banner({ kind: 'error', title, text, action }));
   }
   if (d && !d.complete) {
-    const n = d.runs.length;
+    const n = d.loaded ?? d.runs.length;
     const text = d.reason === 'capped'
       ? (d.totalCount > 1000 && d.coveredSince
           ? `GitHub returns at most 1,000 runs per date-filtered query; this range has ${d.totalCount}. Metrics cover the newest ${n}.`
@@ -165,7 +168,8 @@ function render() {
   // Workflow distribution follows every filter; with no workflow picked, workflows with zero runs in the
   // selection still get a row, so "never ran" is visible rather than missing.
   $('distribution').innerHTML = distributionView(distribution(sel.runs, state.workflowId ? state.data.workflows.filter(w => w.id === state.workflowId) : state.data.workflows),
-                                                 { repoUrl, selectedId: state.workflowId });
+                                                 { repoUrl, selectedId: state.workflowId })
+    + (state.data.hiddenNames?.length ? `<p class="dist-foot muted">Not shown: ${esc(state.data.hiddenNames.join(', '))}.</p>` : '');
 
   // Recent runs
   const shown = sel.runs.slice(0, state.shown);

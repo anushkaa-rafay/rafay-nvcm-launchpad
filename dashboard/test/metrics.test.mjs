@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { classify, chartGroup, kpis, filterRuns, rangeStart, activity, distribution, actors, actorOf,
+import { withoutHidden, classify, chartGroup, kpis, filterRuns, rangeStart, activity, distribution, actors, actorOf,
          durationMs, elapsedMs, formatDuration, formatRelative, formatPercent, pickStep } from '../src/metrics.js';
 import { run, NOW } from './fixtures.mjs';
 
@@ -155,4 +155,12 @@ test('formatRelative / formatPercent', () => {
   assert.equal(formatPercent(null), '—');
   assert.equal(formatPercent(1), '100%');
   assert.equal(formatPercent(2 / 3), '66.7%');
+});
+
+test('withoutHidden: drops runs and workflows by file path, ignoring an @ref suffix', () => {
+  const hidden = ['.github/workflows/ci.yml', '.github/workflows/_phase.yml'];
+  const runs = [{ id: 1, path: '.github/workflows/ci.yml' }, { id: 2, path: '.github/workflows/_phase.yml@refs/heads/main' },
+                { id: 3, path: '.github/workflows/nvcm-greenfield.yml' }, { id: 4, path: 'dynamic/pages/pages-build-deployment' }, { id: 5 }];
+  assert.deepEqual(withoutHidden(runs, hidden).map(r => r.id), [3, 4, 5]);
+  assert.equal(withoutHidden(runs).length, 5, 'nothing hidden by default');
 });

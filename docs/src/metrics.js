@@ -83,6 +83,15 @@ export function elapsedMs(run, now = new Date()) {
   return Math.max(0, now.getTime() - Date.parse(run.run_started_at));
 }
 
+/**
+ * Drops hidden workflows from a list of runs or of workflows — both carry the workflow file as `path`
+ * (".github/workflows/ci.yml"; a run's may end in "@<ref>"). Hidden workflows count nowhere on the page.
+ */
+export function withoutHidden(items, hiddenPaths = []) {
+  const hidden = new Set(hiddenPaths);
+  return items.filter(x => !hidden.has(String(x.path ?? '').split('@')[0]));
+}
+
 /** Filters: { since: Date|null, workflowId: number|null, actor: string|null }. Newest first. */
 export function filterRuns(runs, { since = null, workflowId = null, actor = null } = {}) {
   return runs
