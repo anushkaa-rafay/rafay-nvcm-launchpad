@@ -265,16 +265,20 @@ rafay_nvcm_launchpad/
 │   ├── nvcm-greenfield.yml    entry point: greenfield
 │   ├── nvcm-brownfield.yml    entry point: brownfield
 │   ├── _phase.yml             reusable: one phase of stages, shared by both
+│   ├── unit-<phase>.yml       unit tests: one workflow per phase (common/platform/blueprint/substrate/bringup)
+│   ├── _unit.yml              reusable: one phase of the POC's offline gates — no lab
 │   └── weekly-report.yml      Mondays: the week's runs, summarized and mailed
 ├── .github/actions/lab-access/  OCI CLI config + ssh-agent setup
 ├── config/
 │   ├── common.sh               shared platform stages (both modes)
 │   ├── stages-greenfield.sh     greenfield-only stages + catalogue
-│   └── stages-brownfield.sh     brownfield-only stages + catalogue
+│   ├── stages-brownfield.sh     brownfield-only stages + catalogue
+│   └── unit-tests.sh           unit-test manifest: POC gate → phase + group
 ├── remote/agent.sh             the only file copied onto the OCI host
 ├── scripts/
 │   ├── lab.sh                  OCI power + SSH connect
 │   ├── run-stages.sh           drives one phase, streams logs
+│   ├── run-unit-tests.sh       runs one phase/group of the POC's offline gates
 │   ├── build-report.sh         merges logs → summary.md / summary.json
 │   ├── summary-logs.py         failed stages' last lines → the run's Summary tab
 │   ├── commit-logs.sh          dated commit of the report
@@ -459,6 +463,10 @@ There is no OCI-dependent CI yet — everything below runs with no lab access an
   pods-not-ready continue logic) were verified by actually reproducing the failing behavior first — a real
   `sshd` in a container, a fake failing `oci` binary, the exact two-line step under both candidate shell
   invocations — then confirming the fix resolves that exact reproduction, not just by inspection.
+
+- **The POC's own unit tests**: `unit-<phase>.yml` run rafay_nvcm_poc's offline gates (`test/run-tests.sh`,
+  199 gates) on GitHub-hosted runners, one workflow per phase, no lab needed — see
+  [`Unit_Tests_Plan.md`](Unit_Tests_Plan.md) and the User Guide's "Running unit tests".
 
 **Not yet done**: an end-to-end run of either workflow against the real OCI lab host. Everything above
 verifies the orchestration logic is internally correct; it doesn't yet prove the full pipeline against live

@@ -288,3 +288,25 @@ early or died before committing its logs still counts, but shows no lab, branch 
 
 If something goes wrong and you're not sure why, that run's `workflow.log` is the first place to look —
 every stage is in it, in order, each ending in a `STAGE STATUS:` line (search for `STAGE STATUS: FAILED`); `Dev_Guide.md` has the internals if you need to go deeper.
+
+## Running unit tests
+
+These run rafay_nvcm_poc's offline unit tests (`test/run-tests.sh`) on GitHub's own runners. They need **no
+lab**: no instance is started, nothing is SSHed into, and they can run at the same time as any lab run.
+
+Actions → pick one → **Run workflow**:
+
+| Workflow | Tests for | Groups |
+|---|---|---|
+| `unit-common` | repo-wide hygiene (doc links, no credentials, suite completeness, …) | `hygiene` |
+| `unit-platform` | 1 · Installation — platform scripts, Helm chart, catalog, REST API | `install`, `api` |
+| `unit-blueprint` | 2 · Blueprint — intake, blueprint generate/verify, brownfield discovery | `intake`, `generate-verify`, `brownfield` |
+| `unit-substrate` | 3 · Substrate — substrate planning, VM builders, recovery | `substrate` |
+| `unit-bringup` | 4 · Site bring-up — fabric deploy, tenants, servers, day-2 recovery | `fabric`, `tenants`, `servers`, `day2` |
+
+Inputs: `poc_branch` (blank = `POC_DEFAULT_BRANCH`) and `groups` (`all`, or e.g. `tenants,servers` to re-run
+just those). Each group is its own job in the run graph, so one red group doesn't hide the rest. The run's
+**Summary** tab lists every test with its result and time; each group's logs are an artifact (`unit-<phase>-<group>`).
+
+If the run fails at **Plan · coverage** with "Unmapped POC gate", a new test was added to rafay_nvcm_poc that
+isn't assigned to a phase yet — add one line for it in `config/unit-tests.sh` (see `Dev_Guide.md` → Unit tests).

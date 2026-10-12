@@ -49,9 +49,11 @@ into `meta.env` for it.
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
 | `_phase.yml` | `workflow_call` **only** — called by the two above, once per phase | one phase (platform/blueprint/substrate/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of once per job |
 | `weekly-report.yml` | `schedule` (Monday 09:00 IST), or a person clicks Run | `scripts/weekly-report.py`: the last 7 days of the two entry points' runs, from the Actions API + each run's committed `summary.json` → its Summary tab and a mail to `MAIL_TO`. Touches no lab |
+| `unit-<phase>.yml` (×5) | `workflow_dispatch`, or `workflow_call` | rafay_nvcm_poc's **offline unit gates** for one phase — `common`, `platform`, `blueprint`, `substrate`, `bringup`. GitHub-hosted runners only: no lab, no OCI/AWS, no SSH. See [Unit tests](#unit-tests) |
+| `_unit.yml` | `workflow_call` **only** — called by the five above | plan (pin POC SHA + coverage check) → one matrix job per group → phase summary |
 
-Only the two entry points and the weekly report belong in the Actions tab. `_phase.yml` runs inside their jobs, never as a run of
-its own, so it appears in the sidebar only if it has runs of its own — typically a "workflow file issue" run
+Only the two entry points, the five `unit-<phase>` workflows and the weekly report belong in the Actions
+tab. `_phase.yml` and `_unit.yml` run inside their callers' jobs, never as runs of their own, so each appears in the sidebar only if it has runs of its own — typically a "workflow file issue" run
 GitHub records when a push breaks its YAML. Deleting those runs takes it off the sidebar again.
 
 There is deliberately **no push/PR workflow**: nothing runs on a code change. The checks that used to run
@@ -80,6 +82,10 @@ scripts/weekly-report.py                weekly-report.yml: runs (Actions API) + 
 scripts/lplib.py                        Python helpers: a stage's section of workflow.log, send_mail (SMTP from MAIL_TO/SMTP_*)
 tests/logging.sh                        self-test of that pipeline against a fake lab
 tests/selftest.sh                       every offline check in one: bash -n, shellcheck, both catalogues' stage logic, logging.sh
+.github/workflows/unit-<phase>.yml      entry: unit tests for one phase (thin caller of _unit.yml)
+.github/workflows/_unit.yml             reusable: plan (coverage + matrix) → test (one job per group) → summary
+config/unit-tests.sh                    unit-test manifest: each POC gate → phase:group (LAUNCHPAD_UNIT_TESTS)
+scripts/run-unit-tests.sh               runner: groups | list | coverage | run | summarize (GitHub runner only)
 ```
 
 ## The stage-catalogue system
@@ -142,6 +148,32 @@ them after real runs.
 4. Update the catalogue table above, and if you also changed a workflow input, its input table in
    `User_Guide.md` too.
 5. Run the local validation below before pushing.
+
+## Unit tests
+
+`rafay_nvcm_poc/test/run-tests.sh` is the POC's offline suite: 199 standalone `python3 <gate>` files plus an
+inline `verify_blueprint.sh` preflight, no cluster/switches/hardware. The unit workflows split it by
+**launchpad phase** — one workflow per phase, its groups as parallel matrix jobs inside it — without copying
+any test code. Design and rationale: [`Unit_Tests_Plan.md`](Unit_Tests_Plan.md).
+
+- **The manifest** — `config/unit-tests.sh`, `LAUNCHPAD_UNIT_TESTS=( phase:group:path … )`, same idiom as
+  `LAUNCHPAD_STAGES`. A gate goes to the phase whose stage runs the code it tests (`test/README.md`'s "Primary
+  inputs" column); `common` holds repo-wide hygiene gates. `@preflight` stands for run-tests.sh's inline
+  `verify_blueprint.sh` block.
+- **Coverage is strict.** `_unit.yml`'s plan job runs `run-unit-tests.sh coverage` against the checked-out POC
+  and fails the run if `run-tests.sh` has a gate the manifest doesn't place, or the manifest names one the POC
+  dropped. **Adding a gate in the POC means adding one line here** — otherwise every unit run goes red.
+- **Verdicts mirror run-tests.sh**: exit 0 pass, 77 skip, else fail; suite env `DC_NO_PUBLISH=1` and
+  `DC_BLUEPRINT=stc/blueprint_stc.yaml`. `DC_REQUIRE_ALL_GATES=1` is always set in CI, so a skip fails the group.
+- **One run, one POC commit**: plan pins the branch's SHA; every group checks out that SHA.
+- **Locally** (needs bash ≥ 4 for the two substrate behaviour gates — macOS's bash 3.2 makes them skip):
+  ```bash
+  scripts/run-unit-tests.sh coverage ../rafay_nvcm_poc
+  scripts/run-unit-tests.sh run substrate substrate ../rafay_nvcm_poc out/substrate
+  DC_REQUIRE_ALL_GATES=0 scripts/run-unit-tests.sh run …   # report skips instead of failing on them
+  ```
+- **Access**: the only secret is `POC_DEPLOY_KEY` (read-only, via `actions/checkout`'s `ssh-key`). The unit
+  workflows use no Environment, so it must exist at **repository** level.
 
 ## Cleanup semantics (read before relying on "clean state")
 

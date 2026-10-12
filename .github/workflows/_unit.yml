@@ -1,0 +1,159 @@
+name: _unit
+# One PHASE of rafay_nvcm_poc's OFFLINE gates (test/run-tests.sh), as placed by config/unit-tests.sh. Called by
+# unit-<phase>.yml — one caller per phase, so every gate of a phase lives in ONE workflow; its groups run as
+# parallel matrix jobs inside it. Runs entirely on GitHub-hosted runners: no lab, no OCI/AWS, no SSH, no
+# Environment — so it never contends with a lab run. See Unit_Tests_Plan.md.
+#   plan    → check out the POC branch, pin its SHA, coverage check (manifest == run-tests.sh), group matrix
+#   test    → one job per group, all on the SAME POC SHA: install the suite's deps, run-unit-tests.sh run
+#   summary → one gate-by-gate table for the whole phase in the run summary
+
+on:
+  workflow_call:
+    inputs:
+      phase:      { type: string, required: true }     # common | platform | blueprint | substrate | bringup
+      poc_branch: { type: string, default: "" }        # blank → vars.POC_DEFAULT_BRANCH → main
+      groups:     { type: string, default: all }       # 'all' or a comma list of the phase's groups
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Plan · coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      groups:  ${{ steps.plan.outputs.groups }}
+      poc_sha: ${{ steps.poc.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate options
+        env:
+          BRANCH:   ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
+          POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
+          SEL:      ${{ inputs.groups || 'all' }}
+        run: |
+          [[ "$BRANCH"   =~ ^[A-Za-z0-9._/-]+$ && "$BRANCH" != -* ]] || { echo "::error::invalid branch '$BRANCH'"; exit 1; }
+          [[ "$POC_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]     || { echo "::error::invalid POC_REPO '$POC_REPO'"; exit 1; }
+          [[ "${SEL// /}" =~ ^[A-Za-z0-9,_-]+$ ]]                 || { echo "::error::invalid groups '$SEL'"; exit 1; }
+
+      # The manifest's own shape (pure logic, no POC needed) — checked first, so a malformed manifest fails fast.
+      - name: Manifest self-test — config/unit-tests.sh
+        run: |
+          # every entry is phase:group:path, the phase is a known one, and no gate is placed twice
+          . config/unit-tests.sh
+          bad="$(printf '%s\n' "${LAUNCHPAD_UNIT_TESTS[@]}" | grep -vE '^[a-z]+:[a-z0-9-]+:(test/[A-Za-z0-9_/.-]+\.py|@preflight)$' || true)"
+          [ -z "$bad" ] || { echo "::error::malformed unit-manifest entries:"; echo "$bad"; exit 1; }
+          dup="$(printf '%s\n' "${LAUNCHPAD_UNIT_TESTS[@]}" | cut -d: -f3 | sort | uniq -d)"
+          [ -z "$dup" ] || { echo "::error::gate(s) placed twice:"; echo "$dup"; exit 1; }
+          for ph in "${LAUNCHPAD_UNIT_PHASES[@]}"; do
+            [ -f ".github/workflows/unit-$ph.yml" ] || { echo "::error::phase '$ph' has no .github/workflows/unit-$ph.yml"; exit 1; }
+            scripts/run-unit-tests.sh groups "$ph" >/dev/null
+            [ -n "$(scripts/run-unit-tests.sh list "$ph")" ]
+          done
+          printf '%s\n' "${LAUNCHPAD_UNIT_TESTS[@]}" | cut -d: -f1 | sort -u | while read -r ph; do
+            [[ " ${LAUNCHPAD_UNIT_PHASES[*]} " == *" $ph "* ]] || { echo "::error::unknown phase '$ph' in config/unit-tests.sh"; exit 1; }
+          done
+          # an unknown group / phase must be rejected — check explicitly, `!` would skip -e on a regression
+          scripts/run-unit-tests.sh groups bringup not-a-group 2>/dev/null && { echo "::error::groups accepted an unknown group"; exit 1; }
+          scripts/run-unit-tests.sh groups not-a-phase 2>/dev/null && { echo "::error::groups accepted an unknown phase"; exit 1; }
+          [ "$(scripts/run-unit-tests.sh groups bringup tenants,servers)" = '["tenants","servers"]' ]
+
+      - name: Check out rafay_nvcm_poc
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
+          ref: ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
+          ssh-key: ${{ secrets.POC_DEPLOY_KEY }}     # read-only deploy key — GITHUB_TOKEN can't read another repo
+          persist-credentials: false
+          path: poc
+
+      - name: Pin the POC commit
+        id: poc
+        run: |
+          sha="$(git -C poc rev-parse HEAD)"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "rafay_nvcm_poc @ $sha"
+
+      # Every gate run-tests.sh runs must be placed in exactly one phase — fails on an unmapped or stale gate,
+      # so a gate added in the POC can never go quietly unrun here (config/unit-tests.sh's header).
+      - name: Coverage — manifest matches test/run-tests.sh
+        run: scripts/run-unit-tests.sh coverage poc
+
+      - name: Plan groups
+        id: plan
+        env: { PHASE: "${{ inputs.phase }}", SEL: "${{ inputs.groups || 'all' }}" }
+        run: |
+          g="$(scripts/run-unit-tests.sh groups "$PHASE" "${SEL// /}")"
+          echo "groups=$g" >> "$GITHUB_OUTPUT"
+          echo "phase $PHASE runs groups: $g"
+
+  test:
+    name: ${{ matrix.group }}
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false              # a red group must not hide whether the others passed
+      matrix:
+        group: ${{ fromJSON(needs.plan.outputs.groups) }}
+    env:
+      OUT: out/${{ matrix.group }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out rafay_nvcm_poc @ ${{ needs.plan.outputs.poc_sha }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
+          ref: ${{ needs.plan.outputs.poc_sha }}     # the SHA plan pinned — every group tests the same commit
+          ssh-key: ${{ secrets.POC_DEPLOY_KEY }}
+          persist-credentials: false
+          path: poc
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: poc/test/render/requirements.txt
+
+      - name: Install the suite's dependencies (test/render/requirements.txt)
+        run: python3 -m pip install -q -r poc/test/render/requirements.txt
+
+      - name: Run gates
+        env: { PHASE: "${{ inputs.phase }}", GROUP: "${{ matrix.group }}", DC_REQUIRE_ALL_GATES: "1" }
+        run: scripts/run-unit-tests.sh run "$PHASE" "$GROUP" poc "$OUT"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-${{ inputs.phase }}-${{ matrix.group }}
+          path: ${{ env.OUT }}
+          if-no-files-found: ignore
+          retention-days: 30
+
+  summary:
+    name: Summary
+    needs: [plan, test]
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true      # nothing to download if every group died before its upload; the summary says so
+        with:
+          pattern: unit-${{ inputs.phase }}-*
+          path: collected
+
+      - name: Phase summary
+        env:
+          PHASE:   ${{ inputs.phase }}
+          POC_SHA: ${{ needs.plan.outputs.poc_sha }}
+        run: |
+          mkdir -p collected
+          scripts/run-unit-tests.sh summarize "$PHASE" collected > /dev/null
+          { cat collected/summary.md; echo; echo "rafay_nvcm_poc @ \`$POC_SHA\`"; } >> "$GITHUB_STEP_SUMMARY"

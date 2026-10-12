@@ -1,0 +1,40 @@
+name: unit-blueprint
+# Unit tests · 2 · Blueprint — every rafay_nvcm_poc offline gate config/unit-tests.sh places in the 'blueprint' phase, in ONE
+# workflow (groups: intake,generate-verify,brownfield — parallel jobs inside it). Thin caller: the mechanics are _unit.yml's. No lab is
+# touched, so this can run alongside any lab run. Manual, or callable from another workflow (e.g. as a
+# pre-flight in front of nvcm-greenfield.yml / nvcm-brownfield.yml — not wired in yet). See Unit_Tests_Plan.md.
+
+run-name: "unit-blueprint · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.groups || 'all' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      poc_branch:
+        description: "rafay_nvcm_poc branch to test — blank uses the POC_DEFAULT_BRANCH repository variable (falls back to main)"
+        required: false
+        default: ""
+        type: string
+      groups:
+        description: "Groups: 'all' or a comma list — intake,generate-verify,brownfield"
+        required: true
+        default: all
+        type: string
+  workflow_call:
+    inputs:
+      poc_branch: { type: string, default: "" }
+      groups:     { type: string, default: all }
+
+# No shared host here, so a newer run of the same phase + branch simply replaces an older one.
+concurrency:
+  group: unit-blueprint-${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: 2 · Blueprint
+    uses: ./.github/workflows/_unit.yml
+    with: { phase: blueprint, poc_branch: "${{ inputs.poc_branch }}", groups: "${{ inputs.groups || 'all' }}" }
+    secrets: inherit
