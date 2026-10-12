@@ -148,14 +148,21 @@ below → Run**.
 |---|---|---|
 | `lab` | *(blank)* | which OCI lab to run on — the name of a GitHub Environment set up as in [One-time setup](#one-time-setup). Blank uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
 | `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
-| `stages` | `all` | or a comma list, for example `blueprint,substrate,dc-bringup` to rerun only the DC part on an installed platform |
-| `blueprint_source` | `generate` | `generate` builds the blueprint in this run's `blueprint` stage; `existing` uses `stc/blueprint_stc.yaml` from `rafay_nvcm_poc` instead |
+| `stages` | `all` | or a comma list, for example `blueprint-generate,blueprint-verify,substrate,site-bringup` to rerun only the DC part on an installed platform |
+| `blueprint_source` | `generate` | `generate` builds the blueprint in this run's `blueprint-generate` stage; `existing` uses `stc/blueprint_stc.yaml` from `rafay_nvcm_poc` instead. Either way `blueprint-verify` checks it before anything is built |
 | `tenants` | `3-11,84-100` | passed to `simulate_dc.sh --tenants` |
 | `shutdown` | ✔ | untick to leave the instance up for debugging |
 
-What it does, stage by stage: `host-prep` → `platform-install-1` → `platform-install-2` →
-`verify-platform` → `blueprint` → `substrate` → `dc-bringup`. See `Dev_Guide.md` if you want the exact
-command each stage runs.
+What it does — four jobs, in order:
+
+| Job | Stages | |
+|---|---|---|
+| 1 · Installation | `host-prep` → `nvcm-install` → `rafay-install` → `platform-verify` | dependencies, NVCM + Nautobot, the Rafay layer, then one verdict for the whole platform |
+| 2 · Blueprint | `blueprint-generate` → `blueprint-verify` | generate from the workbook (or take the existing one), then verify it offline |
+| 3 · Substrate | `substrate` | if this blueprint's fabric VMs already exist → recover them; if none exist → stage images and create them; if only some exist → recover those, create the rest |
+| 4 · Site bring-up | `site-bringup` | underlay → overlay → servers → accept, gated at every layer |
+
+See `Dev_Guide.md` if you want the exact command each stage runs.
 
 ## Running brownfield
 
@@ -165,7 +172,7 @@ command each stage runs.
 |---|---|---|
 | `lab` | *(blank)* | which OCI lab to run on — the name of a GitHub Environment set up as in [One-time setup](#one-time-setup). Blank uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
 | `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
-| `stages` | `bf-discover,bf-blueprint` | stops **before** any write — see "The review gate" below. `all` or a comma list, same convention as greenfield |
+| `stages` | `bf-discover,bf-blueprint-generate` | stops **before** any write — see "The review gate" below. `all` or a comma list, same convention as greenfield |
 | `discover_mode` | `virtual` | `virtual` = the simulated VMs already on this lab host (via `virsh`); `real` = physical switches, needs `seed` |
 | `seed` | *(empty)* | `real` mode only — management IPs/hostnames to discover, one per line |
 | `site` | `blr-dc01` | the discovered site's name |
@@ -181,8 +188,8 @@ command each stage runs.
 SoT write. This repo runs the same pattern across **two separate workflow runs**, because a CI job has no
 terminal to pause in:
 
-1. **Run 1** — default `stages=bf-discover,bf-blueprint`. Nothing is written to Nautobot or to any switch.
-   The `bf-blueprint` stage prints the full generated blueprint into its own log (and, since logs are
+1. **Run 1** — default `stages=bf-discover,bf-blueprint-generate`. Nothing is written to Nautobot or to any switch.
+   The `bf-blueprint-generate` stage prints the full generated blueprint into its own log (and, since logs are
    committed to `logs/<Mon-YYYY>/<DD-Mon-YYYY>/`, into the repo — in that run's `workflow.log`). **Read it.** Resolve every `TODO(confirm)` marker — or
    set `policy_from` to a reference blueprint that already has `tenant_policy` so none appear.
 2. **Run 2** — once satisfied, re-run with `stages=bf-adopt`. It re-finds the same discovered blueprint on

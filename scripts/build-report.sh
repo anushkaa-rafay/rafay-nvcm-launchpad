@@ -10,7 +10,8 @@
 # (the stable contract for any future notifier: email / shared drive / Slack read this file, never the workflow).
 #
 # Env (set by the workflow): RUN_ID RUN_ATTEMPT RUN_URL TRIGGER ACTOR LAB
-#   RESULT_LAB RESULT_BOOT RESULT_PLATFORM RESULT_SITE RESULT_BRINGUP RESULT_POWEROFF   (needs.<job>.result)
+#   RESULT_LAB RESULT_BOOT RESULT_PLATFORM RESULT_BLUEPRINT RESULT_SUBSTRATE RESULT_BRINGUP RESULT_POWEROFF
+#   (needs.<job>.result; RESULT_SUBSTRATE is unset for brownfield, which has no substrate job)
 # The lab's INSTANCE_ID comes from boot's meta.env: the report job runs outside the lab's GitHub Environment.
 #
 set -euo pipefail
@@ -58,7 +59,7 @@ for e in "${LAUNCHPAD_STAGES[@]}"; do
 done
 
 failed_stage="$(awk -F'\t' '$4!="passed" && $4!="skipped" && $4!="not-selected"{print $2; exit}' "$OUT/status.tsv")"
-jobs="${RESULT_LAB:-} ${RESULT_BOOT:-} ${RESULT_PLATFORM:-} ${RESULT_SITE:-} ${RESULT_BRINGUP:-}"
+jobs="${RESULT_LAB:-} ${RESULT_BOOT:-} ${RESULT_PLATFORM:-} ${RESULT_BLUEPRINT:-} ${RESULT_SUBSTRATE:-} ${RESULT_BRINGUP:-}"
 if   [ -n "$failed_stage" ] || [[ " $jobs " == *" failure "* ]]; then status=FAILED
 elif [[ " $jobs " == *" cancelled "* ]]; then status=CANCELLED
 else status=PASSED; fi

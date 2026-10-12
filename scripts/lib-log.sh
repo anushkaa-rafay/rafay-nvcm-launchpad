@@ -7,7 +7,7 @@
 #
 # workflow.log section per catalogue stage (stage output itself is copied verbatim, never re-prefixed):
 #   ============================================================
-#   STAGE 06: substrate (phase: site)
+#   STAGE 07: substrate (phase: substrate)
 #   ============================================================
 #
 #   [2026-10-04 22:04:16 UTC] INFO  Starting stage substrate (timeout 120m, run key 36606934354-1)
