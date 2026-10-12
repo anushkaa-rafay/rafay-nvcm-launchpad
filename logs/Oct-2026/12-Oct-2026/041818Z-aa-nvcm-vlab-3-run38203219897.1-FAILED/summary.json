@@ -1,0 +1,101 @@
+{
+  "status": "FAILED",
+  "failed_stage": "verify-platform",
+  "poc": {
+    "repo": "ramakrishna-rafay/rafay_nvcm_poc",
+    "branch": "prototype_fixes",
+    "sha": "112f0b4e0916ae58a7a5c73933877badfc902e1c"
+  },
+  "run": {
+    "id": "38203219897",
+    "attempt": "1",
+    "url": "https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/38203219897",
+    "trigger": "workflow_dispatch",
+    "actor": "anushkaa-rafay",
+    "started": "2026-10-12T04:18:18Z",
+    "finished": "2026-10-12T04:25:41Z"
+  },
+  "oci": {
+    "lab": "aa-nvcm-vlab-3",
+    "instance": "ocid1.instance.oc1.phx.anyhqljtymbj47qcsdqydspyafdjpiymmh737hhddcqmkh2ts4l3nwlbifha",
+    "host": "161.153.73.41",
+    "was_running_before": "true",
+    "poweroff_job": "skipped"
+  },
+  "options": {
+    "blueprint_source": "existing",
+    "tenants": "3-12"
+  },
+  "stages": [
+    {
+      "index": 1,
+      "name": "host-prep",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-12T04:19:38Z",
+      "finished": "2026-10-12T04:19:59Z",
+      "seconds": 21
+    },
+    {
+      "index": 2,
+      "name": "platform-install-1",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-12T04:19:59Z",
+      "finished": "2026-10-12T04:20:41Z",
+      "seconds": 42
+    },
+    {
+      "index": 3,
+      "name": "platform-install-2",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-12T04:20:41Z",
+      "finished": "2026-10-12T04:24:28Z",
+      "seconds": 227
+    },
+    {
+      "index": 4,
+      "name": "verify-platform",
+      "phase": "platform",
+      "result": "failed",
+      "rc": "1",
+      "started": "2026-10-12T04:24:28Z",
+      "finished": "2026-10-12T04:25:31Z",
+      "seconds": 63
+    },
+    {
+      "index": 5,
+      "name": "blueprint",
+      "phase": "site",
+      "result": "skipped",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 6,
+      "name": "substrate",
+      "phase": "site",
+      "result": "skipped",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 7,
+      "name": "dc-bringup",
+      "phase": "bringup",
+      "result": "skipped",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    }
+  ]
+}
