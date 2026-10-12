@@ -1,0 +1,523 @@
+============================================================
+WORKFLOW RUN 38202286972.1 · lab aa-nvcm-vlab-3 · config/stages-greenfield.sh · prototype_fixes @ 112f0b4e0916
+Started 2026-10-12T04:04:27Z · https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/38202286972
+============================================================
+
+============================================================
+STAGE 01: host-prep (phase: platform)
+============================================================
+
+[2026-10-12 04:07:10 UTC] INFO  Starting stage host-prep (timeout 45m, run key 38202286972-1)
+[agent] started host-prep (pid 18620, timeout 45m)
+[launchpad] stage=host-prep branch=prototype_fixes sha=112f0b4e0916ae58a7a5c73933877badfc902e1c started=2026-10-12T04:07:11Z
+DNS configuration Start (1)...
+[dns] Network interface : enp0s9
+[dns] MAC address       : 02:00:17:0e:9b:a1
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (1) ...
+Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:2 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble InRelease
+Hit:3 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.43.0-1ubuntu7.3).
+curl is already the newest version (8.5.0-2ubuntu10.15).
+ca-certificates is already the newest version (20260601~24.04.1).
+jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
+qemu-system-x86 is already the newest version (1:8.2.2+ds-0ubuntu1.18).
+libvirt-daemon-system is already the newest version (10.0.0-2ubuntu8.19).
+libvirt-clients is already the newest version (10.0.0-2ubuntu8.19).
+virtinst is already the newest version (1:4.1.0-3ubuntu0.1).
+bridge-utils is already the newest version (1.7.1-1ubuntu2).
+dnsmasq-base is already the newest version (2.91-0ubuntu0.24.04.2).
+sshpass is already the newest version (1.09-1).
+cloud-image-utils is already the newest version (0.33-1).
+docker.io is already the newest version (29.1.3-0ubuntu3~24.04.2).
+docker-buildx is already the newest version (0.30.1-0ubuntu1~24.04.1).
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+DNS configuration Start (2)...
+[dns] Network interface : enp0s9
+[dns] MAC address       : 02:00:17:0e:9b:a1
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (2) ...
+github.com/docker/buildx 0.30.1 0.30.1-0ubuntu1~24.04.1
+>>> Host prep done. LOG OUT and BACK IN now (for docker/kvm/libvirt group membership), then continue.
+[2026-10-12 04:07:33 UTC] INFO  Stage host-prep passed (rc=0, 23s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 02: platform-install-1 (phase: platform)
+============================================================
+
+[2026-10-12 04:07:33 UTC] INFO  Starting stage platform-install-1 (timeout 150m, run key 38202286972-1)
+[agent] started platform-install-1 (pid 20024, timeout 150m)
+[launchpad] stage=platform-install-1 branch=prototype_fixes sha=112f0b4e0916ae58a7a5c73933877badfc902e1c started=2026-10-12T04:07:34Z
+[install] → platform/nvcm-install.sh --yes
+
+══════════════════════════════════════════════════════════════════════
+  Part I — install NVCM + Nautobot (kind cluster 'nv-config-manager', namespace 'nv-config-manager')
+══════════════════════════════════════════════════════════════════════
+[nvcm] toolchain OK (docker/kind/kubectl/helm/uv).
+[nvcm] NVCM release 'nv-config-manager' already installed at commit a6af41250fb2cb1353d0788002aede2d351bd531 — version unchanged, skipping the re-deploy (idempotent).
+[nvcm]    (to re-apply the config anyway, run 'nvcm-installer deploy /home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/nvcm-install-config.yaml …' by hand — see setup_guide.md §8).
+[nvcm] Entering ..checkout_nvcm_version()
+[nvcm] checking out and pointing to NVCM commit a6af41250fb2cb1353d0788002aede2d351bd531 ...
+[nvcm] Leaving..checkout_nvcm_version()
+
+══════════════════════════════════════════════════════════════════════
+  Observability extras — Loki + Alloy log pipeline + durable Prometheus (helm upgrade, --reuse-values)
+══════════════════════════════════════════════════════════════════════
+[nvcm] [INFO] Observability extras are missing from this release; installing version 1.3.0.
+Release "nv-config-manager" has been upgraded. Happy Helming!
+NAME: nv-config-manager
+LAST DEPLOYED: Mon Oct 12 04:07:35 2026
+NAMESPACE: nv-config-manager
+STATUS: deployed
+REVISION: 6
+TEST SUITE: None
+[nvcm] observability extras applied (loki / alloy logs / grafana datasource / prometheus persistence).
+
+══════════════════════════════════════════════════════════════════════
+  Part I — verify NVCM + Nautobot readiness
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [FAIL] 1 pod(s) not Running (kubectl -n nv-config-manager get pods)
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[nvcm] PART I NOT READY — fix the [FAIL] lines above (Appendix A of setup_guide.md), then re-run.
+[install] !! platform/nvcm-install.sh failed — see its output above.
+[launchpad] platform-install-1: not fully ready yet (pods still starting) — not fatal here, continuing
+[2026-10-12 04:09:01 UTC] INFO  Stage platform-install-1 passed (rc=0, 88s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 03: platform-install-2 (phase: platform)
+============================================================
+
+[2026-10-12 04:09:01 UTC] INFO  Starting stage platform-install-2 (timeout 60m, run key 38202286972-1)
+[agent] started platform-install-2 (pid 23631, timeout 60m)
+[launchpad] stage=platform-install-2 branch=prototype_fixes sha=112f0b4e0916ae58a7a5c73933877badfc902e1c started=2026-10-12T04:09:02Z
+[install] → platform/rafay-custom-helm.sh install --yes --platform-only
+
+══════════════════════════════════════════════════════════════════════
+  Part II — install the Rafay customization layer
+══════════════════════════════════════════════════════════════════════
+[rafay] toolchain OK (docker/kind/kubectl/helm).
+[rafay] platform preflight OK — both content PVCs present, render-api mounts the templates PVC.
+
+══════════════════════════════════════════════════════════════════════
+  Build the package
+══════════════════════════════════════════════════════════════════════
+[rafay] build mode: GENERIC platform package — no site data (seed a site later: seed_site_jobs.sh).
+[rafay]             baked single-site instead:  /home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/rafay-custom-helm.sh install --blueprint <path>/blueprint_<site>.yaml
+mode: PLATFORM-ONLY — generic engine, no site data (deliver it later: Part 2, seed_site_jobs.sh)
+  platform-only: site designs EXCLUDED; blueprint NOT vendored (Part 2 delivers both)
+staged payload:
+  16K	/home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/files/plugins.tgz
+  172K	/home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/files/jobs.tgz
+  (ConfigMap object limit is ~1 MB total, incl. base64 overhead — keep both well under that)
+Successfully packaged chart and saved it to: /home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/rafay-nvcm-stack-0.2.4.tgz
+[rafay] packaged: /home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/rafay-nvcm-stack-0.2.4.tgz (211257 bytes, payload embedded)
+[rafay] no blueprint currently seeded on this cluster — nothing to preserve (a fresh/platform-only install, the usual case).
+
+══════════════════════════════════════════════════════════════════════
+  Helm install — release 'rafay-nvcm' (namespace 'nv-config-manager', --timeout 25m)
+══════════════════════════════════════════════════════════════════════
+[rafay] release 'rafay-nvcm' already exists (deployed) — using 'helm upgrade' (idempotent).
+Release "rafay-nvcm" has been upgraded. Happy Helming!
+NAME: rafay-nvcm
+LAST DEPLOYED: Mon Oct 12 04:09:03 2026
+NAMESPACE: nv-config-manager
+STATUS: deployed
+REVISION: 4
+TEST SUITE: None
+NOTES:
+Rafay NVCM customization layer (Part 1) — release rafay-nvcm → namespace nv-config-manager
+
+The post-install hook has (or will shortly):
+  • seeded the Nautobot job packages onto PVC nautobot-custom-jobs
+  • seeded the render plugin + NVUE templates onto PVC render-service-template-plugins, then restarted render-api
+  • suppressed the NVIDIA "Load Bootstrap Data" noise
+  • registered the GitRepository "rafay_nvcm_catalog" if it was absent
+  • synced the GitRepository "rafay_nvcm_catalog" + enabled its git jobs
+
+VERIFY:
+  kubectl -n nv-config-manager logs job -l app.kubernetes.io/instance=rafay-nvcm,rafay.io/hook=ops
+  kubectl -n nv-config-manager get pods -l app.kubernetes.io/name=nv-config-manager-render-api   # render-api Running
+  kubectl -n nv-config-manager exec deploy/nv-config-manager-render-api >/dev/null 2>&1 || true
+
+The numbered runbook (0.1 … 7.1) should be registered + enabled in the Nautobot Jobs UI.
+
+GitRepository registration is now AUTOMATIC (gitRepo.register). The bootstrap repo is public by default, so no
+secret is needed. For a PRIVATE repo, create a k8s Secret with the git token and reference it — the chart never
+embeds the token in values:
+  kubectl -n nv-config-manager create secret generic rafay-git --from-literal=token=<PAT>
+  helm upgrade rafay-nvcm <chart> -n nv-config-manager --set gitRepo.tokenSecret.name=rafay-git
+
+══════════════════════════════════════════════════════════════════════
+  Verify — post-install acceptance check (read-only)
+══════════════════════════════════════════════════════════════════════
+== Part 1 install verification — ns=nv-config-manager release=rafay-nvcm ==
+1) Helm release deployed?
+   [PASS] helm release 'rafay-nvcm' STATUS=deployed
+2) Target PVCs present?
+   [PASS] PVC 'nautobot-custom-jobs' present
+   [PASS] PVC 'render-service-template-plugins' present
+3) render-api wired for template plugins?
+   [PASS] render-api mounts 'render-service-template-plugins'
+   [PASS] render-api has the install-template-plugins init container
+4-6) Nautobot jobs / suppress / GitOps (read-only ORM)...
+   [PASS] 25 numbered runbook job(s) registered + enabled
+          - 0.1 · Load foundation catalog (generic)
+          - 1a · Validate blueprint
+          - 2.0 · Foundation (locations/roles/device-types from blueprint)
+          - 2.1 · Devices (switches + edge)
+          - 2.2 · Cables
+          - 2.3 · Devices + Cables
+          - 3.1 · Tenant — Create / Delete (gated)
+          - 3.2 · Tenant — Onboard (overlay engine)
+          - 3.3 · Tenant — Offboard (overlay engine)
+          - 3.4 · Tenant — Drift Check (desired vs intent)
+          - 3.5 · Tenant — Reap Abandoned Workflows
+          - 3.6 · Tenant — List
+          - 3.7 · Tenant — Get
+          - 4.1 · Register (add to free pool)
+          - 4.1a · Set availability
+          - 4.1b · Unregister (retire)
+          - 4.2 · Attach to tenant
+          - 4.3 · Move to another tenant
+          - 4.4 · Detach from tenant
+          - 4.5 · Assign GPU to tenant
+          - 4.6 · Release GPU to free pool
+          - 4.7 · Server — Drift Check (desired vs intent)
+          - 5.1 · PKey + SR-IOV rails (config-ready)
+          - 6.1 · Deploy Whole DC (render + push all)
+          - 7.1 · Drift — Detect (running vs intent)
+   [PASS] package blueprint_validate: 1 job(s) registered
+   [PASS] package site_provision: 4 job(s) registered
+   [PASS] package tenant: 2 job(s) registered
+   [PASS] package lifecycle: 6 job(s) registered
+   [PASS] package server: 9 job(s) registered
+   [PASS] package ib: 1 job(s) registered
+   [PASS] package provision: 1 job(s) registered
+   [PASS] package drift: 1 job(s) registered
+   [PASS] NVIDIA 'Load Bootstrap Data' loader suppressed
+   [PASS] GitRepository 'rafay_nvcm_catalog' registered (7c256748-76bf-4a91-8f40-034a6f14b35b)
+   [PASS] 1 git-synced job(s) enabled
+   [PASS] cluster history: clean (no 'STC ' names, no '… (2)' collisions)
+7) render-api healthy?
+   [PASS] render-api availableReplicas=1
+
+==============  INSTALL VERIFIED (19 checks) — Part 1 is installed and ready to use  ==============
+[rafay] PART II COMPLETE — Rafay layer installed and verified. Full verdict any time: platform/verify_platform_install.sh all
+[install] → platform/verify_platform_install.sh all
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part I: NVCM + Nautobot
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [FAIL] 2 pod(s) not Running (kubectl -n nv-config-manager get pods)
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[verify] Part I: NOT READY
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part II: Rafay customization layer (the acceptance test)
+══════════════════════════════════════════════════════════════════════
+== Part 1 install verification — ns=nv-config-manager release=rafay-nvcm ==
+1) Helm release deployed?
+   [PASS] helm release 'rafay-nvcm' STATUS=deployed
+2) Target PVCs present?
+   [PASS] PVC 'nautobot-custom-jobs' present
+   [PASS] PVC 'render-service-template-plugins' present
+3) render-api wired for template plugins?
+   [PASS] render-api mounts 'render-service-template-plugins'
+   [PASS] render-api has the install-template-plugins init container
+4-6) Nautobot jobs / suppress / GitOps (read-only ORM)...
+   [PASS] 25 numbered runbook job(s) registered + enabled
+          - 0.1 · Load foundation catalog (generic)
+          - 1a · Validate blueprint
+          - 2.0 · Foundation (locations/roles/device-types from blueprint)
+          - 2.1 · Devices (switches + edge)
+          - 2.2 · Cables
+          - 2.3 · Devices + Cables
+          - 3.1 · Tenant — Create / Delete (gated)
+          - 3.2 · Tenant — Onboard (overlay engine)
+          - 3.3 · Tenant — Offboard (overlay engine)
+          - 3.4 · Tenant — Drift Check (desired vs intent)
+          - 3.5 · Tenant — Reap Abandoned Workflows
+          - 3.6 · Tenant — List
+          - 3.7 · Tenant — Get
+          - 4.1 · Register (add to free pool)
+          - 4.1a · Set availability
+          - 4.1b · Unregister (retire)
+          - 4.2 · Attach to tenant
+          - 4.3 · Move to another tenant
+          - 4.4 · Detach from tenant
+          - 4.5 · Assign GPU to tenant
+          - 4.6 · Release GPU to free pool
+          - 4.7 · Server — Drift Check (desired vs intent)
+          - 5.1 · PKey + SR-IOV rails (config-ready)
+          - 6.1 · Deploy Whole DC (render + push all)
+          - 7.1 · Drift — Detect (running vs intent)
+   [PASS] package blueprint_validate: 1 job(s) registered
+   [PASS] package site_provision: 4 job(s) registered
+   [PASS] package tenant: 2 job(s) registered
+   [PASS] package lifecycle: 6 job(s) registered
+   [PASS] package server: 9 job(s) registered
+   [PASS] package ib: 1 job(s) registered
+   [PASS] package provision: 1 job(s) registered
+   [PASS] package drift: 1 job(s) registered
+   [PASS] NVIDIA 'Load Bootstrap Data' loader suppressed
+   [PASS] GitRepository 'rafay_nvcm_catalog' registered (7c256748-76bf-4a91-8f40-034a6f14b35b)
+   [PASS] 1 git-synced job(s) enabled
+   [PASS] cluster history: clean (no 'STC ' names, no '… (2)' collisions)
+7) render-api healthy?
+   [PASS] render-api availableReplicas=1
+
+==============  INSTALL VERIFIED (19 checks) — Part 1 is installed and ready to use  ==============
+[verify] Part II: READY
+[verify] env-backed Secrets (report-only — a platform-config gap surfaces at job RUN time, not here):
+    env-backed Secrets that do NOT resolve: 0
+[verify] unresolved = INFORMATIONAL here; jobs that read them (e.g. 1b Discover) fail at RUN time. Fix:
+[verify]    inject the variables into the Nautobot + celery deployments via NVCM's Helm values —
+[verify]    exact steps: docs/gitops_repo_design.md §10, 'G1 — the action that closes it, concretely'.
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Telemetry: NVCM's own stack + the Rafay-layer extras (deep check, not part of 'nvcm')
+══════════════════════════════════════════════════════════════════════
+  NVCM telemetry — Prometheus + Alloy + PodMonitors (namespace nv-config-manager):
+   [PASS] Prometheus running (metric store)
+   [PASS] Grafana Alloy running (scrapes every pod; also the log pipeline)
+   [PASS] 11 PodMonitor(s) defined (what Alloy scrapes)
+   [INFO] Grafana not present — query Prometheus directly instead
+   [PASS] Tempo present (trace store)
+[verify] Telemetry (NVCM stack): READY
+  Telemetry extras added by the Rafay layer (report-only):
+   [PASS] Loki present — pod logs are being stored (they survive a pod restart)
+   [PASS] grafana route present (reachable without an SSH tunnel)
+   [PASS] prometheus route present (reachable without an SSH tunnel)
+
+══════════════════════════════════════════════════════════════════════
+  Cluster state (report-only — never fails; act on it with platform/platform_cluster.sh)
+══════════════════════════════════════════════════════════════════════
+[verify] PVC module layouts (a package under BOTH /jobs and /jobs/custom registers twice):
+    /opt/nautobot/jobs: blueprint_validate, common, drift, ib, lifecycle, nv_config_manager_jobs, provision, server, site_provision, tenant
+    /opt/nautobot/jobs/custom: (none)
+[verify] STALE records (installed=False — module gone, cannot run; 'platform/platform_cluster.sh clean' deletes these):
+    total: 0
+[verify] name COLLISIONS (enabled '… (2)' / 'STC ' records; 'clean --collisions' deletes those with no history):
+    total: 0
+[verify] LEGACY bootstrap-repo jobs (repo retired from this codebase; live records are YOUR call — guide A0):
+    total: 0
+
+══════════════════════════════════════════════════════════════════════
+  Verdict
+══════════════════════════════════════════════════════════════════════
+[verify] NOT READY — 1 layer(s) failed. Fix the [FAIL] lines above (setup_guide.md Appendix A;
+[verify] previously-used cluster? Appendix A0 / platform/platform_cluster.sh). Re-run until it prints VERIFIED.
+[install] !! platform/verify_platform_install.sh failed — see its output above.
+[launchpad] platform-install-2: not fully ready yet (pods still starting) — not fatal here, continuing
+[2026-10-12 04:13:01 UTC] INFO  Stage platform-install-2 passed (rc=0, 240s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 04: verify-platform (phase: platform)
+============================================================
+
+[2026-10-12 04:13:01 UTC] INFO  Starting stage verify-platform (timeout 20m, run key 38202286972-1)
+[agent] started verify-platform (pid 32991, timeout 20m)
+[launchpad] stage=verify-platform branch=prototype_fixes sha=112f0b4e0916ae58a7a5c73933877badfc902e1c started=2026-10-12T04:13:02Z
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part I: NVCM + Nautobot
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [FAIL] 1 pod(s) not Running (kubectl -n nv-config-manager get pods)
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[verify] Part I: NOT READY
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part II: Rafay customization layer (the acceptance test)
+══════════════════════════════════════════════════════════════════════
+== Part 1 install verification — ns=nv-config-manager release=rafay-nvcm ==
+1) Helm release deployed?
+   [PASS] helm release 'rafay-nvcm' STATUS=deployed
+2) Target PVCs present?
+   [PASS] PVC 'nautobot-custom-jobs' present
+   [PASS] PVC 'render-service-template-plugins' present
+3) render-api wired for template plugins?
+   [PASS] render-api mounts 'render-service-template-plugins'
+   [PASS] render-api has the install-template-plugins init container
+4-6) Nautobot jobs / suppress / GitOps (read-only ORM)...
+   [PASS] 25 numbered runbook job(s) registered + enabled
+          - 0.1 · Load foundation catalog (generic)
+          - 1a · Validate blueprint
+          - 2.0 · Foundation (locations/roles/device-types from blueprint)
+          - 2.1 · Devices (switches + edge)
+          - 2.2 · Cables
+          - 2.3 · Devices + Cables
+          - 3.1 · Tenant — Create / Delete (gated)
+          - 3.2 · Tenant — Onboard (overlay engine)
+          - 3.3 · Tenant — Offboard (overlay engine)
+          - 3.4 · Tenant — Drift Check (desired vs intent)
+          - 3.5 · Tenant — Reap Abandoned Workflows
+          - 3.6 · Tenant — List
+          - 3.7 · Tenant — Get
+          - 4.1 · Register (add to free pool)
+          - 4.1a · Set availability
+          - 4.1b · Unregister (retire)
+          - 4.2 · Attach to tenant
+          - 4.3 · Move to another tenant
+          - 4.4 · Detach from tenant
+          - 4.5 · Assign GPU to tenant
+          - 4.6 · Release GPU to free pool
+          - 4.7 · Server — Drift Check (desired vs intent)
+          - 5.1 · PKey + SR-IOV rails (config-ready)
+          - 6.1 · Deploy Whole DC (render + push all)
+          - 7.1 · Drift — Detect (running vs intent)
+   [PASS] package blueprint_validate: 1 job(s) registered
+   [PASS] package site_provision: 4 job(s) registered
+   [PASS] package tenant: 2 job(s) registered
+   [PASS] package lifecycle: 6 job(s) registered
+   [PASS] package server: 9 job(s) registered
+   [PASS] package ib: 1 job(s) registered
+   [PASS] package provision: 1 job(s) registered
+   [PASS] package drift: 1 job(s) registered
+   [PASS] NVIDIA 'Load Bootstrap Data' loader suppressed
+   [PASS] GitRepository 'rafay_nvcm_catalog' registered (7c256748-76bf-4a91-8f40-034a6f14b35b)
+   [PASS] 1 git-synced job(s) enabled
+   [PASS] cluster history: clean (no 'STC ' names, no '… (2)' collisions)
+7) render-api healthy?
+   [PASS] render-api availableReplicas=1
+
+==============  INSTALL VERIFIED (19 checks) — Part 1 is installed and ready to use  ==============
+[verify] Part II: READY
+[verify] env-backed Secrets (report-only — a platform-config gap surfaces at job RUN time, not here):
+    env-backed Secrets that do NOT resolve: 0
+[verify] unresolved = INFORMATIONAL here; jobs that read them (e.g. 1b Discover) fail at RUN time. Fix:
+[verify]    inject the variables into the Nautobot + celery deployments via NVCM's Helm values —
+[verify]    exact steps: docs/gitops_repo_design.md §10, 'G1 — the action that closes it, concretely'.
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Telemetry: NVCM's own stack + the Rafay-layer extras (deep check, not part of 'nvcm')
+══════════════════════════════════════════════════════════════════════
+  NVCM telemetry — Prometheus + Alloy + PodMonitors (namespace nv-config-manager):
+   [PASS] Prometheus running (metric store)
+   [PASS] Grafana Alloy running (scrapes every pod; also the log pipeline)
+   [PASS] 11 PodMonitor(s) defined (what Alloy scrapes)
+   [INFO] Grafana not present — query Prometheus directly instead
+   [PASS] Tempo present (trace store)
+[verify] Telemetry (NVCM stack): READY
+  Telemetry extras added by the Rafay layer (report-only):
+   [PASS] Loki present — pod logs are being stored (they survive a pod restart)
+   [PASS] grafana route present (reachable without an SSH tunnel)
+   [PASS] prometheus route present (reachable without an SSH tunnel)
+
+══════════════════════════════════════════════════════════════════════
+  Cluster state (report-only — never fails; act on it with platform/platform_cluster.sh)
+══════════════════════════════════════════════════════════════════════
+[verify] PVC module layouts (a package under BOTH /jobs and /jobs/custom registers twice):
+    /opt/nautobot/jobs: blueprint_validate, common, drift, ib, lifecycle, nv_config_manager_jobs, provision, server, site_provision, tenant
+    /opt/nautobot/jobs/custom: (none)
+[verify] STALE records (installed=False — module gone, cannot run; 'platform/platform_cluster.sh clean' deletes these):
+    total: 0
+[verify] name COLLISIONS (enabled '… (2)' / 'STC ' records; 'clean --collisions' deletes those with no history):
+    total: 0
+[verify] LEGACY bootstrap-repo jobs (repo retired from this codebase; live records are YOUR call — guide A0):
+    total: 0
+
+══════════════════════════════════════════════════════════════════════
+  Verdict
+══════════════════════════════════════════════════════════════════════
+[verify] NOT READY — 1 layer(s) failed. Fix the [FAIL] lines above (setup_guide.md Appendix A;
+[verify] previously-used cluster? Appendix A0 / platform/platform_cluster.sh). Re-run until it prints VERIFIED.
+[2026-10-12 04:14:08 UTC] ERROR Stage verify-platform failed (rc=1, 67s)
+
+------------------------------------------------------------
+STAGE STATUS: FAILED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 05: blueprint (phase: site)
+============================================================
+
+[2026-10-12 04:14:20 UTC] INFO  Stage blueprint not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 06: substrate (phase: site)
+============================================================
+
+[2026-10-12 04:14:20 UTC] INFO  Stage substrate not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 07: dc-bringup (phase: bringup)
+============================================================
+
+[2026-10-12 04:14:20 UTC] INFO  Stage dc-bringup not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+WORKFLOW STATUS: FAILED (failed stage: verify-platform)
+============================================================
