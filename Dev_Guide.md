@@ -22,9 +22,9 @@ and never reimplemented here. If a stage needs more than a few lines of glue, th
 multi-hour install. The runner just reconnects and keeps polling/streaming; the host-side process doesn't
 care whether anyone's watching.
 
-**Why phases are separate jobs** (`platform` / `site` / `bringup`, each calling `_phase.yml`): GitHub-hosted
-jobs are hard-capped at 6 hours. Splitting the pipeline into three jobs gives each phase its own fresh
-budget. Keep each phase's *stage timeouts* summed under ~340 minutes so there's slack left for SSH/connect
+**Why phases are separate jobs** (`platform` / `blueprint` / `substrate` / `bringup`, each calling `_phase.yml`;
+brownfield has no `substrate`): they are the four steps of the flow — Installation, Blueprint, Substrate, Site
+bring-up — and GitHub-hosted jobs are hard-capped at 6 hours, so each phase also gets its own fresh budget. Keep each phase's *stage timeouts* summed under ~340 minutes so there's slack left for SSH/connect
 overhead.
 
 **Why one concurrency group per lab, across both workflows** (`nvcm-oci-lab-<lab>`): for a given lab, both
@@ -47,7 +47,7 @@ into `meta.env` for it.
 |---|---|---|
 | `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for building a fabric from scratch |
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
-| `_phase.yml` | `workflow_call` **only** — called by the two above, three times each | one phase (platform/site/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of duplicated 3×2 times |
+| `_phase.yml` | `workflow_call` **only** — called by the two above, once per phase | one phase (platform/blueprint/substrate/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of once per job |
 
 Only the two entry points belong in the Actions tab. `_phase.yml` runs inside their jobs, never as a run of
 its own, so it appears in the sidebar only if it has runs of its own — typically a "workflow file issue" run
@@ -64,8 +64,8 @@ there are `tests/selftest.sh` — run it before pushing (see "Validating a chang
 .github/workflows/_phase.yml            reusable: one phase of stages — shared by both, parameterized by `catalogue`
 .github/actions/lab-access/             OCI CLI config + ssh-agent (keys never touch the workspace)
 config/common.sh                        the 4 platform stages, shared by both catalogues (SITE/TENANTS defaults too)
-config/stages-greenfield.sh             greenfield-only stages (blueprint/substrate/dc-bringup) + LAUNCHPAD_STAGES
-config/stages-brownfield.sh             brownfield-only stages (bf-discover/bf-blueprint/bf-adopt) + LAUNCHPAD_STAGES
+config/stages-greenfield.sh             greenfield-only stages (blueprint-generate/blueprint-verify/substrate/site-bringup) + LAUNCHPAD_STAGES
+config/stages-brownfield.sh             brownfield-only stages (bf-discover/bf-blueprint-generate/bf-adopt) + LAUNCHPAD_STAGES
 remote/agent.sh                         runs ON the host: preflight, prepare/clone, detached stage runner, diag
 scripts/lab.sh                          runner: OCI power (start/stop/state), SSH connect + readiness, pushes the selected catalogue
 scripts/run-stages.sh                   runner: drive a phase (from $LAUNCHPAD_CATALOGUE), stream into the phase's workflow.log, record status.tsv
@@ -79,7 +79,7 @@ tests/selftest.sh                       every offline check in one: bash -n, she
 ## The stage-catalogue system
 
 Both onboarding modes need the identical bare NVCM+Nautobot platform before anything mode-specific happens,
-so the four platform stages (`host-prep`, `platform-install-1`, `platform-install-2`, `verify-platform`) are
+so the four platform stages (`host-prep`, `nvcm-install`, `rafay-install`, `platform-verify`) are
 defined **once**, in `config/common.sh`, and sourced by both `config/stages-greenfield.sh` and
 `config/stages-brownfield.sh`. Neither catalogue reimplements them.
 
@@ -94,23 +94,24 @@ to know which mode is active.
 | Stage | Job | Calls (in `rafay_nvcm_poc`) | Timeout |
 |---|---|---|---|
 | host-prep | platform | `deploy_scripts/platform/nvcm-host-prep.sh` | 45m |
-| platform-install-1 | platform | `platform/platform_install.sh nvcm --yes` | 150m |
-| platform-install-2 | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
-| verify-platform | platform | `platform/verify_platform_install.sh all` | 20m |
-| blueprint | site | `blueprint/xlsx_to_blueprint.py` (STC workbook → `blr-dc01`) + `verify_blueprint.sh` | 20m |
-| substrate | site | `substrate/vm_image_operations.sh fetch` + `simulate_dc.sh --apply --from substrate --to substrate` | 120m |
-| dc-bringup | bringup | `simulate_dc.sh --apply --auto-approve --from underlay --to accept` | 300m |
+| nvcm-install | platform | `platform/platform_install.sh nvcm --yes` | 150m |
+| rafay-install | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
+| platform-verify | platform | `platform/verify_platform_install.sh all` | 20m |
+| blueprint-generate | blueprint | `blueprint/xlsx_to_blueprint.py` (STC workbook → `blr-dc01`); with `blueprint_source=existing` it generates nothing and just confirms `stc/blueprint_stc.yaml` is there | 20m |
+| blueprint-verify | blueprint | `verify_blueprint.sh` on whichever blueprint this run uses (generated or existing) | 10m |
+| substrate | substrate | counts this blueprint's fabric VMs (`plan_substrate.py` + `virsh dominfo`): **all exist** → `recover_substrate.sh` + `verify_layers.sh L1`/`L2`; **none** → `vm_image_operations.sh fetch` + `simulate_dc.sh --apply --from substrate --to substrate`; **some** → recover, then create the rest | 120m |
+| site-bringup | bringup | `simulate_dc.sh --apply --auto-approve --from underlay --to accept` | 300m |
 
 ### Brownfield catalogue (`config/stages-brownfield.sh`)
 
 | Stage | Job | Calls (in `rafay_nvcm_poc`) | Timeout |
 |---|---|---|---|
 | host-prep | platform | `deploy_scripts/platform/nvcm-host-prep.sh` | 45m |
-| platform-install-1 | platform | `platform/platform_install.sh nvcm --yes` | 150m |
-| platform-install-2 | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
-| verify-platform | platform | `platform/verify_platform_install.sh all` | 20m |
-| bf-discover | site | `onboarding/brownfield/scripts/bf-onboard.sh discover` — **read-only** | 30m |
-| bf-blueprint | site | `bf-onboard.sh blueprint` → `blueprint_<site>.yaml` — **read-only**, prints the blueprint for review | 20m |
+| nvcm-install | platform | `platform/platform_install.sh nvcm --yes` | 150m |
+| rafay-install | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
+| platform-verify | platform | `platform/verify_platform_install.sh all` | 20m |
+| bf-discover | blueprint | `onboarding/brownfield/scripts/bf-onboard.sh discover` — **read-only** | 30m |
+| bf-blueprint-generate | blueprint | `bf-onboard.sh blueprint` → `blueprint_<site>.yaml` — **read-only**, prints the blueprint for review | 20m |
 | bf-adopt | bringup | `deploy_scripts/fabric/provision_site.sh --blueprint <discovered> --apply --auto-approve` — **the only write** | 240m |
 
 Keep each catalogue's *stage timeouts summed per phase* under ~340 minutes — GitHub-hosted jobs are
@@ -122,7 +123,7 @@ them after real runs.
 1. Pick the catalogue file (`stages-greenfield.sh` or `stages-brownfield.sh`) — or `common.sh` if it belongs
    to both modes.
 2. Add one `name:phase:timeout_minutes` line to that file's `LAUNCHPAD_STAGES` array (order = execution
-   order; phase must be `platform`, `site`, or `bringup`).
+   order; phase must be `platform`, `blueprint`, `substrate` (greenfield only), or `bringup`).
 3. Add a `stage_<name>` function (dashes become underscores) whose body is an **invocation** of a
    documented `rafay_nvcm_poc` command — never new installation logic. If the underlying command's own
    readiness check can transiently fail right after a helm upgrade (pods still starting, not a real
@@ -130,7 +131,7 @@ them after real runs.
    `common.sh`'s `lp_continue_if_not_ready "<description>" <cmd...>` rather than letting the stage fail on a
    timing fluke: it treats a matching "not ready yet" signal as non-fatal and continues (the operator's own
    call — pods just need more time, and a later stage re-checks full readiness once they've had it), while
-   any other failure from the same command still propagates normally. See `stage_platform_install_1`/`_2`
+   any other failure from the same command still propagates normally. See `stage_nvcm_install`/`stage_rafay_install`
    for the pattern.
 4. Update the catalogue table above, and if you also changed a workflow input, its input table in
    `User_Guide.md` too.
@@ -202,9 +203,9 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
 `config/stages-brownfield.sh` or `scripts/run-stages.sh`:
 
 ```bash
-# the default selection (bf-discover,bf-blueprint) must plan NOTHING for bringup —
+# the default selection (bf-discover,bf-blueprint-generate) must plan NOTHING for bringup —
 # a regression here would silently skip the safety stop before any SoT write
-[ -z "$(LAUNCHPAD_CATALOGUE=config/stages-brownfield.sh scripts/run-stages.sh plan bringup bf-discover,bf-blueprint)" ]
+[ -z "$(LAUNCHPAD_CATALOGUE=config/stages-brownfield.sh scripts/run-stages.sh plan bringup bf-discover,bf-blueprint-generate)" ]
 # the resume run (stages=bf-adopt) must still find it
 [ "$(LAUNCHPAD_CATALOGUE=config/stages-brownfield.sh scripts/run-stages.sh plan bringup bf-adopt)" = "bf-adopt" ]
 ```
@@ -240,11 +241,11 @@ from the GitHub Actions API — is **not on this branch**. It lives alone on the
   gap between the discover+blueprint run and the reviewed adopt run.
 - **The review gate is enforced by input defaults, not a technical lock.** Nothing stops someone from
   dispatching `nvcm-brownfield` with `stages=all` against a real DC. The safety is documentation + the
-  default (`bf-discover,bf-blueprint`) stopping short of any write — if this ever needs to be a hard
+  default (`bf-discover,bf-blueprint-generate`) stopping short of any write — if this ever needs to be a hard
   technical gate instead (e.g. a GitHub Environment with required reviewers), that's a real design change,
   not a bug fix.
 - **`_phase.yml`'s `Run stages` step runs even when nothing is selected for that phase.** This is
-  intentional — a resume run like `stages=bf-adopt` needs the `platform` and `site` phase jobs to execute
+  intentional — a resume run like `stages=bf-adopt` needs the `platform` and `blueprint` phase jobs to execute
   and do nothing, rather than being skipped outright, so the job graph stays uniform across every stage
   selection.
 - **`SSH_KNOWN_HOSTS` is rewritten to the alias `lab`, never stored keyed to the literal address it was
@@ -272,7 +273,7 @@ from the GitHub Actions API — is **not on this branch**. It lives alone on the
   instance never started. If you add a new `run:` step that pipes anything through `tee` (or any command
   whose failure matters, not just its last stage), it needs `set -o pipefail` first; don't assume GitHub
   Actions supplies it.
-- **Jobs run strictly in sequence, and stop at the first failure.** `platform`/`site`/`bringup` each run
+- **Jobs run strictly in sequence, and stop at the first failure.** `platform`/`blueprint`/`substrate`/`bringup` each run
   only if every earlier phase succeeded (`if: !cancelled() && needs.<each>.result == 'success'`); after a
   failure (❌) the later phases show **skipped** (grey) in the run graph, and their stages ⚪ in the Step
   Summary. `poweroff` and `report` still run (`!cancelled()`). Every `if:` spells out its status function
@@ -286,7 +287,7 @@ from the GitHub Actions API — is **not on this branch**. It lives alone on the
 - **Every stage runs through `lp_run_stage` (`config/common.sh`), not called directly**, wired in
   `remote/agent.sh`'s generated stage script. If a stage fails with the apt/dpkg lock still held — cloud-init
   or `unattended-upgrades` running their own background `apt-get` right after boot is a common race any
-  stage that shells out to `apt-get` (`host-prep`, `blueprint`, and potentially a future one) can lose — it
+  stage that shells out to `apt-get` (`host-prep`, `blueprint-generate`, and potentially a future one) can lose — it
   retries the **whole stage**, up to `LP_RUN_STAGE_MAX_WAIT` seconds (default 600), rather than failing
   outright. Safe because every stage here is itself documented idempotent/re-runnable. Any other failure
   (not matching that exact signature) propagates immediately on the first attempt. This is wrapped centrally

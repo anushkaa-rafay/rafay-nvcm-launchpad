@@ -13,7 +13,7 @@
 # platform_install.sh's own internal readiness check runs right after `helm upgrade` returns, before pods
 # necessarily finish starting — its failure message says "fix the [FAIL] lines above ... then re-run", but
 # per the operator (2026-09-29) that's expected/transient here, not something to stop the run over: the
-# pods just take a while to come up, and verify-platform (the next real stage) re-checks full readiness
+# pods just take a while to come up, and platform-verify (the next real stage) re-checks full readiness
 # once they've had more time. So: NEITHER retry NOR fail on this specific signal — just continue. Any OTHER
 # failure (a real problem) still stops the stage normally.
 lp_continue_if_not_ready(){
@@ -54,7 +54,8 @@ lp_run_stage(){
   done
 }
 
+# setup_guide.md Part II: §6 host prep, §8 NVCM + Nautobot, §10 Rafay customization, §9/§11/§19 verify
 stage_host_prep(){           bash deploy_scripts/platform/nvcm-host-prep.sh; }   # group changes apply from the next stage (new login)
-stage_platform_install_1(){  lp_continue_if_not_ready "platform-install-1" bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
-stage_platform_install_2(){  lp_continue_if_not_ready "platform-install-2" bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }
-stage_verify_platform(){     bash deploy_scripts/platform/verify_platform_install.sh all; }
+stage_nvcm_install(){  lp_continue_if_not_ready "nvcm-install" bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
+stage_rafay_install(){  lp_continue_if_not_ready "rafay-install" bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }
+stage_platform_verify(){     bash deploy_scripts/platform/verify_platform_install.sh all; }

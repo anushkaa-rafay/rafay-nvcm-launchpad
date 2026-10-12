@@ -48,7 +48,7 @@ scenario(){
   local name="$1" rcs="$2"; shift 2
   export FIXTURES="$T/$name/fixtures"; mkdir -p "$FIXTURES" "$T/$name/collected/logs-boot"
   rm -rf "$T/home/launchpad/runs"
-  local i=0 s; for s in host-prep platform-install-1 platform-install-2 verify-platform blueprint substrate dc-bringup; do
+  local i=0 s; for s in host-prep nvcm-install rafay-install platform-verify blueprint-generate blueprint-verify substrate site-bringup; do
     i=$((i+1)); fixture "$s" "$(cut -d, -f$i <<< "$rcs")"
   done
   printf 'POC_BRANCH=main\nPOC_SHA=0123456789abcdef\nSTARTED_AT=2026-10-04T22:04:15Z\n' > "$T/$name/collected/logs-boot/meta.env"
@@ -67,69 +67,69 @@ scenario(){
 
 stage_order(){ grep -oE '^STAGE [0-9]{2}: [a-z0-9-]+' "$1" | paste -sd, -; }
 status_order(){ grep -oE '^STAGE STATUS: [A-Z-]+' "$1" | cut -d' ' -f3 | paste -sd, -; }
-ALL="STAGE 01: host-prep,STAGE 02: platform-install-1,STAGE 03: platform-install-2,STAGE 04: verify-platform,STAGE 05: blueprint,STAGE 06: substrate,STAGE 07: dc-bringup"
+ALL="STAGE 01: host-prep,STAGE 02: nvcm-install,STAGE 03: rafay-install,STAGE 04: platform-verify,STAGE 05: blueprint-generate,STAGE 06: blueprint-verify,STAGE 07: substrate,STAGE 08: site-bringup"
 
 # ── 1. all stages pass ──────────────────────────────────────────────────────────────────────────────────
 echo "scenario: all stages pass"
-RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=success RESULT_BRINGUP=success \
-  scenario pass 0,0,0,0,0,0,0 platform site bringup
+RESULT_BOOT=success RESULT_PLATFORM=success RESULT_BLUEPRINT=success RESULT_SUBSTRATE=success RESULT_BRINGUP=success \
+  scenario pass 0,0,0,0,0,0,0,0 platform blueprint substrate bringup
 R="$T/pass/report"
 DESC="report holds exactly workflow.log + boot.log + status.tsv + summary.{json,md}"
 ok [ "$(cd "$R" && ls | paste -sd, -)" = "boot.log,status.tsv,summary.json,summary.md,workflow.log" ]
 DESC="no per-stage NN-<stage>.log anywhere — report or phase artifacts"
 ok [ -z "$(find "$T/pass" -name '[0-9][0-9]-*.log')" ]
-DESC="one workflow.log per phase artifact"; ok [ "$(find "$T/pass/collected" -name workflow.log | wc -l)" -eq 3 ]
+DESC="one workflow.log per phase artifact"; ok [ "$(find "$T/pass/collected" -name workflow.log | wc -l)" -eq 4 ]
 DESC="every stage has a header, in catalogue order"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
-DESC="every stage's footer says PASSED"; ok [ "$(status_order "$R/workflow.log")" = "PASSED,PASSED,PASSED,PASSED,PASSED,PASSED,PASSED" ]
-DESC="all 28 output lines present (incl. those pulled on a later poll, and stderr text)"
-ok [ "$(grep -cE '^(\[launchpad\] stage=|out-|err-)' "$R/workflow.log")" -eq 28 ]
+DESC="every stage's footer says PASSED"; ok [ "$(status_order "$R/workflow.log")" = "PASSED,PASSED,PASSED,PASSED,PASSED,PASSED,PASSED,PASSED" ]
+DESC="all 32 output lines present (incl. those pulled on a later poll, and stderr text)"
+ok [ "$(grep -cE '^(\[launchpad\] stage=|out-|err-)' "$R/workflow.log")" -eq 32 ]
 DESC="no output line duplicated"; ok [ -z "$(grep -E '^(out-|err-)' "$R/workflow.log" | sort | uniq -d)" ]
 DESC="stage output lands inside its own section"
-ok awk '/^STAGE 05:/{s=1} /^STAGE 06:/{s=0} s&&/out-blueprint line 2/{f=1} END{exit !f}' "$R/workflow.log"
+ok awk '/^STAGE 05:/{s=1} /^STAGE 06:/{s=0} s&&/out-blueprint-generate line 2/{f=1} END{exit !f}' "$R/workflow.log"
 DESC="run-level status recorded in workflow.log"; ok grep -qx 'WORKFLOW STATUS: PASSED' "$R/workflow.log"
 DESC="summary.json status PASSED"; ok [ "$(jq -r .status "$R/summary.json")" = PASSED ]
 
 # ── 2. a stage fails (substrate, rc=1) — the bringup phase job is skipped ──────────────────────
 echo "scenario: substrate fails"
-RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=failure RESULT_BRINGUP=skipped \
-  scenario fail 0,0,0,0,0,1,0 platform site
+RESULT_BOOT=success RESULT_PLATFORM=success RESULT_BLUEPRINT=success RESULT_SUBSTRATE=failure RESULT_BRINGUP=skipped \
+  scenario fail 0,0,0,0,0,0,1,0 platform blueprint substrate
 R="$T/fail/report"
-DESC="run-stages.sh exits 1 for the failed phase"; ok [ "$(cat "$T/fail/run-site.rc")" = 1 ]
+DESC="run-stages.sh exits 1 for the failed phase"; ok [ "$(cat "$T/fail/run-substrate.rc")" = 1 ]
 DESC="diagnostics + every supporting artifact still produced"
-ok [ "$(cd "$R" && ls | paste -sd, -)" = "boot.log,diagnostics-site.txt,status.tsv,summary.json,summary.md,workflow.log" ]
-DESC="all 7 stage headers in order, incl. the never-run bringup phase"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
-DESC="statuses: 5 passed, substrate FAILED, dc-bringup SKIPPED"
-ok [ "$(status_order "$R/workflow.log")" = "PASSED,PASSED,PASSED,PASSED,PASSED,FAILED,SKIPPED" ]
+ok [ "$(cd "$R" && ls | paste -sd, -)" = "boot.log,diagnostics-substrate.txt,status.tsv,summary.json,summary.md,workflow.log" ]
+DESC="all 8 stage headers in order, incl. the never-run bringup phase"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
+DESC="statuses: 6 passed, substrate FAILED, site-bringup SKIPPED"
+ok [ "$(status_order "$R/workflow.log")" = "PASSED,PASSED,PASSED,PASSED,PASSED,PASSED,FAILED,SKIPPED" ]
 DESC="failed stage's error output kept"; ok grep -q '^err-substrate Traceback' "$R/workflow.log"
 DESC="failed stage's rc logged"; ok grep -qE '\] ERROR Stage substrate failed \(rc=1, [0-9]+s\)' "$R/workflow.log"
 DESC="WORKFLOW STATUS names the failed stage"; ok grep -qx 'WORKFLOW STATUS: FAILED (failed stage: substrate)' "$R/workflow.log"
 DESC="status.tsv unchanged in shape: substrate failed rc=1"; ok [ "$(awk -F'\t' '$2=="substrate"{print $4"/"$5}' "$R/status.tsv")" = failed/1 ]
 
-# ── 3. cancelled mid-stage (blueprint never exits; the site job is killed) ────────────────────────────────
-echo "scenario: cancelled during blueprint"
-CANCEL_PHASE=site RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=cancelled RESULT_BRINGUP=cancelled \
-  scenario cancel 0,0,0,0,-,0,0 platform site
+# ── 3. cancelled mid-stage (blueprint-generate never exits; the blueprint job is killed) ────────────────────────────────
+echo "scenario: cancelled during blueprint-generate"
+CANCEL_PHASE=blueprint RESULT_BOOT=success RESULT_PLATFORM=success RESULT_BLUEPRINT=cancelled RESULT_SUBSTRATE=cancelled RESULT_BRINGUP=cancelled \
+  scenario cancel 0,0,0,0,-,0,0,0 platform blueprint
 R="$T/cancel/report"
-DESC="all 7 stage headers in order"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
-DESC="blueprint INTERRUPTED (not SKIPPED), later stages SKIPPED"
-ok [ "$(status_order "$R/workflow.log")" = "PASSED,PASSED,PASSED,PASSED,INTERRUPTED,SKIPPED,SKIPPED" ]
-DESC="output pulled before the cancel is kept"; ok grep -q '^out-blueprint line 2' "$R/workflow.log"
-DESC="status.tsv: blueprint interrupted"; ok [ "$(awk -F'\t' '$2=="blueprint"{print $4}' "$R/status.tsv")" = interrupted ]
+DESC="all 8 stage headers in order"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
+DESC="blueprint-generate INTERRUPTED (not SKIPPED), later stages SKIPPED"
+ok [ "$(status_order "$R/workflow.log")" = "PASSED,PASSED,PASSED,PASSED,INTERRUPTED,SKIPPED,SKIPPED,SKIPPED" ]
+DESC="output pulled before the cancel is kept"; ok grep -q '^out-blueprint-generate line 2' "$R/workflow.log"
+DESC="status.tsv: blueprint-generate interrupted"; ok [ "$(awk -F'\t' '$2=="blueprint-generate"{print $4}' "$R/status.tsv")" = interrupted ]
 # build-report.sh's existing rule (unchanged here): an interrupted stage is the failed stage → FAILED
-DESC="summary.json: FAILED at blueprint"; ok [ "$(jq -r '.status+"/"+.failed_stage' "$R/summary.json")" = FAILED/blueprint ]
-DESC="WORKFLOW STATUS: FAILED at blueprint"; ok grep -qx 'WORKFLOW STATUS: FAILED (failed stage: blueprint)' "$R/workflow.log"
+DESC="summary.json: FAILED at blueprint-generate"; ok [ "$(jq -r '.status+"/"+.failed_stage' "$R/summary.json")" = FAILED/blueprint-generate ]
+DESC="WORKFLOW STATUS: FAILED at blueprint-generate"; ok grep -qx 'WORKFLOW STATUS: FAILED (failed stage: blueprint-generate)' "$R/workflow.log"
 
 # ── 4. boot failed — no phase ran at all ─────────────────────────────────────────────────────────────────
 echo "scenario: boot failed"
-RESULT_BOOT=failure RESULT_PLATFORM=skipped RESULT_SITE=skipped RESULT_BRINGUP=skipped scenario boot 0,0,0,0,0,0,0
+RESULT_BOOT=failure RESULT_PLATFORM=skipped RESULT_BLUEPRINT=skipped RESULT_SUBSTRATE=skipped RESULT_BRINGUP=skipped scenario boot 0,0,0,0,0,0,0,0
 R="$T/boot/report"
 DESC="workflow.log still lists every stage"; ok [ "$(stage_order "$R/workflow.log")" = "$ALL" ]
-DESC="all SKIPPED"; ok [ "$(status_order "$R/workflow.log")" = "SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED" ]
+DESC="all SKIPPED"; ok [ "$(status_order "$R/workflow.log")" = "SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED,SKIPPED" ]
 
 # ── 4b. unknown lab — the lab job failed, so boot and every phase were skipped ───────────────────────────────
 echo "scenario: unknown lab"
-LAB=no-such-lab RESULT_LAB=failure RESULT_BOOT=skipped RESULT_PLATFORM=skipped RESULT_SITE=skipped RESULT_BRINGUP=skipped \
-  scenario nolab 0,0,0,0,0,0,0
+LAB=no-such-lab RESULT_LAB=failure RESULT_BOOT=skipped RESULT_PLATFORM=skipped RESULT_BLUEPRINT=skipped RESULT_SUBSTRATE=skipped RESULT_BRINGUP=skipped \
+  scenario nolab 0,0,0,0,0,0,0,0
 R="$T/nolab/report"
 DESC="summary.json: FAILED at the lab, naming it (not PASSED, though every job after it was only skipped)"
 ok [ "$(jq -r '.status+"/"+.failed_stage' "$R/summary.json")" = "FAILED/lab (no such GitHub Environment: 'no-such-lab')" ]
@@ -138,8 +138,8 @@ DESC="summary.json .oci.lab falls back to the requested lab"; ok [ "$(jq -r .oci
 # ── 4c. the lab + its instance come from boot's meta.env (the report job runs outside the lab's Environment) ──
 echo "scenario: lab recorded"
 printf 'LAB=lab-2\nINSTANCE_ID=ocid1.instance.oc1..lab2\n' > "$T/lab-meta"
-LAB_META="$T/lab-meta" RESULT_LAB=success RESULT_BOOT=success RESULT_PLATFORM=success RESULT_SITE=success RESULT_BRINGUP=success \
-  scenario labrec 0,0,0,0,0,0,0 platform site bringup
+LAB_META="$T/lab-meta" RESULT_LAB=success RESULT_BOOT=success RESULT_PLATFORM=success RESULT_BLUEPRINT=success RESULT_SUBSTRATE=success RESULT_BRINGUP=success \
+  scenario labrec 0,0,0,0,0,0,0,0 platform blueprint substrate bringup
 R="$T/labrec/report"
 DESC="summary.json .oci.lab/.oci.instance from meta.env"
 ok [ "$(jq -r '.oci.lab+"/"+.oci.instance' "$R/summary.json")" = lab-2/ocid1.instance.oc1..lab2 ]
@@ -167,7 +167,7 @@ git init -q --bare "$T/origin.git"; git clone -q "$T/origin.git" "$T/repo" 2>/de
   "$ROOT/scripts/commit-logs.sh" "$T/fail/report" > /dev/null )
 D="$T/repo/logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED"
 DESC="commit-logs.sh files the report under Mon-YYYY/DD-Mon-YYYY with every artifact"
-ok [ "$(cd "$D" 2>/dev/null && ls | paste -sd, -)" = "boot.log,diagnostics-site.txt,status.tsv,summary.json,summary.md,workflow.log" ]
+ok [ "$(cd "$D" 2>/dev/null && ls | paste -sd, -)" = "boot.log,diagnostics-substrate.txt,status.tsv,summary.json,summary.md,workflow.log" ]
 DESC="no numeric logs/YYYY/MM/DD directories"; ok [ -z "$(find "$T/repo/logs" -type d -regex '.*/logs/[0-9]+.*')" ]
 DESC="pushed to origin"; ok git -C "$T/origin.git" cat-file -e "HEAD:logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED/workflow.log"
 

@@ -38,9 +38,9 @@ report, and power the instance back off — every time, including on failure.
 
 - Two GitHub Actions workflows (`nvcm-greenfield`, `nvcm-brownfield`) orchestrating the **existing** OCI lab
   host via the OCI CLI (power) and SSH (execution) — never provisioning a new instance.
-- The stage-catalogue system: shared platform bring-up (`host-prep`, `platform-install-1`/`-2`,
-  `verify-platform`), plus mode-specific stages (`blueprint`/`substrate`/`dc-bringup` for greenfield;
-  `bf-discover`/`bf-blueprint`/`bf-adopt` for brownfield).
+- The stage-catalogue system: shared platform bring-up (`host-prep`, `nvcm-install`, `rafay-install`,
+  `platform-verify`), plus mode-specific stages (`blueprint-generate`/`blueprint-verify`/`substrate`/`site-bringup` for greenfield;
+  `bf-discover`/`bf-blueprint-generate`/`bf-adopt` for brownfield).
 - The brownfield review gate: discover and blueprint are read-only; adopting (the only write) is a
   deliberate, separate step.
 - Structured logging: live streaming to the Actions UI, artifact upload, and a permanent dated commit.
@@ -130,9 +130,9 @@ instance never calls back into GitHub Actions, and nothing listens on the runner
  │  └──────────────────────────┘   ⑦    │   vars (INSTANCE_ID, SSH_*, OCI_*/   │   │
  │                              git push│   AWS_*)  ·  secrets (private keys)  │   │
  │  rafay_nvcm_poc repo                 │                                      │   │
- │  ┌──────────────────────────┐        │ jobs: lab → boot → platform → site → │   │
- │  │ installer + deploy       │        │       bringup → poweroff → report    │   │
- │  │ scripts (read-only       │        │ hand-off between jobs: artifacts ⑥   │   │
+ │  ┌──────────────────────────┐        │ jobs: lab → boot → platform →        │   │
+ │  │ installer + deploy       │        │  blueprint → substrate → bringup →   │   │
+ │  │ scripts (read-only       │        │  poweroff → report · artifacts ⑥     │   │
  │  │ deploy key)              │        └───────┬──────────────────┬───────────┘   │
  │  └────────────▲─────────────┘                │                  │               │
  └───────────────┼──────────────────────────────┼──────────────────┼───────────────┘
@@ -176,11 +176,12 @@ Major components:
   runs on the same lab (the same physical host) queue.
 - **One GitHub Environment per OCI lab** — the `lab` input names it; it holds that lab's instance/SSH
   variables and any secrets that differ from the repository-level ones.
-- **A reusable phase workflow** (`_phase.yml`) — one phase (`platform`/`site`/`bringup`) of stages, called
-  three times per run by each entry point so the phase logic exists once, not duplicated six times.
+- **A reusable phase workflow** (`_phase.yml`) — one phase of stages, called once per phase by each entry point
+  (greenfield: `platform`/`blueprint`/`substrate`/`bringup`; brownfield: `platform`/`blueprint`/`bringup`)
+  so the phase logic exists once.
 - **The stage-catalogue system** (`config/common.sh` + `config/stages-greenfield.sh` +
   `config/stages-brownfield.sh`) — the only place that maps a stage name to a `rafay_nvcm_poc` command.
-  Platform bring-up is defined once and shared; only the site/bringup stages differ by mode.
+  Platform bring-up is defined once and shared; only the blueprint/substrate/bringup stages differ by mode.
 - **The host agent** (`remote/agent.sh`) — the only thing copied onto the OCI host. Runs each stage
   **detached** (`setsid` + its own `timeout`), so an SSH drop or a hand-off between GitHub jobs never kills
   a multi-hour install.
@@ -241,11 +242,11 @@ pipeline should do:
         ↓
 11. Verify platform
         ↓
-12. Generate blueprint
+12. Blueprint: generate (or take the existing one) → verify
         ↓
-13. Prepare substrate
+13. Substrate: recover it if it exists, otherwise create it
         ↓
-14. Bring up DC
+14. Site bring-up
         ↓
 15. Collect logs
         ↓
@@ -361,7 +362,7 @@ died mid-stage), `SKIPPED` or `NOT-SELECTED`. A stage's stdout and stderr are co
 
 ```
 ============================================================
-STAGE 06: substrate (phase: site)
+STAGE 07: substrate (phase: substrate)
 ============================================================
 
 [2026-10-04 22:31:40 UTC] INFO  Starting stage substrate (timeout 120m, run key 36606934354-1)
@@ -378,12 +379,13 @@ greenfield is explicitly documented as:
 
 ```
 host-prep
-→ platform-install-1
-→ platform-install-2
-→ verify-platform
-→ blueprint
+→ nvcm-install
+→ rafay-install
+→ platform-verify
+→ blueprint-generate
+→ blueprint-verify
 → substrate
-→ dc-bringup
+→ site-bringup
 ```
 
 To debug a failure: start with the Step Summary's pass/fail table, then search the committed
@@ -396,7 +398,7 @@ failure.
 |---|---|
 | OCI CLI auth is misconfigured | Fails fast in a preflight check with a clear, named-secret error, rather than surfacing as a confusing downstream SSH failure. |
 | Repository clone fails | The `boot` job fails; later phases run but do nothing; the instance is still powered off and a report is still produced. |
-| A stage's own readiness check fails because pods haven't finished starting yet | Recognized as non-fatal and the pipeline continues — the later `verify-platform` stage is the real gate once more time has passed. Any other failure from that same command still stops the stage normally. |
+| A stage's own readiness check fails because pods haven't finished starting yet | Recognized as non-fatal and the pipeline continues — the later `platform-verify` stage is the real gate once more time has passed. Any other failure from that same command still stops the stage normally. |
 | An installation stage fails for a real reason | The pipeline stops at that stage; later stages are recorded `skipped` (or `interrupted` if they were themselves running when the job died); the failure is never hidden by a later job. |
 | A stage times out or hangs | Each stage has its own timeout, enforced on the host independent of the GitHub job's own budget, so a hung install is killed cleanly rather than silently continuing forever. |
 | The job itself fails or is cancelled | Power-off and report generation still run — a longstanding GitHub Actions quirk where a skipped dependency can defeat `always()` is worked around explicitly (see `Dev_Guide.md`), so the lab is never left running unreported. |

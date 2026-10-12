@@ -3,7 +3,7 @@ name: nvcm-greenfield
 # rafay_nvcm_poc's onboarding/greenfield/greenfield_adoption_plan.md (spreadsheet → blueprint → deploy).
 #   lab (resolve the `lab` input → its GitHub Environment: which OCI host, which credentials)
 #   → boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
-#   → platform → site → bringup   (config/stages-greenfield.sh, executed ON the host)
+#   → platform → blueprint → substrate → bringup   (config/stages-greenfield.sh, executed ON the host)
 #   → poweroff (always, unless shutdown=false) → report (always: artifact + dated commit under logs/)
 # The installation logic lives in rafay_nvcm_poc; this repo only orchestrates it. See also: nvcm-brownfield.yml
 # (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
@@ -25,12 +25,12 @@ on:
         default: ""
         type: string
       stages:
-        description: "Stages: 'all' or a comma list — host-prep,platform-install-1,platform-install-2,verify-platform,blueprint,substrate,dc-bringup"
+        description: "Stages: 'all' or a comma list — host-prep,nvcm-install,rafay-install,platform-verify,blueprint-generate,blueprint-verify,substrate,site-bringup"
         required: true
         default: all
         type: string
       blueprint_source:
-        description: "Blueprint for substrate/dc-bringup: generate (this run's blueprint stage builds it) or existing (stc/blueprint_stc.yaml in rafay_nvcm_poc)"
+        description: "Blueprint for substrate/site-bringup: generate (this run's blueprint-generate stage builds it) or existing (stc/blueprint_stc.yaml in rafay_nvcm_poc)"
         default: generate
         type: choice
         options: [generate, existing]
@@ -66,6 +66,7 @@ jobs:
   # Environment behind and fail later with a confusing "INSTANCE_ID not configured". Every job that touches
   # the lab (boot, the phases, poweroff) runs in this Environment, so vars.* / secrets.* resolve per lab.
   lab:
+    name: Resolve lab
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -87,6 +88,7 @@ jobs:
           echo "lab: $LAB"
 
   boot:
+    name: Boot lab + get the repository (§5)
     needs: lab
     environment: ${{ needs.lab.outputs.name }}
     runs-on: ubuntu-latest
@@ -157,7 +159,7 @@ jobs:
           scripts/lab.sh connect 2>&1 | tee -a "$OUT/boot.log"
           scripts/lab.sh push-agent
 
-      - name: Clean workspace + clone rafay_nvcm_poc
+      - name: Clean workspace + clone rafay_nvcm_poc (setup_guide §5)
         env:
           KEY:      ${{ steps.opts.outputs.run_key }}
           POC_REPO: ${{ steps.opts.outputs.POC_REPO }}
@@ -193,35 +195,47 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-  # Strictly sequential: boot → platform → site → bringup → poweroff → report. A phase runs only if EVERY
+  # Strictly sequential: boot → platform → blueprint → substrate → bringup → poweroff → report. A phase runs only if EVERY
   # phase before it succeeded; after the first failure (❌) the later phases are SKIPPED (grey ⊘ in the run
   # graph), never run-and-green. Every `if:` below names its status function (!cancelled()) and the exact
   # needs.*.result it requires, explicitly: a job relying on the implicit success() check can be wrongly
   # skipped when any job further upstream was skipped (actions/runner#2205) — explicit conditions are that
   # issue's documented workaround, and are what keeps poweroff/report running after a skipped phase.
   platform:
+    name: 1 · Installation
     needs: [lab, boot]
     if: ${{ !cancelled() && needs.boot.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
     with: { phase: platform, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
-  site:
+  blueprint:
+    name: 2 · Blueprint (generate or existing → verify)
     needs: [lab, boot, platform]
     if: ${{ !cancelled() && needs.boot.result == 'success' && needs.platform.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
-    with: { phase: site, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
+    with: { phase: blueprint, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
+    secrets: inherit
+
+  substrate:
+    name: 3 · Substrate (recover if present, else create)
+    needs: [lab, boot, blueprint]
+    if: ${{ !cancelled() && needs.boot.result == 'success' && needs.blueprint.result == 'success' }}
+    uses: ./.github/workflows/_phase.yml
+    with: { phase: substrate, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   bringup:
-    needs: [lab, boot, site]
-    if: ${{ !cancelled() && needs.boot.result == 'success' && needs.site.result == 'success' }}
+    name: 4 · Site bring-up
+    needs: [lab, boot, substrate]
+    if: ${{ !cancelled() && needs.boot.result == 'success' && needs.substrate.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
     with: { phase: bringup, lab: "${{ needs.lab.outputs.name }}", run_key: "${{ needs.boot.outputs.run_key }}", stages: "${{ needs.boot.outputs.stages }}", catalogue: config/stages-greenfield.sh }
     secrets: inherit
 
   poweroff:
-    needs: [lab, boot, platform, site, bringup]
+    name: Power off lab
+    needs: [lab, boot, platform, blueprint, substrate, bringup]
     environment: ${{ needs.lab.outputs.name }}
     # !cancelled(): also after a failure or a skipped phase — see the note above the `platform` job.
     # Non-dispatch triggers (schedule) always shut down.
@@ -247,7 +261,8 @@ jobs:
         run: scripts/lab.sh stop
 
   report:
-    needs: [lab, boot, platform, site, bringup, poweroff]
+    name: Report + commit logs
+    needs: [lab, boot, platform, blueprint, substrate, bringup, poweroff]
     # !cancelled(), not always() — see the note on the poweroff job above.
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
@@ -277,7 +292,8 @@ jobs:
           RESULT_LAB: ${{ needs.lab.result }}
           RESULT_BOOT: ${{ needs.boot.result }}
           RESULT_PLATFORM: ${{ needs.platform.result }}
-          RESULT_SITE: ${{ needs.site.result }}
+          RESULT_BLUEPRINT: ${{ needs.blueprint.result }}
+          RESULT_SUBSTRATE: ${{ needs.substrate.result }}
           RESULT_BRINGUP: ${{ needs.bringup.result }}
           RESULT_POWEROFF: ${{ needs.poweroff.result }}
         run: |
