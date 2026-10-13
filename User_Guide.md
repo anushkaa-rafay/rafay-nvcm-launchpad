@@ -269,5 +269,20 @@ DC. Use the two-run pattern there.
 - Only one run (of either workflow) is ever active against the lab at a time — a second trigger queues
   behind it rather than clashing.
 
+## The weekly report
+
+Every **Monday at 09:00 IST** the `weekly-report` workflow summarizes the last 7 days of greenfield and
+brownfield runs and mails it to `MAIL_TO` (the same mail setup as failure mails — step 6 of setup). The same
+report is on that run's **Summary** tab, so it's readable even before mail is set up. It shows:
+
+- runs, passed / failed / cancelled and the pass rate, per workflow;
+- the daily greenfield run's week, day by day;
+- where runs failed — the stage that stopped each failed run, most frequent first;
+- each stage's average and longest duration (passed stages only);
+- every run: when, who, lab, branch, result, failed stage, duration and a link.
+
+For a different window, **Actions → weekly-report → Run workflow** and set `days`. A run that was cancelled
+early or died before committing its logs still counts, but shows no lab, branch or stage.
+
 If something goes wrong and you're not sure why, that run's `workflow.log` is the first place to look —
 every stage is in it, in order, each ending in a `STAGE STATUS:` line (search for `STAGE STATUS: FAILED`); `Dev_Guide.md` has the internals if you need to go deeper.

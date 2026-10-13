@@ -1,0 +1,43 @@
+name: weekly-report
+# Every Monday 09:00 IST: the last 7 days of nvcm-greenfield / nvcm-brownfield runs — pass rate, the daily
+# run's week, where runs failed, stage durations, every run with its link — on this run's Summary tab and
+# mailed to MAIL_TO (nothing is mailed while MAIL_TO is unset). Reads the Actions API and the committed logs/;
+# touches no lab, no OCI/AWS, no SSH.
+
+on:
+  schedule:
+    - cron: "30 3 * * 1"   # Monday 03:30 UTC = 09:00 IST
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "How many days back to report on"
+        default: "7"
+        type: string
+
+permissions:
+  actions: read          # list the workflows' runs
+  contents: read         # logs/ — each run's committed summary.json
+
+jobs:
+  report:
+    name: Weekly report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build + mail the report
+        env:
+          DAYS: ${{ inputs.days || '7' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          MAIL_TO:       ${{ vars.MAIL_TO }}
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_SERVER:   ${{ vars.SMTP_SERVER }}
+          SMTP_PORT:     ${{ vars.SMTP_PORT }}
+        run: |
+          [[ "$DAYS" =~ ^[0-9]+$ && "$DAYS" -ge 1 ]] || { echo "::error::days must be a whole number ≥ 1 (got '$DAYS')"; exit 1; }
+          # the Summary tab gets the report even when the mail fails; the job still goes red for it
+          rc=0; python3 scripts/weekly-report.py --days "$DAYS" --out weekly --mail || rc=$?
+          [ -f weekly/report.md ] && cat weekly/report.md >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
