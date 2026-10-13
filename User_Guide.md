@@ -257,7 +257,9 @@ DC. Use the two-run pattern there.
   powered off afterward (unless you unticked `shutdown`) and a report is still produced — a failure
   never leaves the lab running or the run unreported.
 - Results land in three places every run:
-  - The **Step Summary** tab on the run itself — a quick pass/fail table.
+  - The **Summary** tab on the run itself — the pass/fail stage table and, for each stage that failed, its
+    last 100 lines in a collapsible **Logs** section (`boot.log`'s, if the run died before any stage). The
+    full `workflow.log` is in the `run-report` artifact.
   - Downloadable **artifacts** (`logs-*`, `run-report`) on the run page, for 30–90 days.
   - A permanent commit under `logs/<Mon-YYYY>/<DD-Mon-YYYY>/<time>Z-<lab>-run<id>.<attempt>-<STATUS>/` in this
     repo (e.g. `logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED/`) — the durable record,

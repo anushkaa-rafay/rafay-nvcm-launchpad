@@ -74,6 +74,7 @@ scripts/run-stages.sh                   runner: drive a phase (from $LAUNCHPAD_C
 scripts/build-report.sh                 merge job logs → one workflow.log + summary.md / summary.json
 scripts/commit-logs.sh                  commit the report under logs/<Mon-YYYY>/<DD-Mon-YYYY>/<run>/
 scripts/lib-log.sh                      the log format + committed path, shared by the three above
+scripts/summary-logs.py                 report job: each failed stage's last 100 lines → the run's Summary tab (collapsible)
 scripts/failure-mail.py                 report job, on FAILED: mail the result, the failed stage's tail, the logs attached
 scripts/weekly-report.py                weekly-report.yml: runs (Actions API) + committed summary.json → report.md / report.html / mail
 scripts/lplib.py                        Python helpers: a stage's section of workflow.log, send_mail (SMTP from MAIL_TO/SMTP_*)
