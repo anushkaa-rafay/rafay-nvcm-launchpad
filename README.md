@@ -298,7 +298,9 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
 - **Variables**: `INSTANCE_ID` (required; an OCI OCID or an EC2 `i-…` ID, which selects the cloud),
   `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` (OCI labs) or `AWS_ACCESS_KEY_ID`, `AWS_REGION`
   (AWS labs), `SSH_USER`, `SSH_HOST`, `SSH_KNOWN_HOSTS`,
-  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`.
+  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`, and for the daily greenfield run `SCHEDULE_LAB`,
+  `SCHEDULE_POC_BRANCH` (blank → `DEFAULT_LAB` / `POC_DEFAULT_BRANCH` → `main` — set it to the branch the daily
+  run should test).
 - **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`INSTANCE_ID`, SSH host, …)
   live on it, plus any secret that differs for that lab; anything not set there falls back to repo level.
 - **SSH keys**: two distinct ones — a lab-host login key, and the POC repo's read-only deploy key — see
