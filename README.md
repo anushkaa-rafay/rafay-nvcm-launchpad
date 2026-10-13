@@ -68,10 +68,8 @@ why. A partial load shows a banner saying how many runs were counted.
 
 ## Authentication and security
 
-Which repository the page reports on is decided when it's built, never hardcoded: the repository the
-dashboard workflow runs in (`GITHUB_REPOSITORY`), unless the repository variable `DASHBOARD_REPOSITORY`
-(`owner/repo`) names another one. Locally, `npm start` / `npm run build` use `DASHBOARD_REPOSITORY` or
-`GITHUB_REPOSITORY` from the environment, else this checkout's `origin` remote.
+Which repository the page reports on is decided when it's built, never hardcoded: `DASHBOARD_REPOSITORY`
+or `GITHUB_REPOSITORY` (`owner/repo`) from the environment, else this checkout's `origin` remote.
 
 - **Public repository:** the page loads with no token. Anonymous calls share a limit of 60 requests/hour per
   network (IP); when it runs out, the "Rate limited" banner offers **Connect a token**.
@@ -106,7 +104,6 @@ have separate histories: never merge one into the other (Git refuses unless forc
 history). The page reports on the repository's Actions runs whichever branch they ran on.
 
 ```
-.github/workflows/dashboard.yml   tests + "docs/ is current" check on every push/PR to this branch
 dashboard/                        the source: page, styles, src/, tests, build/serve scripts
 docs/                             the built page — what GitHub Pages serves (generated: never edit by hand)
 ```
@@ -128,8 +125,7 @@ ES modules don't load from `file://`, so open the page through `npm start` (or a
 double-clicking `index.html`.
 
 **Which repository it reports on** is set by the build, never hardcoded: `DASHBOARD_REPOSITORY`
-(`owner/repo`) if set in the environment, else this checkout's `origin` remote. In `dashboard.yml` it's the
-repository variable `DASHBOARD_REPOSITORY`, else the repository the workflow runs in.
+(`owner/repo`) if set in the environment, else this checkout's `origin` remote.
 
 ## Deployment (GitHub Pages, from this branch)
 
@@ -154,8 +150,9 @@ git push origin dashboard
 ```
 
 `docs/` must be rebuilt and committed together with any change under `dashboard/`: Pages serves whatever is
-committed there. `dashboard.yml` enforces it — every push and PR to this branch rebuilds and fails with
-*"docs/ is out of date"* if the result differs from the commit.
+committed there. Nothing checks this for you — this branch has no workflow, so nothing runs on a push or PR.
+Before pushing, run `npm test` and `npm run pages`, and make sure `git status` shows nothing left over in
+`docs/`.
 
 ### 3. One-time Pages setup (repository admin)
 
@@ -177,8 +174,8 @@ static host; nothing in the page depends on GitHub Pages.
 | Change | What to do |
 |---|---|
 | Code under `dashboard/` changed | `npm run pages`, commit `dashboard/` and `docs/` together, push. Pages redeploys by itself |
-| New workflow runs (NVCM, lint…) | nothing — the page reads runs live (Refresh, or auto-refresh every 5 min) |
-| Report on another repository | `DASHBOARD_REPOSITORY=owner/repo npm run pages`, commit, push. Also set the repository variable `DASHBOARD_REPOSITORY` to the same value, or the `docs/` check in `dashboard.yml` fails |
+| New workflow runs (NVCM, unit tests, weekly report…) | nothing — the page reads runs live (Refresh, or auto-refresh every 5 min) |
+| Report on another repository | `DASHBOARD_REPOSITORY=owner/repo npm run pages`, commit, push. The value is baked into `docs/` at build time |
 | Take the site down | Settings → Pages → **Unpublish site** (or Source: None) |
 
 ## Limitations
@@ -198,7 +195,7 @@ static host; nothing in the page depends on GitHub Pages.
 
 For analytics that outlive GitHub's run history, record each run when it finishes:
 
-1. Add a small workflow on `workflow_run: { workflows: [nvcm-greenfield, nvcm-brownfield, lint], types: [completed] }`
+1. Add a small workflow on `workflow_run: { workflows: [nvcm-greenfield, nvcm-brownfield], types: [completed] }`
    with `actions: read`, `contents: write`.
 2. It appends the run's fields (id, workflow, actor, event, branch, conclusion, timestamps) as one JSON line to
    `dashboard-data/runs-YYYY-MM.jsonl` on a dedicated branch, so it doesn't add noise to `main`.
@@ -218,6 +215,5 @@ The NVCM workflows already keep a durable per-run record: `logs/<Mon-YYYY>/<DD-M
 | "Rate limited" | Wait until the reset time shown, or turn off auto-refresh in idle tabs |
 | "Partial data" banner | 1,000-run cap, `maxPages`, or an error mid-load. The banner says which. Retry, or narrow the date range |
 | Blank page locally | Opened via `file://`. Use `npm start` |
-| `dashboard.yml`: "docs/ is out of date" | Run `npm run pages` in `dashboard/` and commit `docs/` |
 | `/docs` not offered in Settings → Pages | `docs/` isn't on the `dashboard` branch yet. Push it, then reload the settings page |
 | Site shows an old page (or the README) | Browser cache (up to 10 min): hard-refresh. Else the "pages build and deployment" run hasn't finished, or Source isn't `dashboard` + `/docs` |

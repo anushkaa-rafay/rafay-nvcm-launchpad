@@ -11,10 +11,12 @@ export const CONFIG = {
   autoRefreshMs: 5 * 60e3,    // auto-refresh interval while the tab is visible (toggle in the header)
   tableStep: 25,              // Recent Runs rows per "Show more"
   // Workflows left out of every number, chart, filter and table, by file path. These are plumbing, not
-  // things anyone runs: _phase only executes inside the NVCM workflows, ci.yml lints this repo, and
-  // dashboard.yml tests this page. Remove a line to show that workflow again.
+  // things anyone runs: _phase and _unit only execute inside their callers (the NVCM and unit-<phase>
+  // workflows). ci.yml ("lint") and dashboard.yml are gone, listed so their past runs stay out too.
+  // Remove a line to show that workflow again.
   hiddenWorkflows: [
     '.github/workflows/_phase.yml',
+    '.github/workflows/_unit.yml',
     '.github/workflows/ci.yml',
     '.github/workflows/dashboard.yml',
   ],
