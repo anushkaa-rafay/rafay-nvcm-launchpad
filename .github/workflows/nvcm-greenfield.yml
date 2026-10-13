@@ -314,4 +314,15 @@ jobs:
       - name: Commit logs to logs/<Mon-YYYY>/<DD-Mon-YYYY>
         run: scripts/commit-logs.sh report
 
-      # Future notifiers (email / shared drive / Slack) go here, reading report/summary.json.
+      - name: Mail the failure
+        # !cancelled(): mail even if committing the logs failed. A mail problem must not change the run's result.
+        if: ${{ !cancelled() && steps.report.outputs.status == 'FAILED' }}
+        continue-on-error: true
+        env:
+          MAIL_TO:       ${{ vars.MAIL_TO }}
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_SERVER:   ${{ vars.SMTP_SERVER }}
+          SMTP_PORT:     ${{ vars.SMTP_PORT }}
+        run: python3 scripts/failure-mail.py report
+
