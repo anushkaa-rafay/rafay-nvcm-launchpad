@@ -45,7 +45,7 @@ into `meta.env` for it.
 
 | Workflow | Triggered how | Purpose |
 |---|---|---|
-| `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for building a fabric from scratch |
+| `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run; and `schedule`, daily 06:00 IST (lab `SCHEDULE_LAB`, branch `SCHEDULE_POC_BRANCH`) | the real entry point for building a fabric from scratch |
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
 | `_phase.yml` | `workflow_call` **only** — called by the two above, once per phase | one phase (platform/blueprint/substrate/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of once per job |
 
