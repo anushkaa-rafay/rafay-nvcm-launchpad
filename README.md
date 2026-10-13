@@ -263,8 +263,7 @@ rafay_nvcm_launchpad/
 ├── .github/workflows/
 │   ├── nvcm-greenfield.yml    entry point: greenfield
 │   ├── nvcm-brownfield.yml    entry point: brownfield
-│   ├── _phase.yml             reusable: one phase of stages, shared by both
-│   └── ci.yml                 lint/self-test on push/PR — optional, never touches OCI
+│   └── _phase.yml             reusable: one phase of stages, shared by both
 ├── .github/actions/lab-access/  OCI CLI config + ssh-agent setup
 ├── config/
 │   ├── common.sh               shared platform stages (both modes)
@@ -443,7 +442,7 @@ That's exactly the purpose of the orchestration layer.
 There is no OCI-dependent CI yet — everything below runs with no lab access and no secrets:
 
 - **Static checks**: `bash -n` (syntax) and `shellcheck` (warning severity and above) on every script;
-  `actionlint` on every workflow file. Enforced automatically by `ci.yml` on push/PR.
+  `actionlint` on every workflow file. Run locally with `tests/selftest.sh` — no workflow runs on push/PR.
 - **Stage-selection self-tests**: both catalogues' `validate`/`plan` logic, including the specific assertion
   that the brownfield review gate's default selection plans nothing for the write stage, and that the
   resume run finds it correctly.

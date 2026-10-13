@@ -41,22 +41,20 @@ first, because GitHub silently auto-creates any Environment a job names — a ty
 empty one behind. The `report` job runs outside the Environment, so `boot` writes `LAB` and `INSTANCE_ID`
 into `meta.env` for it.
 
-## The four workflows, and which ones you actually run
+## The three workflows, and which ones you actually run
 
 | Workflow | Triggered how | Purpose |
 |---|---|---|
 | `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for building a fabric from scratch |
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
 | `_phase.yml` | `workflow_call` **only** — called by the two above, three times each | one phase (platform/site/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of duplicated 3×2 times |
-| `ci.yml` | `push`/`pull_request`/manual | **not part of the OCI automation at all** — lints this repo's own scripts (shellcheck, `bash -n`, actionlint) and runs the stage-catalogue self-tests below. Never touches OCI, SSH, or any secret |
 
-`_phase.yml` shows up in the Actions tab because GitHub lists every workflow file regardless of trigger
-type — it has no meaningful "Run workflow" button of its own (its inputs are only meaningful when supplied
-by a caller). That's expected, not a misconfiguration.
+Only the two entry points belong in the Actions tab. `_phase.yml` runs inside their jobs, never as a run of
+its own, so it appears in the sidebar only if it has runs of its own — typically a "workflow file issue" run
+GitHub records when a push breaks its YAML. Deleting those runs takes it off the sidebar again.
 
-`ci.yml` is the one genuinely optional file here: delete it if you'd rather the Actions list only show the
-two real entry points. Keeping it means a shell syntax error or a broken stage-name gets caught on a PR
-instead of on a real (slow, shared) lab run.
+There is deliberately **no push/PR workflow**: nothing runs on a code change. The checks that used to run
+there are `tests/selftest.sh` — run it before pushing (see "Validating a change locally" below).
 
 ## Layout
 
@@ -64,7 +62,6 @@ instead of on a real (slow, shared) lab run.
 .github/workflows/nvcm-greenfield.yml   entry: inputs, boot → phases → poweroff → report (catalogue: stages-greenfield.sh)
 .github/workflows/nvcm-brownfield.yml   entry: inputs, boot → phases → poweroff → report (catalogue: stages-brownfield.sh)
 .github/workflows/_phase.yml            reusable: one phase of stages — shared by both, parameterized by `catalogue`
-.github/workflows/ci.yml                lint on push/PR: shellcheck, syntax, both catalogues' self-tests, actionlint
 .github/actions/lab-access/             OCI CLI config + ssh-agent (keys never touch the workspace)
 config/common.sh                        the 4 platform stages, shared by both catalogues (SITE/TENANTS defaults too)
 config/stages-greenfield.sh             greenfield-only stages (blueprint/substrate/dc-bringup) + LAUNCHPAD_STAGES
@@ -75,7 +72,8 @@ scripts/run-stages.sh                   runner: drive a phase (from $LAUNCHPAD_C
 scripts/build-report.sh                 merge job logs → one workflow.log + summary.md / summary.json
 scripts/commit-logs.sh                  commit the report under logs/<Mon-YYYY>/<DD-Mon-YYYY>/<run>/
 scripts/lib-log.sh                      the log format + committed path, shared by the three above
-tests/logging.sh                        self-test of that pipeline against a fake lab (run by ci.yml)
+tests/logging.sh                        self-test of that pipeline against a fake lab
+tests/selftest.sh                       every offline check in one: bash -n, shellcheck, both catalogues' stage logic, logging.sh
 ```
 
 ## The stage-catalogue system
@@ -185,31 +183,18 @@ the team agrees it's safe.
 
 ## Validating a change locally, without touching OCI
 
-Everything below runs in a plain `ubuntu:24.04` container — no lab access, no secrets, and it's exactly
-what `ci.yml` runs on every push/PR. Run it before pushing a change to any script or workflow.
+Everything below runs in a plain `ubuntu:24.04` container — no lab access, no secrets. Nothing runs these
+for you (there is no push/PR workflow), so run them before pushing a change to any script or workflow.
 
 ```bash
 # from the repo root
 docker run --rm -v "$PWD:/repo" -w /repo ubuntu:24.04 bash -ec '
-  # 1) every script parses
-  find scripts remote config tests -name "*.sh" -print0 | xargs -0 -n1 bash -n
-
-  # 2) shellcheck, warning severity and above
   apt-get update -qq >/dev/null && apt-get install -qq -y shellcheck jq git >/dev/null
-  shellcheck -x --severity=warning scripts/*.sh remote/*.sh config/*.sh tests/*.sh
-
-  # 3) stage-selection logic, both catalogues — pure logic, no SSH
-  for cat in config/stages-greenfield.sh config/stages-brownfield.sh; do
-    echo "=== $cat ==="
-    LAUNCHPAD_CATALOGUE=$cat scripts/run-stages.sh validate all
-    LAUNCHPAD_CATALOGUE=$cat scripts/run-stages.sh plan platform all
-  done
-
-  # 4) log layout: run-stages → build-report → commit-logs against a fake lab
-  tests/logging.sh
+  # bash -n, shellcheck, the stage-selection logic of both catalogues, the log layout against a fake lab
+  tests/selftest.sh
 '
 
-# 5) workflow YAML itself
+# workflow YAML itself
 docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -color
 ```
 
@@ -224,7 +209,7 @@ For the brownfield review-gate logic specifically, the assertion worth re-runnin
 [ "$(LAUNCHPAD_CATALOGUE=config/stages-brownfield.sh scripts/run-stages.sh plan bringup bf-adopt)" = "bf-adopt" ]
 ```
 
-`ci.yml` runs all of this automatically; the commands above are for iterating locally before you push.
+`tests/selftest.sh` asserts both of these, along with the rest of the stage-selection checks.
 
 ## The dashboard (separate `dashboard` branch)
 
