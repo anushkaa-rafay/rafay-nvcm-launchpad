@@ -323,6 +323,9 @@ jobs:
           MAIL_TO:       ${{ vars.MAIL_TO }}
           SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_OAUTH_CLIENT_ID:     ${{ vars.SMTP_OAUTH_CLIENT_ID }}
+          SMTP_OAUTH_CLIENT_SECRET: ${{ secrets.SMTP_OAUTH_CLIENT_SECRET }}
+          SMTP_OAUTH_REFRESH_TOKEN: ${{ secrets.SMTP_OAUTH_REFRESH_TOKEN }}
           SMTP_SERVER:   ${{ vars.SMTP_SERVER }}
           SMTP_PORT:     ${{ vars.SMTP_PORT }}
         run: python3 scripts/failure-mail.py report

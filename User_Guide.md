@@ -64,6 +64,7 @@ the run at its first job, before anything touches OCI.
 | `AWS_SECRET_ACCESS_KEY` | Repo (lab may override) | **AWS labs**: the IAM access key's secret |
 | `SSH_PRIVATE_KEY` | Repo (lab may override) | SSH key authorized on the lab host |
 | `SMTP_PASSWORD` | Repo only | optional — the Gmail **App Password** the run mails are sent with (see step 6) |
+| `SMTP_OAUTH_CLIENT_SECRET`, `SMTP_OAUTH_REFRESH_TOKEN` | Repo only | optional — instead of `SMTP_PASSWORD`: Gmail OAuth2 login (see step 6) |
 
 Only private keys (and the mail password) are secrets; every other value is read from variables. Every run checks the values for its
 lab's cloud only (an AWS lab needs no `OCI_*` credentials and vice versa) before touching the instance: a
@@ -135,27 +136,51 @@ host's disk.
 **6. Email (optional)**
 
 Runs mail their result through a Gmail account (Python's own SMTP client, from the runner — no third-party
-action ever sees the password). Until `MAIL_TO` is set nothing is sent and nothing fails; the run just notes
+action ever sees the credentials). Until `MAIL_TO` is set nothing is sent and nothing fails; the run just notes
 "no mail sent". All of these are repository-level — the report job doesn't run in a lab's Environment.
 
 | Name | Kind | Value |
 |---|---|---|
 | `MAIL_TO` | variable | comma-separated recipients, e.g. `a@rafay.co,b@rafay.co` |
 | `SMTP_USERNAME` | variable | the Gmail address that sends — also the mail's From. Example: `nvcm-launchpad-alerts@gmail.com` (or a Google Workspace address such as `nvcm-alerts@rafay.co`) |
-| `SMTP_PASSWORD` | **secret** | an **App Password** for that account (Google Account → Security → 2-Step Verification → App passwords; 2-Step Verification must be on). Gmail refuses the normal account password over SMTP. Example shape: Google shows it as `abcd efgh ijkl mnop` (16 letters) — paste it as `abcdefghijklmnop`, without the spaces |
 | `SMTP_SERVER`, `SMTP_PORT` | variable | optional — default `smtp.gmail.com` and `465` (TLS); `587` uses STARTTLS |
 
+Then **one** way to log in. OAuth2 is what Google recommends; an App Password is the quick start. If the
+OAuth2 refresh token is set, OAuth2 is used and `SMTP_PASSWORD` is ignored.
+
+*Option A — OAuth2 (recommended)*
+
+| Name | Kind | Value |
+|---|---|---|
+| `SMTP_OAUTH_CLIENT_ID` | variable | the OAuth client's ID, e.g. `123456789012-abc…xyz.apps.googleusercontent.com` (Google Cloud console → APIs & Services → Credentials) |
+| `SMTP_OAUTH_CLIENT_SECRET` | **secret** | that client's secret, e.g. `GOCSPX-…` |
+| `SMTP_OAUTH_REFRESH_TOKEN` | **secret** | a refresh token issued **to the `SMTP_USERNAME` account** with the `https://mail.google.com/` scope, e.g. `1//0g…`. Each send trades it for a one-hour access token; the refresh token itself only ever goes to Google's token endpoint |
+
+Two things that break it: the refresh token belongs to a different account than `SMTP_USERNAME` (Gmail refuses
+the login), or the OAuth app's consent screen is left in **Testing** — Google then expires refresh tokens after
+7 days. Use an **Internal** app (a Google Workspace account) or a published one.
+
+*Option B — App Password*
+
+| Name | Kind | Value |
+|---|---|---|
+| `SMTP_PASSWORD` | **secret** | an **App Password** for that account (Google Account → Security → 2-Step Verification → App passwords; 2-Step Verification must be on). Gmail refuses the normal account password over SMTP. Example shape: Google shows it as `abcd efgh ijkl mnop` (16 letters) — paste it as `abcdefghijklmnop`, without the spaces |
+
+Google warns that App Passwords are less secure: one works like the account's password without 2-Step
+Verification, for the whole account, until revoked. Acceptable on a dedicated sender account; prefer OAuth2.
+
 The example values above are illustrations, not real accounts. Use a dedicated sender account rather than a
-person's own mailbox: its App Password can then be revoked (Google Account → App passwords) without
-affecting anyone, and replies to the alerts don't land in a personal inbox.
+person's own mailbox: its App Password or OAuth grant can then be revoked (Google Account → Security) without
+affecting anyone, the mails don't go out in a colleague's name, and replies to the alerts don't land in a
+personal inbox.
 
 What happens with a partial setup — none of it ever fails a lab run:
 
 | Set up | Result |
 |---|---|
 | `MAIL_TO` unset | no mail; the report job notes "no mail sent — the MAIL_TO repository variable is not set" |
-| `MAIL_TO` set, `SMTP_USERNAME` or `SMTP_PASSWORD` missing | no mail; a **warning** on the run names what's missing |
-| everything set, but Gmail refuses the login | no mail; an error on the step says to use an App Password (the account password, or an account without 2-Step Verification, is refused) |
+| `MAIL_TO` set, `SMTP_USERNAME` or the login (`SMTP_PASSWORD`, or all three `SMTP_OAUTH_*`) missing | no mail; a **warning** on the run names what's missing |
+| everything set, but Gmail refuses the login | no mail; an error on the step says why — App Password: use one (the account password, or an account without 2-Step Verification, is refused); OAuth2: the refresh token was revoked/expired, or was issued to another account |
 
 The weekly report behaves the same way, except that a refused login turns its own run red.
 
