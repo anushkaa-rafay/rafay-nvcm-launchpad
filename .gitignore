@@ -7,3 +7,4 @@ report/
 # the dashboard lives on its own `dashboard` branch; a build left behind after switching must not land on main
 dashboard/
 __pycache__/
+weekly/

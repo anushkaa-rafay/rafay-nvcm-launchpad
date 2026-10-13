@@ -41,15 +41,16 @@ first, because GitHub silently auto-creates any Environment a job names — a ty
 empty one behind. The `report` job runs outside the Environment, so `boot` writes `LAB` and `INSTANCE_ID`
 into `meta.env` for it.
 
-## The three workflows, and which ones you actually run
+## The four workflows, and which ones you actually run
 
 | Workflow | Triggered how | Purpose |
 |---|---|---|
 | `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run; and `schedule`, daily 06:00 IST (lab `SCHEDULE_LAB`, branch `SCHEDULE_POC_BRANCH`) | the real entry point for building a fabric from scratch |
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
 | `_phase.yml` | `workflow_call` **only** — called by the two above, once per phase | one phase (platform/blueprint/substrate/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of once per job |
+| `weekly-report.yml` | `schedule` (Monday 09:00 IST), or a person clicks Run | `scripts/weekly-report.py`: the last 7 days of the two entry points' runs, from the Actions API + each run's committed `summary.json` → its Summary tab and a mail to `MAIL_TO`. Touches no lab |
 
-Only the two entry points belong in the Actions tab. `_phase.yml` runs inside their jobs, never as a run of
+Only the two entry points and the weekly report belong in the Actions tab. `_phase.yml` runs inside their jobs, never as a run of
 its own, so it appears in the sidebar only if it has runs of its own — typically a "workflow file issue" run
 GitHub records when a push breaks its YAML. Deleting those runs takes it off the sidebar again.
 
@@ -62,6 +63,7 @@ there are `tests/selftest.sh` — run it before pushing (see "Validating a chang
 .github/workflows/nvcm-greenfield.yml   entry: inputs, boot → phases → poweroff → report (catalogue: stages-greenfield.sh)
 .github/workflows/nvcm-brownfield.yml   entry: inputs, boot → phases → poweroff → report (catalogue: stages-brownfield.sh)
 .github/workflows/_phase.yml            reusable: one phase of stages — shared by both, parameterized by `catalogue`
+.github/workflows/weekly-report.yml     Mondays: last 7 days of runs → Summary tab + mail (scripts/weekly-report.py)
 .github/actions/lab-access/             OCI CLI config + ssh-agent (keys never touch the workspace)
 config/common.sh                        the 4 platform stages, shared by both catalogues (SITE/TENANTS defaults too)
 config/stages-greenfield.sh             greenfield-only stages (blueprint-generate/blueprint-verify/substrate/site-bringup) + LAUNCHPAD_STAGES
@@ -73,6 +75,7 @@ scripts/build-report.sh                 merge job logs → one workflow.log + su
 scripts/commit-logs.sh                  commit the report under logs/<Mon-YYYY>/<DD-Mon-YYYY>/<run>/
 scripts/lib-log.sh                      the log format + committed path, shared by the three above
 scripts/failure-mail.py                 report job, on FAILED: mail the result, the failed stage's tail, the logs attached
+scripts/weekly-report.py                weekly-report.yml: runs (Actions API) + committed summary.json → report.md / report.html / mail
 scripts/lplib.py                        Python helpers: a stage's section of workflow.log, send_mail (SMTP from MAIL_TO/SMTP_*)
 tests/logging.sh                        self-test of that pipeline against a fake lab
 tests/selftest.sh                       every offline check in one: bash -n, shellcheck, both catalogues' stage logic, logging.sh
