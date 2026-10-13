@@ -275,7 +275,8 @@ rafay_nvcm_launchpad/
 │   ├── lab.sh                  OCI power + SSH connect
 │   ├── run-stages.sh           drives one phase, streams logs
 │   ├── build-report.sh         merges logs → summary.md / summary.json
-│   └── commit-logs.sh          dated commit of the report
+│   ├── commit-logs.sh          dated commit of the report
+│   └── failure-mail.py         emails a failed run's report (+ lplib.py, its helpers)
 ├── User_Guide.md               how to run a workflow
 └── Dev_Guide.md                architecture, internals, how to extend
 
@@ -294,13 +295,14 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
   across repositories, even under the same owner).
 - **Secrets** (GitHub Settings → Secrets and variables → Actions) — private keys only: `OCI_API_KEY`
   (OCI labs) or `AWS_SECRET_ACCESS_KEY` (AWS labs), `SSH_PRIVATE_KEY` (lab host login), `POC_DEPLOY_KEY`
-  (read-only clone access).
+  (read-only clone access), and optionally `SMTP_PASSWORD` (the Gmail App Password run mails are sent with).
 - **Variables**: `INSTANCE_ID` (required; an OCI OCID or an EC2 `i-…` ID, which selects the cloud),
   `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` (OCI labs) or `AWS_ACCESS_KEY_ID`, `AWS_REGION`
   (AWS labs), `SSH_USER`, `SSH_HOST`, `SSH_KNOWN_HOSTS`,
   `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`, and for the daily greenfield run `SCHEDULE_LAB`,
   `SCHEDULE_POC_BRANCH` (blank → `DEFAULT_LAB` / `POC_DEFAULT_BRANCH` → `main` — set it to the branch the daily
-  run should test).
+  run should test). Email (optional): `MAIL_TO`, `SMTP_USERNAME` (+ secret `SMTP_PASSWORD`, a Gmail App Password — the
+  account needs 2-Step Verification on); nothing is mailed, and nothing fails, until all three are set.
 - **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`INSTANCE_ID`, SSH host, …)
   live on it, plus any secret that differs for that lab; anything not set there falls back to repo level.
 - **SSH keys**: two distinct ones — a lab-host login key, and the POC repo's read-only deploy key — see
@@ -464,8 +466,8 @@ infrastructure.
 - The brownfield review gate is enforced by a workflow-input default, not a platform-level lock — nothing
   technically prevents dispatching straight to `stages=all` against a real DC.
 - No automated destructive-reset stage; a deeper environment reset stays a manual `rafay_nvcm_poc` command.
-- No notification integration yet (email / shared drive / Slack) — `summary.json` is a stable contract for
-  one, not yet consumed by anything.
+- Notification is email only, and only for failed runs; a shared-drive or Slack notifier would read the same
+  `summary.json`.
 - Concurrency is a soft GitHub Actions queue (one pending run per lab), adequate for the current scale, not
   a distributed lock suitable for much higher concurrency. A run on another lab never waits.
 - Parallel runs commit their logs to the same branch; `commit-logs.sh` rebases and retries on a rejected
@@ -474,7 +476,7 @@ infrastructure.
 
 ## 16. Future Improvements
 
-- Wire an actual notifier (email, shared drive, or Slack) off the existing `summary.json` contract.
+- Add a Slack or shared-drive notifier beside the email one, off the same `summary.json` contract.
 - Consider a hard technical gate for brownfield adoption (e.g. a GitHub Environment with required
   reviewers) if the input-default approach proves insufficient in practice.
 - Add an automated destructive-reset stage once the team agrees on when it's safe.

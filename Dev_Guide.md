@@ -72,6 +72,8 @@ scripts/run-stages.sh                   runner: drive a phase (from $LAUNCHPAD_C
 scripts/build-report.sh                 merge job logs → one workflow.log + summary.md / summary.json
 scripts/commit-logs.sh                  commit the report under logs/<Mon-YYYY>/<DD-Mon-YYYY>/<run>/
 scripts/lib-log.sh                      the log format + committed path, shared by the three above
+scripts/failure-mail.py                 report job, on FAILED: mail the result, the failed stage's tail, the logs attached
+scripts/lplib.py                        Python helpers: a stage's section of workflow.log, send_mail (SMTP from MAIL_TO/SMTP_*)
 tests/logging.sh                        self-test of that pipeline against a fake lab
 tests/selftest.sh                       every offline check in one: bash -n, shellcheck, both catalogues' stage logic, logging.sh
 ```
@@ -177,9 +179,12 @@ the team agrees it's safe.
 - `poweroff` and `report` jobs use `if: always()` and run after a success, a failure, or a cancellation —
   the instance is stopped even if it was already running before the run started (the report records that),
   and a report is always produced so a failure can never hide behind a job that never ran.
-- `summary.json` (written by `build-report.sh`) is the stable contract for any future notifier — email, a
-  shared drive, Slack. Add such a step at the end of the `report` job, reading that file; never parse the
-  workflow's own state instead. `scripts/commit-logs.sh` is the one piece to replace if logs move to
+- `summary.json` (written by `build-report.sh`) is the stable contract for every notifier. The report job's
+  last step, on `status == FAILED`, runs `scripts/failure-mail.py report`, which reads only that file plus the
+  report's logs; any further notifier (shared drive, Slack) belongs beside it, reading the same file — never
+  the workflow's own state. Mail goes through `scripts/lplib.py` (stdlib `smtplib`, config from `MAIL_TO` /
+  `SMTP_*`, a notice and no send when `MAIL_TO` is unset). The step is `continue-on-error`, so a mail
+  problem never changes a run's result. `scripts/commit-logs.sh` is the one piece to replace if logs move to
   external storage.
 
 ## Validating a change locally, without touching OCI

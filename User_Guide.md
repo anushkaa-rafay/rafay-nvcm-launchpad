@@ -63,8 +63,9 @@ the run at its first job, before anything touches OCI.
 | `OCI_API_KEY` | Repo (lab may override) | **OCI labs**: the API signing private key (PEM) |
 | `AWS_SECRET_ACCESS_KEY` | Repo (lab may override) | **AWS labs**: the IAM access key's secret |
 | `SSH_PRIVATE_KEY` | Repo (lab may override) | SSH key authorized on the lab host |
+| `SMTP_PASSWORD` | Repo only | optional — the Gmail **App Password** the run mails are sent with (see step 6) |
 
-Only private keys are secrets; every other value is read from variables. Every run checks the values for its
+Only private keys (and the mail password) are secrets; every other value is read from variables. Every run checks the values for its
 lab's cloud only (an AWS lab needs no `OCI_*` credentials and vice versa) before touching the instance: a
 missing value is reported by name together with the lab it was looked up for, and a value of the wrong shape
 fails there instead of as the cloud's opaque `404 NotAuthorizedOrNotFound` / `InvalidInstanceID`. A value saved on one lab's Environment is
@@ -130,6 +131,33 @@ host's disk.
   runner inside the VCN.
 - `sshpass` and `virsh` (brownfield's `bf-discover` stage in `virtual` mode) are already installed by
   `nvcm-host-prep.sh` — no extra host setup beyond the `host-prep` stage either flow already runs.
+
+**6. Email (optional)**
+
+Runs mail their result through a Gmail account (Python's own SMTP client, from the runner — no third-party
+action ever sees the password). Until `MAIL_TO` is set nothing is sent and nothing fails; the run just notes
+"no mail sent". All of these are repository-level — the report job doesn't run in a lab's Environment.
+
+| Name | Kind | Value |
+|---|---|---|
+| `MAIL_TO` | variable | comma-separated recipients, e.g. `a@rafay.co,b@rafay.co` |
+| `SMTP_USERNAME` | variable | the Gmail address that sends — also the mail's From. Example: `nvcm-launchpad-alerts@gmail.com` (or a Google Workspace address such as `nvcm-alerts@rafay.co`) |
+| `SMTP_PASSWORD` | **secret** | an **App Password** for that account (Google Account → Security → 2-Step Verification → App passwords; 2-Step Verification must be on). Gmail refuses the normal account password over SMTP. Example shape: Google shows it as `abcd efgh ijkl mnop` (16 letters) — paste it as `abcdefghijklmnop`, without the spaces |
+| `SMTP_SERVER`, `SMTP_PORT` | variable | optional — default `smtp.gmail.com` and `465` (TLS); `587` uses STARTTLS |
+
+The example values above are illustrations, not real accounts. Use a dedicated sender account rather than a
+person's own mailbox: its App Password can then be revoked (Google Account → App passwords) without
+affecting anyone, and replies to the alerts don't land in a personal inbox.
+
+What happens with a partial setup — none of it ever fails a lab run:
+
+| Set up | Result |
+|---|---|
+| `MAIL_TO` unset | no mail; the report job notes "no mail sent — the MAIL_TO repository variable is not set" |
+| `MAIL_TO` set, `SMTP_USERNAME` or `SMTP_PASSWORD` missing | no mail; a **warning** on the run names what's missing |
+| everything set, but Gmail refuses the login | no mail; an error on the step says to use an App Password (the account password, or an account without 2-Step Verification, is refused) |
+
+The weekly report behaves the same way, except that a refused login turns its own run red.
 
 ## Which flow do I run?
 
@@ -234,6 +262,10 @@ DC. Use the two-run pattern there.
   - A permanent commit under `logs/<Mon-YYYY>/<DD-Mon-YYYY>/<time>Z-<lab>-run<id>.<attempt>-<STATUS>/` in this
     repo (e.g. `logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED/`) — the durable record,
     including the brownfield blueprint you need to review before `bf-adopt`.
+- A **failed** run (either workflow, manual or daily) also sends an **email** to `MAIL_TO` (see step 6 of
+  setup): which stage failed, on which lab and branch, the stage table, the failed stage's last 60 lines, and
+  `workflow.log` plus that phase's `diagnostics-*.txt` attached (`boot.log` if it died before any stage; a
+  file over 5 MB is attached gzipped). Passed and cancelled runs send nothing.
 - Only one run (of either workflow) is ever active against the lab at a time — a second trigger queues
   behind it rather than clashing.
 
