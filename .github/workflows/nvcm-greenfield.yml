@@ -303,6 +303,7 @@ jobs:
           mkdir -p collected
           scripts/build-report.sh collected report
           cat report/summary.md >> "$GITHUB_STEP_SUMMARY"
+          python3 scripts/summary-logs.py report >> "$GITHUB_STEP_SUMMARY"   # failed stages' last lines
 
       - name: Upload run report
         uses: actions/upload-artifact@v4

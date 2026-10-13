@@ -276,6 +276,7 @@ rafay_nvcm_launchpad/
 │   ├── lab.sh                  OCI power + SSH connect
 │   ├── run-stages.sh           drives one phase, streams logs
 │   ├── build-report.sh         merges logs → summary.md / summary.json
+│   ├── summary-logs.py         failed stages' last lines → the run's Summary tab
 │   ├── commit-logs.sh          dated commit of the report
 │   ├── failure-mail.py         emails a failed run's report (+ lplib.py, its helpers)
 │   └── weekly-report.py        the weekly summary of runs (weekly-report.yml)
