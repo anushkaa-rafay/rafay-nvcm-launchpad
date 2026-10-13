@@ -1,0 +1,176 @@
+============================================================
+WORKFLOW RUN 38394547266.1 · lab aa-nvcm-vlab-3 · config/stages-greenfield.sh · prototype_fixes @ 9c423ed3aa46
+Started 2026-10-13T12:03:54Z · https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/38394547266
+============================================================
+
+============================================================
+STAGE 01: host-prep (phase: platform)
+============================================================
+
+[2026-10-13 12:05:28 UTC] INFO  Starting stage host-prep (timeout 45m, run key 38394547266-1)
+[agent] started host-prep (pid 540465, timeout 45m)
+[launchpad] stage=host-prep branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-13T12:05:28Z
+DNS configuration Start (1)...
+[dns] Network interface : enp0s9
+[dns] MAC address       : 02:00:17:0e:9b:a1
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (1) ...
+Hit:1 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble InRelease
+Get:2 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:3 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Hit:4 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-backports InRelease
+Get:5 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1702 kB]
+Get:6 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1144 kB]
+Get:7 http://security.ubuntu.com/ubuntu noble-security/main Translation-en [230 kB]
+Get:8 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1221 kB]
+Get:9 http://security.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+Get:10 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+Get:11 http://security.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+Fetched 6901 kB in 3s (2481 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.43.0-1ubuntu7.3).
+curl is already the newest version (8.5.0-2ubuntu10.15).
+ca-certificates is already the newest version (20260601~24.04.1).
+jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
+qemu-system-x86 is already the newest version (1:8.2.2+ds-0ubuntu1.18).
+libvirt-daemon-system is already the newest version (10.0.0-2ubuntu8.19).
+libvirt-clients is already the newest version (10.0.0-2ubuntu8.19).
+virtinst is already the newest version (1:4.1.0-3ubuntu0.1).
+bridge-utils is already the newest version (1.7.1-1ubuntu2).
+dnsmasq-base is already the newest version (2.91-0ubuntu0.24.04.2).
+sshpass is already the newest version (1.09-1).
+cloud-image-utils is already the newest version (0.33-1).
+docker.io is already the newest version (29.1.3-0ubuntu3~24.04.2).
+docker-buildx is already the newest version (0.30.1-0ubuntu1~24.04.1).
+0 upgraded, 0 newly installed, 0 to remove and 18 not upgraded.
+DNS configuration Start (2)...
+[dns] Network interface : enp0s9
+[dns] MAC address       : 02:00:17:0e:9b:a1
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (2) ...
+github.com/docker/buildx 0.30.1 0.30.1-0ubuntu1~24.04.1
+>>> Host prep done. LOG OUT and BACK IN now (for docker/kvm/libvirt group membership), then continue.
+[2026-10-13 12:05:50 UTC] INFO  Stage host-prep passed (rc=0, 22s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 02: nvcm-install (phase: platform)
+============================================================
+
+[2026-10-13 12:05:50 UTC] INFO  Starting stage nvcm-install (timeout 150m, run key 38394547266-1)
+[agent] started nvcm-install (pid 541869, timeout 150m)
+[launchpad] stage=nvcm-install branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-13T12:05:50Z
+[install] → platform/nvcm-install.sh --yes
+
+══════════════════════════════════════════════════════════════════════
+  Part I — install NVCM + Nautobot (kind cluster 'nv-config-manager', namespace 'nv-config-manager')
+══════════════════════════════════════════════════════════════════════
+[nvcm] toolchain OK (docker/kind/kubectl/helm/uv).
+[nvcm] NVCM release 'nv-config-manager' already installed at commit a6af41250fb2cb1353d0788002aede2d351bd531 — version unchanged, skipping the re-deploy (idempotent).
+[nvcm]    (to re-apply the config anyway, run 'nvcm-installer deploy /home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/nvcm-install-config.yaml …' by hand — see setup_guide.md §8).
+[nvcm] Entering ..checkout_nvcm_version()
+[nvcm] checking out and pointing to NVCM commit a6af41250fb2cb1353d0788002aede2d351bd531 ...
+[nvcm] Leaving..checkout_nvcm_version()
+
+══════════════════════════════════════════════════════════════════════
+  Observability extras — Loki + Alloy log pipeline + durable Prometheus (helm upgrade, --reuse-values)
+══════════════════════════════════════════════════════════════════════
+[nvcm] [INFO] Release 'nv-config-manager' is 'pending-install', not 'deployed' — not skipping; recovering via the observability upgrade.
+Error: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress
+[nvcm] !! FAILED: helm -n 'nv-config-manager' upgrade nv-config-manager '/home/ubuntu/nvidia/nv-config-manager/deploy/helm' --reuse-values -f '/home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/nvcm-observability-extra.yaml' --timeout '25m'
+[install] !! platform/nvcm-install.sh failed — see its output above.
+[2026-10-13 12:06:15 UTC] ERROR Stage nvcm-install failed (rc=1, 25s)
+
+------------------------------------------------------------
+STAGE STATUS: FAILED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 03: rafay-install (phase: platform)
+============================================================
+
+[2026-10-13 12:06:15 UTC] INFO  Stage rafay-install not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 04: platform-verify (phase: platform)
+============================================================
+
+[2026-10-13 12:06:15 UTC] INFO  Stage platform-verify not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 05: blueprint-generate (phase: blueprint)
+============================================================
+
+[2026-10-13 12:06:25 UTC] INFO  Stage blueprint-generate not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 06: blueprint-verify (phase: blueprint)
+============================================================
+
+[2026-10-13 12:06:25 UTC] INFO  Stage blueprint-verify not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 07: substrate (phase: substrate)
+============================================================
+
+[2026-10-13 12:06:25 UTC] INFO  Stage substrate not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 08: site-bringup (phase: bringup)
+============================================================
+
+[2026-10-13 12:06:25 UTC] INFO  Stage site-bringup not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+WORKFLOW STATUS: FAILED (failed stage: nvcm-install)
+============================================================
