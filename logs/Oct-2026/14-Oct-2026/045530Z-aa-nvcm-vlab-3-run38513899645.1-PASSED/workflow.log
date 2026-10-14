@@ -1,0 +1,2951 @@
+============================================================
+WORKFLOW RUN 38513899645.1 · lab aa-nvcm-vlab-3 · config/stages-greenfield.sh · prototype_fixes @ 9c423ed3aa46
+Started 2026-10-14T04:55:30Z · https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/38513899645
+============================================================
+
+============================================================
+STAGE 01: host-prep (phase: platform)
+============================================================
+
+[2026-10-14 04:57:57 UTC] INFO  Starting stage host-prep (timeout 45m, run key 38513899645-1)
+[agent] started host-prep (pid 32143, timeout 45m)
+[launchpad] stage=host-prep branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T04:57:58Z
+DNS configuration Start (1)...
+[dns] Network interface : enp0s9
+[dns] MAC address       : 02:00:17:0e:9b:a1
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (1) ...
+Hit:1 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:3 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.43.0-1ubuntu7.3).
+curl is already the newest version (8.5.0-2ubuntu10.15).
+ca-certificates is already the newest version (20260601~24.04.1).
+jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
+qemu-system-x86 is already the newest version (1:8.2.2+ds-0ubuntu1.18).
+libvirt-daemon-system is already the newest version (10.0.0-2ubuntu8.19).
+libvirt-clients is already the newest version (10.0.0-2ubuntu8.19).
+virtinst is already the newest version (1:4.1.0-3ubuntu0.1).
+bridge-utils is already the newest version (1.7.1-1ubuntu2).
+dnsmasq-base is already the newest version (2.91-0ubuntu0.24.04.2).
+sshpass is already the newest version (1.09-1).
+cloud-image-utils is already the newest version (0.33-1).
+docker.io is already the newest version (29.1.3-0ubuntu3~24.04.2).
+docker-buildx is already the newest version (0.30.1-0ubuntu1~24.04.1).
+0 upgraded, 0 newly installed, 0 to remove and 20 not upgraded.
+DNS configuration Start (2)...
+[dns] Network interface : enp0s9
+[dns] MAC address       : 02:00:17:0e:9b:a1
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (2) ...
+github.com/docker/buildx 0.30.1 0.30.1-0ubuntu1~24.04.1
+>>> Host prep done. LOG OUT and BACK IN now (for docker/kvm/libvirt group membership), then continue.
+[2026-10-14 04:58:21 UTC] INFO  Stage host-prep passed (rc=0, 24s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 02: platform-nvcm-install (phase: platform)
+============================================================
+
+[2026-10-14 04:58:21 UTC] INFO  Starting stage platform-nvcm-install (timeout 150m, run key 38513899645-1)
+[agent] started platform-nvcm-install (pid 33069, timeout 150m)
+[launchpad] stage=platform-nvcm-install branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T04:58:21Z
+[install] → platform/nvcm-install.sh --yes
+
+══════════════════════════════════════════════════════════════════════
+  Part I — install NVCM + Nautobot (kind cluster 'nv-config-manager', namespace 'nv-config-manager')
+══════════════════════════════════════════════════════════════════════
+[nvcm] toolchain OK (docker/kind/kubectl/helm/uv).
+[nvcm] cloning the NVIDIA NVCM installer (if absent) into /home/ubuntu/nvidia/nv-config-manager ...
+[nvcm] Entering ..checkout_nvcm_version()
+[nvcm] checking out and pointing to NVCM commit a6af41250fb2cb1353d0788002aede2d351bd531 ...
+[nvcm] Leaving..checkout_nvcm_version()
+[nvcm] creating the kind cluster (if absent) ...
+Creating cluster "nv-config-manager" ...
+ • Ensuring node image (kindest/node:v1.31.0) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.31.0) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Waiting ≤ 5m0s for control-plane = Ready ⏳  ...
+ ✓ Waiting ≤ 5m0s for control-plane = Ready ⏳
+ • Ready after 16s 💚
+Set kubectl context to "kind-nv-config-manager"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-nv-config-manager
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+[nvcm] installing the nvcm-installer CLI (uv) ...
+Resolved 43 packages in 15ms
+Checked 41 packages in 30ms
+Resolved 40 packages in 336ms
+   Building nv-config-manager-installer @ file:///home/ubuntu/nvidia/nv-config-manager/installer
+      Built nv-config-manager-installer @ file:///home/ubuntu/nvidia/nv-config-manager/installer
+Prepared 1 package in 567ms
+Installed 40 packages in 61ms
+ + aiohappyeyeballs==2.7.1
+ + aiohttp==3.14.5
+ + aiohttp-retry==2.9.1
+ + aiosignal==1.4.0
+ + annotated-types==0.8.0
+ + attrs==26.1.0
+ + certifi==2026.7.22
+ + charset-normalizer==3.5.2
+ + click==8.5.0
+ + durationpy==0.11
+ + frozenlist==1.8.0
+ + idna==3.20
+ + kubernetes==37.0.1
+ + linkify-it-py==2.2.0
+ + markdown-it-py==4.2.0
+ + mdit-py-plugins==0.6.1
+ + mdurl==0.1.2
+ + multidict==7.1.0
+ + nv-air-sdk==1.4.0
+ + nv-config-manager-installer==1.0.0 (from file:///home/ubuntu/nvidia/nv-config-manager/installer)
+ + oauthlib==4.0.0
+ + platformdirs==4.13.0
+ + propcache==0.5.4
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pygments==2.21.0
+ + python-dateutil==2.9.0.post0
+ + python-dotenv==1.2.4
+ + pyyaml==6.0.3
+ + requests==2.34.2
+ + requests-oauthlib==2.0.0
+ + rich==15.0.0
+ + six==1.17.0
+ + textual==8.2.8
+ + textual-fspicker==1.0.1
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + urllib3==2.8.0
+ + websocket-client==1.9.2
+ + yarl==1.25.1
+Installed 2 executables: nv-config-manager-installer, nvcm-installer
+[nvcm] deploying NVCM + Nautobot (first run builds images locally — ~15-20 min) ...
+  Project root: /home/ubuntu/nvidia/nv-config-manager
+  Pinned kubeconfig context: kind-nv-config-manager (/tmp/nv-config-manager-kubeconfig-jxgwqz7z.yaml)
+[>]  Check prerequisites
+  Kubeconfig context: kind-nv-config-manager  (server: https://0.0.0.0:41119)
+[*]  Check prerequisites
+  Fresh install: no existing Helm release found
+[>]  Build local images
+  Building 6 local image(s) with up to 4 parallel Docker build(s)...
+  [nv-config-manager-nautobot] $ docker build --provenance=false --progress=plain...
+  [nv-config-manager-nats-ready] $ docker build --provenance=false --progress=plain...
+  [nv-config-manager] $ docker build --provenance=false --progress=plain...
+  [nv-config-manager-ui] $ docker build --provenance=false --progress=plain...
+  [nv-config-manager] #0 building with "default" instance using docker driver
+  [nv-config-manager-nautobot] #0 building with "default" instance using docker driver
+  [nv-config-manager-nautobot] #1 [internal] load build definition from nautobot.Dockerfile
+  [nv-config-manager-nautobot] #1 transferring dockerfile: 7.00kB done
+  [nv-config-manager-ui] #0 building with "default" instance using docker driver
+  [nv-config-manager-ui] #1 [internal] load build definition from ui.Dockerfile
+  [nv-config-manager-ui] #1 transferring dockerfile: 2.54kB done
+  [nv-config-manager-nats-ready] #0 building with "default" instance using docker driver
+  [nv-config-manager-nats-ready] #1 [internal] load build definition from nats-ready.Dockerfile
+  [nv-config-manager-nats-ready] #1 transferring dockerfile: 2.23kB done
+  [nv-config-manager-ui] #1 DONE 0.0s
+  [nv-config-manager-ui] #2 [context scripts] load .dockerignore
+  [nv-config-manager-ui] #2 transferring scripts: 2B done
+  [nv-config-manager-ui] #2 DONE 0.0s
+  [nv-config-manager-ui] #3 [internal] load metadata for nvcr.io/nvidia/distroless/node:24-v4.0.9
+  [nv-config-manager-ui] #3 DONE 0.4s
+  [nv-config-manager-nats-ready] #1 DONE 0.0s
+  [nv-config-manager-nats-ready] #2 [context scripts] load .dockerignore
+  [nv-config-manager-nats-ready] #2 transferring scripts: 2B done
+  [nv-config-manager-nats-ready] #2 DONE 0.0s
+  [nv-config-manager-nats-ready] #3 [internal] load metadata for nvcr.io/nvidia/distroless/go:v4.0.8
+  [nv-config-manager-nats-ready] #3 ...
+  [nv-config-manager] #1 [internal] load build definition from nv-config-manager.Dockerfile
+  [nv-config-manager-nautobot] #1 DONE 0.0s
+  [nv-config-manager] #1 transferring dockerfile: 6.54kB done
+  [nv-config-manager] #1 DONE 0.0s
+  [nv-config-manager-nautobot] #2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+  [nv-config-manager-nautobot] #2 DONE 0.5s
+  [nv-config-manager] #2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+  [nv-config-manager] #2 DONE 0.5s
+  [nv-config-manager-ui] #4 [internal] load metadata for nvcr.io/nvidia/base/ubuntu:noble-20260217
+  [nv-config-manager-ui] #4 DONE 0.4s
+  [nv-config-manager-nats-ready] #4 [internal] load metadata for nvcr.io/nvidia/base/ubuntu:noble-20260217
+  [nv-config-manager-nats-ready] #4 DONE 0.4s
+  [nv-config-manager-nats-ready] #3 [internal] load metadata for nvcr.io/nvidia/distroless/go:v4.0.8
+  [nv-config-manager-nats-ready] #3 DONE 0.4s
+  [nv-config-manager-nats-ready] #5 [internal] load .dockerignore
+  [nv-config-manager-nats-ready] #5 transferring context: 2B done
+  [nv-config-manager-nats-ready] #5 DONE 0.0s
+  [nv-config-manager-nats-ready] #6 [deps 1/6] FROM nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a
+  [nv-config-manager-nats-ready] #6 resolve nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a 0.0s done
+  [nv-config-manager-nats-ready] #6 DONE 0.0s
+  [nv-config-manager-nats-ready] #7 [stage-1 1/2] FROM nvcr.io/nvidia/distroless/go:v4.0.8@sha256:938bd28ce4ddb800118a951774203e7563c2067a72b20ae6b85d2c7da165a178
+  [nv-config-manager-nats-ready] #7 resolve nvcr.io/nvidia/distroless/go:v4.0.8@sha256:938bd28ce4ddb800118a951774203e7563c2067a72b20ae6b85d2c7da165a178 0.0s done
+  [nv-config-manager-nats-ready] #7 DONE 0.0s
+  [nv-config-manager-nats-ready] #8 [context scripts] load from client
+  [nv-config-manager-nats-ready] #8 transferring scripts: 45B done
+  [nv-config-manager-nats-ready] #8 DONE 0.0s
+  [nv-config-manager-nats-ready] #9 [internal] load build context
+  [nv-config-manager-nats-ready] #9 transferring context: 453B done
+  [nv-config-manager-nats-ready] #9 DONE 0.0s
+  [nv-config-manager-nats-ready] #10 [builder 5/6] COPY . .
+  [nv-config-manager-nats-ready] #10 CACHED
+  [nv-config-manager-nats-ready] #11 [builder 6/6] RUN go build -ldflags="-s -w" -o bin/nats-ready ./cmd/nats-ready
+  [nv-config-manager-nats-ready] #11 CACHED
+  [nv-config-manager-nats-ready] #12 [builder 4/6] WORKDIR /build
+  [nv-config-manager-nats-ready] #12 CACHED
+  [nv-config-manager-nats-ready] #13 [builder 2/6] COPY --from=scripts configure-apt-mirror.sh /tmp/configure-apt-mirror.sh
+  [nv-config-manager-nats-ready] #13 CACHED
+  [nv-config-manager-nats-ready] #14 [builder 3/6] RUN set -eux;     /tmp/configure-apt-mirror.sh "" "" ubuntu &&     apt-get update && apt-get install -y --no-install-recommends         ca-certificates         curl &&     ARCH=$(dpkg --print-architecture) &&     TARBALL="go1.26.4.linux-${ARCH}.tar.gz" &&     if [ "$ARCH" = "amd64" ]; then EXPECTED="1153d3d50e0ac764b447adfe05c2bcf08e889d42a02e0fe0259bd47f6733ad7f";     elif [ "$ARCH" = "arm64" ]; then EXPECTED="ef758ae7c6cf9267c9c0ef080b8965f453d89ab2d25d9eb22de4405925238768";     else echo "Unsupported architecture: $ARCH" >&2; exit 1; fi &&     curl -fsSL -o /tmp/${TARBALL} "https://go.dev/dl/${TARBALL}" &&     echo "${EXPECTED}  /tmp/${TARBALL}" | sha256sum -c - &&     tar -C /usr/local -xzf /tmp/${TARBALL} &&     rm /tmp/${TARBALL} &&     rm -rf /var/lib/apt/lists/*
+  [nv-config-manager-nats-ready] #14 CACHED
+  [nv-config-manager-nats-ready] #15 [stage-1 2/2] COPY --from=builder /build/bin/nats-ready /nats-ready
+  [nv-config-manager-nats-ready] #15 CACHED
+  [nv-config-manager-nats-ready] #16 exporting to image
+  [nv-config-manager-nats-ready] #16 exporting layers done
+  [nv-config-manager-nats-ready] #16 exporting manifest sha256:d853e91dc00ec44ac15d9cbfd938309254fac94cb1f0e5ea7639131f4d273584 done
+  [nv-config-manager-nats-ready] #16 exporting config sha256:5eafeb938ed2ac602dd1ee6e4580da3cc437ca51eedab0ccd72c20e5e5b4f56d done
+  [nv-config-manager-nats-ready] #16 naming to docker.io/library/nv-config-manager-nats-ready:local done
+  [nv-config-manager-nats-ready] #16 unpacking to docker.io/library/nv-config-manager-nats-ready:local 0.0s done
+  [nv-config-manager-nats-ready] #16 DONE 0.0s
+  [nv-config-manager-nats-ready] 1 warning found (use docker --debug to expand):
+  [nv-config-manager-nats-ready]  - SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ARG "APT_MIRROR_GPG_KEY_URL") (line 12)
+  [nv-config-manager-nats-ready] completed in 0s
+  [nv-config-manager-kea] $ docker build --provenance=false --progress=plain...
+  [nv-config-manager-ui] #5 [internal] load .dockerignore
+  [nv-config-manager-ui] #5 transferring context: 71B done
+  [nv-config-manager-ui] #5 DONE 0.0s
+  [nv-config-manager-ui] #6 [runner 1/5] FROM nvcr.io/nvidia/distroless/node:24-v4.0.9@sha256:0667d39a12f77298e024658c758add8af07607d170260fa17ff25ff8baa71765
+  [nv-config-manager-ui] #6 resolve nvcr.io/nvidia/distroless/node:24-v4.0.9@sha256:0667d39a12f77298e024658c758add8af07607d170260fa17ff25ff8baa71765 0.0s done
+  [nv-config-manager-ui] #6 DONE 0.0s
+  [nv-config-manager-ui] #7 [deps 1/6] FROM nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a
+  [nv-config-manager-ui] #7 resolve nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a 0.0s done
+  [nv-config-manager-ui] #7 DONE 0.0s
+  [nv-config-manager-ui] #8 [context scripts] load from client
+  [nv-config-manager-ui] #8 transferring scripts: 45B done
+  [nv-config-manager-ui] #8 DONE 0.0s
+  [nv-config-manager-ui] #9 [internal] load build context
+  [nv-config-manager-ui] #9 transferring context: 20.47kB 0.1s done
+  [nv-config-manager-ui] #9 DONE 0.1s
+  [nv-config-manager-ui] #10 [deps 2/6] COPY --from=scripts configure-apt-mirror.sh /tmp/configure-apt-mirror.sh
+  [nv-config-manager-ui] #10 CACHED
+  [nv-config-manager-ui] #11 [builder 1/3] WORKDIR /app
+  [nv-config-manager-ui] #11 CACHED
+  [nv-config-manager-ui] #12 [builder 2/3] COPY . .
+  [nv-config-manager-ui] #12 CACHED
+  [nv-config-manager-ui] #13 [builder 3/3] RUN npm run build
+  [nv-config-manager-ui] #13 CACHED
+  [nv-config-manager-ui] #14 [runner 3/5] COPY --from=builder --chown=1000:1000 /app/public ./public
+  [nv-config-manager-ui] #14 CACHED
+  [nv-config-manager-ui] #15 [deps 5/6] COPY package.json package-lock.json* ./
+  [nv-config-manager-ui] #15 CACHED
+  [nv-config-manager-ui] #16 [deps 4/6] WORKDIR /app
+  [nv-config-manager-ui] #16 CACHED
+  [nv-config-manager-ui] #17 [deps 6/6] RUN npm ci
+  [nv-config-manager-ui] #17 CACHED
+  [nv-config-manager-ui] #18 [deps 3/6] RUN set -eux;     /tmp/configure-apt-mirror.sh "" "" ubuntu &&     apt-get update && apt-get upgrade -y &&     apt-get install -y --no-install-recommends         ca-certificates         curl         gnupg &&     mkdir -p /etc/apt/keyrings &&     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg &&     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list &&     apt-get update &&     apt-get install -y --no-install-recommends nodejs &&     apt-get clean &&     rm -rf /var/lib/apt/lists/*
+  [nv-config-manager-ui] #18 CACHED
+  [nv-config-manager-ui] #19 [runner 4/5] COPY --from=builder --chown=1000:1000 /app/.next/standalone ./
+  [nv-config-manager-ui] #19 CACHED
+  [nv-config-manager-ui] #20 [runner 2/5] WORKDIR /app
+  [nv-config-manager-ui] #20 CACHED
+  [nv-config-manager-ui] #21 [runner 5/5] COPY --from=builder --chown=1000:1000 /app/.next/static ./.next/static
+  [nv-config-manager-ui] #21 CACHED
+  [nv-config-manager-ui] #22 exporting to image
+  [nv-config-manager-ui] #22 exporting layers done
+  [nv-config-manager-ui] #22 exporting manifest sha256:57db8b38729e9b2321312c95c677768314c5b7f2ddb02a0649291cfc01838026 done
+  [nv-config-manager-ui] #22 exporting config sha256:912b35b921830b35dc98f6e1d7ef8e1343b39c0bf15d7cb5a9e90b46a965bcab done
+  [nv-config-manager-ui] #22 naming to docker.io/library/nv-config-manager-ui:local done
+  [nv-config-manager-ui] #22 unpacking to docker.io/library/nv-config-manager-ui:local 0.0s done
+  [nv-config-manager-ui] #22 DONE 0.1s
+  [nv-config-manager-ui] 1 warning found (use docker --debug to expand):
+  [nv-config-manager-ui]  - SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ARG "APT_MIRROR_GPG_KEY_URL") (line 12)
+  [nv-config-manager-ui] completed in 0s
+  [nv-config-manager-kea-admin] $ docker build --provenance=false --progress=plain...
+  [nv-config-manager-kea] #0 building with "default" instance using docker driver
+  [nv-config-manager-kea-admin] #0 building with "default" instance using docker driver
+  [nv-config-manager] #3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+  [nv-config-manager] #3 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+  [nv-config-manager] #3 CACHED
+  [nv-config-manager] #4 [internal] load metadata for ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+  [nv-config-manager] #4 ...
+  [nv-config-manager-kea] #1 [internal] load build definition from kea.Dockerfile
+  [nv-config-manager-kea] #1 transferring dockerfile: 2.74kB done
+  [nv-config-manager-nautobot] #3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+  [nv-config-manager-nautobot] #3 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+  [nv-config-manager-nautobot] #3 CACHED
+  [nv-config-manager-nautobot] #4 [context scripts] load .dockerignore
+  [nv-config-manager-nautobot] #4 DONE 0.0s
+  [nv-config-manager-nautobot] #5 [internal] load metadata for ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+  [nv-config-manager-nautobot] #5 ...
+  [nv-config-manager-kea] #1 DONE 0.0s
+  [nv-config-manager-kea] #2 [context scripts] load .dockerignore
+  [nv-config-manager-kea] #2 transferring scripts: 2B done
+  [nv-config-manager-kea] #2 DONE 0.0s
+  [nv-config-manager-kea] #3 [internal] load metadata for nvcr.io/nvidia/base/ubuntu:noble-20260217
+  [nv-config-manager-kea] #3 DONE 0.1s
+  [nv-config-manager-kea] #4 [internal] load .dockerignore
+  [nv-config-manager-kea] #4 transferring context:
+  [nv-config-manager-kea] #4 transferring context: 2B done
+  [nv-config-manager-kea] #4 DONE 0.0s
+  [nv-config-manager-kea] #5 [stage-0 1/5] FROM nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a
+  [nv-config-manager-kea] #5 resolve nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a 0.0s done
+  [nv-config-manager-kea] #5 DONE 0.0s
+  [nv-config-manager-kea] #6 [context scripts] load from client
+  [nv-config-manager-kea] #6 transferring scripts: 45B done
+  [nv-config-manager-kea] #6 DONE 0.0s
+  [nv-config-manager-kea] #7 [internal] load build context
+  [nv-config-manager-kea] #7 transferring context: 4.07kB done
+  [nv-config-manager-kea] #7 DONE 0.0s
+  [nv-config-manager-kea] #8 [stage-0 5/7] RUN bash /tmp/setup.stork.deb.sh &&     apt-get install -y --no-install-recommends isc-stork-agent=2.4.1* &&     rm /tmp/setup.stork.deb.sh &&     apt-get clean &&     rm -rf /var/lib/apt/lists/*
+  [nv-config-manager-kea] #8 CACHED
+  [nv-config-manager-kea] #9 [stage-0 6/7] COPY build/kea/ /
+  [nv-config-manager-kea] #9 CACHED
+  [nv-config-manager-kea] #10 [stage-0 3/7] RUN set -eux;     /tmp/configure-apt-mirror.sh "" "" ubuntu &&     apt-get update && apt-get upgrade -y &&     apt-get install -y --no-install-recommends         bash         ca-certificates         curl         gnupg         supervisor &&     curl -1sLf 'https://dl.cloudsmith.io/public/isc/kea-2-6/setup.deb.sh' | bash &&     apt-get update &&     apt-get install -y --no-install-recommends         isc-kea-ctrl-agent         isc-kea-dhcp4         isc-kea-hooks &&     apt-get clean &&     rm -rf /var/lib/apt/lists/* &&     groupadd -r kea 2>/dev/null || true &&     useradd -r -g kea kea 2>/dev/null || true
+  [nv-config-manager-kea] #10 CACHED
+  [nv-config-manager-kea] #11 [stage-0 2/7] COPY --from=scripts configure-apt-mirror.sh /tmp/configure-apt-mirror.sh
+  [nv-config-manager-kea] #11 CACHED
+  [nv-config-manager-kea] #12 [stage-0 4/7] COPY build/setup.stork.deb.sh /tmp/setup.stork.deb.sh
+  [nv-config-manager-kea] #12 CACHED
+  [nv-config-manager-kea] #13 [stage-0 7/7] RUN mkdir -p /var/run/kea /var/log/kea /var/lib/kea /var/log/supervisor &&     chown -R kea:kea /var/run/kea /var/log/kea /var/lib/kea /etc/kea &&     chmod 644 /etc/kea/kea-dhcp4.conf /etc/kea/kea-ctrl-agent.conf &&     KEA_HOOKS_PATH=$(ls -d /usr/lib/*/kea/hooks 2>/dev/null | head -1) &&     sed -i "s|/usr/lib/kea/hooks|${KEA_HOOKS_PATH}|g" /etc/kea/kea-dhcp4.conf
+  [nv-config-manager-kea] #13 CACHED
+  [nv-config-manager-kea] #14 exporting to image
+  [nv-config-manager-kea] #14 exporting layers done
+  [nv-config-manager-kea] #14 exporting manifest sha256:0f6a15b0fe366675b57674bd7d4cc069ebf6fbf0de6c518de0b8f68dabb5fb16 done
+  [nv-config-manager-kea] #14 exporting config sha256:34b4d489e66ace7b2f9d82c6eab791466f1127fdb838016bed1243f999243bda done
+  [nv-config-manager-kea] #14 naming to docker.io/library/nv-config-manager-kea:local done
+  [nv-config-manager-kea] #14 unpacking to docker.io/library/nv-config-manager-kea:local done
+  [nv-config-manager-kea] #14 DONE 0.0s
+  [nv-config-manager-kea] 1 warning found (use docker --debug to expand):
+  [nv-config-manager-kea]  - SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ARG "APT_MIRROR_GPG_KEY_URL") (line 13)
+  [nv-config-manager-kea] completed in 0s
+  [nv-config-manager] #5 [context scripts] load .dockerignore
+  [nv-config-manager] #5 transferring scripts: 2B done
+  [nv-config-manager] #5 DONE 0.0s
+  [nv-config-manager-nautobot] #4 [context scripts] load .dockerignore
+  [nv-config-manager-nautobot] #4 transferring scripts: 2B done
+  [nv-config-manager-nautobot] #4 DONE 0.0s
+  [nv-config-manager-nautobot] #6 [internal] load metadata for nvcr.io/nvidia/distroless/python:3.11-v4.0.8
+  [nv-config-manager-nautobot] #6 DONE 0.3s
+  [nv-config-manager] #6 [internal] load metadata for nvcr.io/nvidia/distroless/python:3.13-v4.0.8
+  [nv-config-manager] #6 DONE 0.3s
+  [nv-config-manager-kea-admin] #1 [internal] load build definition from kea-admin.Dockerfile
+  [nv-config-manager-kea-admin] #1 transferring dockerfile: 1.71kB done
+  [nv-config-manager-kea-admin] #1 WARN: SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ARG "APT_MIRROR_GPG_KEY_URL") (line 17)
+  [nv-config-manager-kea-admin] #1 DONE 0.0s
+  [nv-config-manager-kea-admin] #2 [context scripts] load .dockerignore
+  [nv-config-manager-kea-admin] #2 transferring scripts: 2B done
+  [nv-config-manager-kea-admin] #2 DONE 0.0s
+  [nv-config-manager-kea-admin] #3 [internal] load metadata for nvcr.io/nvidia/base/ubuntu:noble-20260217
+  [nv-config-manager-kea-admin] #3 DONE 0.0s
+  [nv-config-manager-kea-admin] #4 [internal] load .dockerignore
+  [nv-config-manager-kea-admin] #4 transferring context: 2B done
+  [nv-config-manager-kea-admin] #4 DONE 0.0s
+  [nv-config-manager-kea-admin] #5 [stage-0 1/5] FROM nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a
+  [nv-config-manager-kea-admin] #5 resolve nvcr.io/nvidia/base/ubuntu:noble-20260217@sha256:57a7daab5579d4b4cfbe25b59dc9d22d0c4cec24e5608523e77fd5f12e9da51a 0.0s done
+  [nv-config-manager-kea-admin] #5 DONE 0.0s
+  [nv-config-manager-kea-admin] #6 [context scripts] load from client
+  [nv-config-manager-kea-admin] #6 transferring scripts: 45B done
+  [nv-config-manager-kea-admin] #6 DONE 0.0s
+  [nv-config-manager-kea-admin] #7 [internal] load build context
+  [nv-config-manager-kea-admin] #7 transferring context: 3.12kB 0.1s done
+  [nv-config-manager-kea-admin] #7 DONE 0.2s
+  [nv-config-manager-kea-admin] #8 [stage-0 2/5] COPY --from=scripts configure-apt-mirror.sh /tmp/configure-apt-mirror.sh
+  [nv-config-manager-kea-admin] #8 CACHED
+  [nv-config-manager-kea-admin] #9 [stage-0 3/5] RUN set -eux;     /tmp/configure-apt-mirror.sh "" "" ubuntu &&     apt-get update && apt-get upgrade -y &&     apt-get install -y --no-install-recommends         bash         ca-certificates         curl         gnupg         postgresql-client &&     curl -1sLf 'https://dl.cloudsmith.io/public/isc/kea-2-6/setup.deb.sh' | bash &&     apt-get update &&     apt-get install -y --no-install-recommends isc-kea-admin &&     apt-get clean &&     rm -rf /var/lib/apt/lists/*
+  [nv-config-manager-kea-admin] #9 CACHED
+  [nv-config-manager-kea-admin] #10 [stage-0 4/5] COPY build/kea-admin/entrypoint.sh /entrypoint.sh
+  [nv-config-manager-kea-admin] #10 CACHED
+  [nv-config-manager-kea-admin] #11 [stage-0 5/5] RUN chmod +x /entrypoint.sh
+  [nv-config-manager-kea-admin] #11 CACHED
+  [nv-config-manager-kea-admin] #12 exporting to image
+  [nv-config-manager-kea-admin] #12 exporting layers done
+  [nv-config-manager-kea-admin] #12 exporting manifest sha256:f89108d884b25f942f5577d0d6e631cf19aab17b179d7ed881f3c0b08d01f21e done
+  [nv-config-manager-kea-admin] #12 exporting config sha256:498959d2c89b63750db61fe77f9006060178ead95bb142e3b552c43bd59cf7cc done
+  [nv-config-manager-kea-admin] #12 naming to docker.io/library/nv-config-manager-kea-admin:local done
+  [nv-config-manager-kea-admin] #12 unpacking to docker.io/library/nv-config-manager-kea-admin:local done
+  [nv-config-manager-kea-admin] #12 DONE 0.0s
+  [nv-config-manager-kea-admin] 1 warning found (use docker --debug to expand):
+  [nv-config-manager-kea-admin]  - SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ARG "APT_MIRROR_GPG_KEY_URL") (line 17)
+  [nv-config-manager-kea-admin] completed in 0s
+  [nv-config-manager] #4 [internal] load metadata for ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+  [nv-config-manager] #4 DONE 0.5s
+  [nv-config-manager-nautobot] #5 [internal] load metadata for ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+  [nv-config-manager-nautobot] #5 DONE 0.5s
+  [nv-config-manager-nautobot] #7 [internal] load .dockerignore
+  [nv-config-manager-nautobot] #7 transferring context: 2B done
+  [nv-config-manager-nautobot] #7 DONE 0.0s
+  [nv-config-manager-nautobot] #8 [internal] load build context
+  [nv-config-manager-nautobot] #8 DONE 0.0s
+  [nv-config-manager-nautobot] #9 [context scripts] load from client
+  [nv-config-manager-nautobot] #9 DONE 0.0s
+  [nv-config-manager-nautobot] #10 [builder  1/13] FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim@sha256:4f5d923c9dcea037f57bda425dd209f3ec643da2f0b74227f68d09dab0b3bb36
+  [nv-config-manager-nautobot] #10 resolve ghcr.io/astral-sh/uv:python3.11-bookworm-slim@sha256:4f5d923c9dcea037f57bda425dd209f3ec643da2f0b74227f68d09dab0b3bb36 0.0s done
+  [nv-config-manager-nautobot] #10 DONE 0.1s
+  [nv-config-manager-nautobot] #11 [stage-1  1/47] FROM nvcr.io/nvidia/distroless/python:3.11-v4.0.8@sha256:bf89b7509eed586d519baf1044e29387d5936d0928065fb68fea7f53fa919df5
+  [nv-config-manager-nautobot] #11 resolve nvcr.io/nvidia/distroless/python:3.11-v4.0.8@sha256:bf89b7509eed586d519baf1044e29387d5936d0928065fb68fea7f53fa919df5 0.0s done
+  [nv-config-manager-nautobot] #11 DONE 0.1s
+  [nv-config-manager-nautobot] #9 [context scripts] load from client
+  [nv-config-manager-nautobot] #9 transferring scripts: 45B done
+  [nv-config-manager-nautobot] #9 DONE 0.0s
+  [nv-config-manager-nautobot] #8 [internal] load build context
+  [nv-config-manager-nautobot] #8 transferring context: 16.38kB 0.1s done
+  [nv-config-manager-nautobot] #8 DONE 0.1s
+  [nv-config-manager] #7 [internal] load .dockerignore
+  [nv-config-manager] #7 transferring context: 2B done
+  [nv-config-manager] #7 DONE 0.0s
+  [nv-config-manager] #8 [stage-1  1/11] FROM nvcr.io/nvidia/distroless/python:3.13-v4.0.8@sha256:89574a7b9524b7166ff3e0c547ad87a203437b3afe71dfb9878e279196254b76
+  [nv-config-manager] #8 resolve nvcr.io/nvidia/distroless/python:3.13-v4.0.8@sha256:89574a7b9524b7166ff3e0c547ad87a203437b3afe71dfb9878e279196254b76 0.0s done
+  [nv-config-manager] #8 DONE 0.0s
+  [nv-config-manager] #9 [builder  1/11] FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim@sha256:531f855bda2c73cd6ef67d56b733b357cea384185b3022bd09f05e002cd144ca
+  [nv-config-manager] #9 resolve ghcr.io/astral-sh/uv:python3.13-bookworm-slim@sha256:531f855bda2c73cd6ef67d56b733b357cea384185b3022bd09f05e002cd144ca 0.0s done
+  [nv-config-manager] #9 DONE 0.0s
+  [nv-config-manager] #10 [context scripts] load from client
+  [nv-config-manager] #10 transferring scripts: 45B done
+  [nv-config-manager] #10 DONE 0.0s
+  [nv-config-manager] #11 [internal] load build context
+  [nv-config-manager] #11 transferring context: 7.41MB 0.1s done
+  [nv-config-manager] #11 DONE 0.1s
+  [nv-config-manager] #12 [builder  8/11] COPY db/migrations/ /code/nv-config-manager/db/migrations/
+  [nv-config-manager] #12 CACHED
+  [nv-config-manager] #13 [builder  5/11] COPY pyproject.toml uv.lock README.md /code/nv-config-manager/
+  [nv-config-manager] #13 CACHED
+  [nv-config-manager] #14 [stage-1  3/11] COPY --from=builder /code/nv-config-manager/.venv /code/nv-config-manager/.venv
+  [nv-config-manager] #14 CACHED
+  [nv-config-manager] #15 [stage-1 10/11] COPY --from=builder /sftp-bin/sshpass /usr/bin/sshpass
+  [nv-config-manager] #15 CACHED
+  [nv-config-manager] #16 [stage-1  5/11] COPY --from=builder /code/nv-config-manager/src/tests/__init__.py /code/nv-config-manager/src/tests/__init__.py
+  [nv-config-manager] #16 CACHED
+  [nv-config-manager] #17 [builder  3/11] RUN set -eux;     /tmp/configure-apt-mirror.sh "" "" debian &&     apt-get update && apt-get install -y --no-install-recommends     g++     gcc     libffi-dev     libpq-dev     openssh-server     sshpass &&     rm -rf /var/lib/apt/lists/* &&     mkdir -p /sftp-bin /sftp-lib &&     cp /usr/bin/sftp /usr/bin/ssh /usr/bin/sshpass /sftp-bin/ &&     for bin in /usr/bin/sftp /usr/bin/ssh /usr/bin/sshpass; do         ldd "$bin" | grep "=>" | awk '{print $3}' | xargs -I{} cp -n {} /sftp-lib/ 2>/dev/null || true;     done
+  [nv-config-manager] #17 CACHED
+  [nv-config-manager] #18 [builder 10/11] RUN uv venv /code/nv-config-manager/.venv
+  [nv-config-manager] #18 CACHED
+  [nv-config-manager] #19 [stage-1  6/11] COPY --from=builder /code/nv-config-manager/src/tests/integration/ /code/nv-config-manager/src/tests/integration/
+  [nv-config-manager] #19 CACHED
+  [nv-config-manager] #20 [stage-1  8/11] COPY --from=builder /sftp-bin/sftp /usr/bin/sftp
+  [nv-config-manager] #20 CACHED
+  [nv-config-manager] #21 [builder 11/11] RUN --mount=type=cache,id=nvcm-uv-cache,target=/root/.cache/uv     set -eux;     if [ -n "" ]; then         export SETUPTOOLS_SCM_PRETEND_VERSION="";     fi;     if [ "false" = "true" ]; then         uv sync             --frozen             --no-dev             --group integration-test             --no-editable             --no-binary-package numpy             --config-settings-package "numpy:setup-args=-Dcpu-baseline=min"             --config-settings-package "numpy:setup-args=-Dcpu-dispatch=max"             --config-settings-package "numpy:setup-args=-Dallow-noblas=true";     else         uv sync --frozen --no-dev --group integration-test --no-editable;     fi;     chmod -R a+rX /code/nv-config-manager/.venv /code/nv-config-manager/db /code/nv-config-manager/src
+  [nv-config-manager] #21 CACHED
+  [nv-config-manager] #22 [builder  4/11] WORKDIR /code/nv-config-manager
+  [nv-config-manager] #22 CACHED
+  [nv-config-manager] #23 [builder  7/11] COPY components/network-templates/ /code/nv-config-manager/components/network-templates/
+  [nv-config-manager] #23 CACHED
+  [nv-config-manager] #24 [stage-1  2/11] WORKDIR /code/nv-config-manager
+  [nv-config-manager] #24 CACHED
+  [nv-config-manager] #25 [builder  6/11] COPY src/ /code/nv-config-manager/src/
+  [nv-config-manager] #25 CACHED
+  [nv-config-manager] #26 [builder  2/11] COPY --from=scripts configure-apt-mirror.sh /tmp/configure-apt-mirror.sh
+  [nv-config-manager] #26 CACHED
+  [nv-config-manager] #27 [stage-1  7/11] COPY --from=builder /etc/ssh/moduli /etc/ssh/moduli
+  [nv-config-manager] #27 CACHED
+  [nv-config-manager] #28 [stage-1  4/11] COPY --from=builder /code/nv-config-manager/db /code/nv-config-manager/db
+  [nv-config-manager] #28 CACHED
+  [nv-config-manager] #29 [stage-1  9/11] COPY --from=builder /sftp-bin/ssh /usr/bin/ssh
+  [nv-config-manager] #29 CACHED
+  [nv-config-manager] #30 [builder  9/11] COPY db/alembic.ini /code/nv-config-manager/db/
+  [nv-config-manager] #30 CACHED
+  [nv-config-manager] #31 [stage-1 11/11] COPY --from=builder /sftp-lib/ /lib/
+  [nv-config-manager] #31 CACHED
+  [nv-config-manager] #32 exporting to image
+  [nv-config-manager] #32 exporting layers done
+  [nv-config-manager] #32 exporting manifest sha256:2ee11356ded1171a86a81086fb71f54b51226c65cdfb9e81624d62e43160b4bb done
+  [nv-config-manager] #32 exporting config sha256:1f867dd849ff0ab5a2784db911c4815cadbeb0f30076e6c5f1b6bde648aba294 done
+  [nv-config-manager] #32 naming to docker.io/library/nv-config-manager:local done
+  [nv-config-manager] #32 unpacking to docker.io/library/nv-config-manager:local 0.0s done
+  [nv-config-manager] #32 DONE 0.0s
+  [nv-config-manager] completed in 1s
+  [nv-config-manager-nautobot] #12 [stage-1 20/47] COPY --from=builder /usr/lib/git-core /usr/lib/git-core
+  [nv-config-manager-nautobot] #12 CACHED
+  [nv-config-manager-nautobot] #13 [builder 10/13] COPY nv_config_manager_auth /opt/nautobot/nv_config_manager_auth
+  [nv-config-manager-nautobot] #13 CACHED
+  [nv-config-manager-nautobot] #14 [stage-1 33/47] COPY --from=builder /lib/*-linux-gnu/libk5crypto.so* /usr/lib/
+  [nv-config-manager-nautobot] #14 CACHED
+  [nv-config-manager-nautobot] #15 [builder  3/13] RUN set -eux;     /tmp/configure-apt-mirror.sh "" "" debian &&     apt-get update && apt-get install -y --no-install-recommends     g++     gcc     git=1:2.39.5-0+deb12u3     libffi-dev     libjpeg-dev     libldap2-dev     libpq-dev     libsasl2-dev     libssl-dev     libxml2-dev     libxslt1-dev     zlib1g-dev &&     rm -rf /var/lib/apt/lists/*
+  [nv-config-manager-nautobot] #15 CACHED
+  [nv-config-manager-nautobot] #16 [stage-1  7/47] COPY --from=builder --chown=1000:1000 /opt/nautobot/media /opt/nautobot/media
+  [nv-config-manager-nautobot] #16 CACHED
+  [nv-config-manager-nautobot] #17 [builder  9/13] COPY nv_config_manager_jobs /opt/nautobot/jobs/nv_config_manager_jobs
+  [nv-config-manager-nautobot] #17 CACHED
+  [nv-config-manager-nautobot] #18 [stage-1 25/47] COPY --from=builder /lib/*-linux-gnu/libcrypto.so* /usr/lib/
+  [nv-config-manager-nautobot] #18 CACHED
+  [nv-config-manager-nautobot] #19 [stage-1 39/47] COPY --from=builder /lib/*-linux-gnu/libp11-kit.so* /usr/lib/
+  [nv-config-manager-nautobot] #19 CACHED
+  [nv-config-manager-nautobot] #20 [builder  2/13] COPY --from=scripts configure-apt-mirror.sh /tmp/configure-apt-mirror.sh
+  [nv-config-manager-nautobot] #20 CACHED
+  [nv-config-manager-nautobot] #21 [stage-1  6/47] COPY --from=builder --chown=1000:1000 /opt/nautobot/static /opt/nautobot/static
+  [nv-config-manager-nautobot] #21 CACHED
+  [nv-config-manager-nautobot] #22 [stage-1 30/47] COPY --from=builder /lib/*-linux-gnu/libgssapi_krb5.so* /usr/lib/
+  [nv-config-manager-nautobot] #22 CACHED
+  [nv-config-manager-nautobot] #23 [stage-1 43/47] COPY --from=builder /lib/*-linux-gnu/libssh2.so* /usr/lib/
+  [nv-config-manager-nautobot] #23 CACHED
+  [nv-config-manager-nautobot] #24 [builder 13/13] RUN mkdir -p /opt/nautobot/static     /opt/nautobot/media     /opt/nautobot/media/devicetype-images     /opt/nautobot/media/image-attachments     /opt/nautobot/git     /opt/nautobot/.cache &&     chmod -R a+rX /opt/nautobot/.venv /opt/nautobot/nautobot_config.py /opt/nautobot/nv_config_manager_auth
+  [nv-config-manager-nautobot] #24 CACHED
+  [nv-config-manager-nautobot] #25 [builder  8/13] COPY nautobot_config.py /opt/nautobot/nautobot_config.py
+  [nv-config-manager-nautobot] #25 CACHED
+  [nv-config-manager-nautobot] #26 [stage-1 45/47] COPY --from=builder /lib/*-linux-gnu/libunistring.so* /usr/lib/
+  [nv-config-manager-nautobot] #26 CACHED
+  [nv-config-manager-nautobot] #27 [stage-1 13/47] COPY --from=builder /usr/lib/*-linux-gnu/libxslt.so* /usr/lib/
+  [nv-config-manager-nautobot] #27 CACHED
+  [nv-config-manager-nautobot] #28 [stage-1 38/47] COPY --from=builder /lib/*-linux-gnu/libnghttp2.so* /usr/lib/
+  [nv-config-manager-nautobot] #28 CACHED
+  [nv-config-manager-nautobot] #29 [stage-1 46/47] COPY --from=builder /lib/*-linux-gnu/libz.so* /usr/lib/
+  [nv-config-manager-nautobot] #29 CACHED
+  [nv-config-manager-nautobot] #30 [stage-1 37/47] COPY --from=builder /lib/*-linux-gnu/libnettle.so* /usr/lib/
+  [nv-config-manager-nautobot] #30 CACHED
+  [nv-config-manager-nautobot] #31 [stage-1  4/47] COPY --from=builder /opt/nautobot/nautobot_config.py /opt/nautobot/nautobot_config.py
+  [nv-config-manager-nautobot] #31 CACHED
+  [nv-config-manager-nautobot] #32 [stage-1 31/47] COPY --from=builder /lib/*-linux-gnu/libhogweed.so* /usr/lib/
+  [nv-config-manager-nautobot] #32 CACHED
+  [nv-config-manager-nautobot] #33 [stage-1 35/47] COPY --from=builder /lib/*-linux-gnu/libkrb5.so* /usr/lib/
+  [nv-config-manager-nautobot] #33 CACHED
+  [nv-config-manager-nautobot] #34 [stage-1 24/47] COPY --from=builder /lib/*-linux-gnu/libcom_err.so* /usr/lib/
+  [nv-config-manager-nautobot] #34 CACHED
+  [nv-config-manager-nautobot] #35 [stage-1 17/47] COPY --from=builder /usr/lib/*-linux-gnu/libsasl2.so* /usr/lib/
+  [nv-config-manager-nautobot] #35 CACHED
+  [nv-config-manager-nautobot] #36 [stage-1 26/47] COPY --from=builder /lib/*-linux-gnu/libcurl-gnutls.so* /usr/lib/
+  [nv-config-manager-nautobot] #36 CACHED
+  [nv-config-manager-nautobot] #37 [builder 11/13] RUN uv venv /opt/nautobot/.venv
+  [nv-config-manager-nautobot] #37 CACHED
+  [nv-config-manager-nautobot] #38 [stage-1 32/47] COPY --from=builder /lib/*-linux-gnu/libidn2.so* /usr/lib/
+  [nv-config-manager-nautobot] #38 CACHED
+  [nv-config-manager-nautobot] #39 [stage-1 11/47] COPY --from=builder /usr/lib/*-linux-gnu/libpq.so* /usr/lib/
+  [nv-config-manager-nautobot] #39 CACHED
+  [nv-config-manager-nautobot] #40 [stage-1 29/47] COPY --from=builder /lib/*-linux-gnu/libgnutls.so* /usr/lib/
+  [nv-config-manager-nautobot] #40 CACHED
+  [nv-config-manager-nautobot] #41 [stage-1  2/47] WORKDIR /opt/nautobot
+  [nv-config-manager-nautobot] #41 CACHED
+  [nv-config-manager-nautobot] #42 [stage-1  9/47] COPY --from=builder --chown=1000:1000 /opt/nautobot/jobs /opt/nautobot/jobs
+  [nv-config-manager-nautobot] #42 CACHED
+  [nv-config-manager-nautobot] #43 [stage-1 19/47] COPY --from=builder /usr/bin/git /usr/bin/git
+  [nv-config-manager-nautobot] #43 CACHED
+  [nv-config-manager-nautobot] #44 [stage-1 36/47] COPY --from=builder /lib/*-linux-gnu/libkrb5support.so* /usr/lib/
+  [nv-config-manager-nautobot] #44 CACHED
+  [nv-config-manager-nautobot] #45 [stage-1 12/47] COPY --from=builder /usr/lib/*-linux-gnu/libxml2.so* /usr/lib/
+  [nv-config-manager-nautobot] #45 CACHED
+  [nv-config-manager-nautobot] #46 [stage-1  5/47] COPY --from=builder /opt/nautobot/nv_config_manager_auth /opt/nautobot/nv_config_manager_auth
+  [nv-config-manager-nautobot] #46 CACHED
+  [nv-config-manager-nautobot] #47 [builder  4/13] WORKDIR /opt/nautobot
+  [nv-config-manager-nautobot] #47 CACHED
+  [nv-config-manager-nautobot] #48 [stage-1 21/47] COPY --from=builder /usr/share/git-core /usr/share/git-core
+  [nv-config-manager-nautobot] #48 CACHED
+  [nv-config-manager-nautobot] #49 [stage-1 14/47] COPY --from=builder /usr/lib/*-linux-gnu/libexslt.so* /usr/lib/
+  [nv-config-manager-nautobot] #49 CACHED
+  [nv-config-manager-nautobot] #50 [stage-1 34/47] COPY --from=builder /lib/*-linux-gnu/libkeyutils.so* /usr/lib/
+  [nv-config-manager-nautobot] #50 CACHED
+  [nv-config-manager-nautobot] #51 [stage-1  3/47] COPY --from=builder /opt/nautobot/.venv /opt/nautobot/.venv
+  [nv-config-manager-nautobot] #51 CACHED
+  [nv-config-manager-nautobot] #52 [stage-1  8/47] COPY --from=builder --chown=1000:1000 /opt/nautobot/git /opt/nautobot/git
+  [nv-config-manager-nautobot] #52 CACHED
+  [nv-config-manager-nautobot] #53 [stage-1 16/47] COPY --from=builder /usr/lib/*-linux-gnu/liblber*.so* /usr/lib/
+  [nv-config-manager-nautobot] #53 CACHED
+  [nv-config-manager-nautobot] #54 [builder  6/13] COPY nautobot-app-overlays /opt/nautobot/nautobot-app-overlays
+  [nv-config-manager-nautobot] #54 CACHED
+  [nv-config-manager-nautobot] #55 [stage-1 28/47] COPY --from=builder /lib/*-linux-gnu/libgmp.so* /usr/lib/
+  [nv-config-manager-nautobot] #55 CACHED
+  [nv-config-manager-nautobot] #56 [builder  5/13] COPY pyproject.toml uv.lock /opt/nautobot/
+  [nv-config-manager-nautobot] #56 CACHED
+  [nv-config-manager-nautobot] #57 [stage-1 23/47] COPY --from=builder /lib/*-linux-gnu/libbrotlidec.so* /usr/lib/
+  [nv-config-manager-nautobot] #57 CACHED
+  [nv-config-manager-nautobot] #58 [stage-1 10/47] COPY --from=builder --chown=1000:1000 /opt/nautobot/.cache /opt/nautobot/.cache
+  [nv-config-manager-nautobot] #58 CACHED
+  [nv-config-manager-nautobot] #59 [stage-1 15/47] COPY --from=builder /usr/lib/*-linux-gnu/libldap*.so* /usr/lib/
+  [nv-config-manager-nautobot] #59 CACHED
+  [nv-config-manager-nautobot] #60 [builder 12/13] RUN --mount=type=cache,id=nvcm-uv-cache,target=/root/.cache/uv     set -eux;     if [ -n "" ]; then         export SETUPTOOLS_SCM_PRETEND_VERSION="";         export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_NAUTOBOT_APP_OVERLAYS="";     fi;     if [ -n "" ]; then         export SETUPTOOLS_SCM_PRETEND_VERSION="";         export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_NAUTOBOT_NV_CONFIG_MANAGER="";     fi;     uv sync --frozen --no-dev --no-editable
+  [nv-config-manager-nautobot] #60 CACHED
+  [nv-config-manager-nautobot] #61 [stage-1 40/47] COPY --from=builder /lib/*-linux-gnu/libpcre2-8.so* /usr/lib/
+  [nv-config-manager-nautobot] #61 CACHED
+  [nv-config-manager-nautobot] #62 [stage-1 22/47] COPY --from=builder /lib/*-linux-gnu/libbrotlicommon.so* /usr/lib/
+  [nv-config-manager-nautobot] #62 CACHED
+  [nv-config-manager-nautobot] #63 [stage-1 27/47] COPY --from=builder /lib/*-linux-gnu/libffi.so* /usr/lib/
+  [nv-config-manager-nautobot] #63 CACHED
+  [nv-config-manager-nautobot] #64 [stage-1 44/47] COPY --from=builder /lib/*-linux-gnu/libtasn1.so* /usr/lib/
+  [nv-config-manager-nautobot] #64 CACHED
+  [nv-config-manager-nautobot] #65 [stage-1 42/47] COPY --from=builder /lib/*-linux-gnu/librtmp.so* /usr/lib/
+  [nv-config-manager-nautobot] #65 CACHED
+  [nv-config-manager-nautobot] #66 [stage-1 41/47] COPY --from=builder /lib/*-linux-gnu/libpsl.so* /usr/lib/
+  [nv-config-manager-nautobot] #66 CACHED
+  [nv-config-manager-nautobot] #67 [stage-1 18/47] COPY --from=builder /usr/lib/*-linux-gnu/libjpeg.so* /usr/lib/
+  [nv-config-manager-nautobot] #67 CACHED
+  [nv-config-manager-nautobot] #68 [builder  7/13] COPY nautobot-nv-config-manager /opt/nautobot/nautobot-nv-config-manager
+  [nv-config-manager-nautobot] #68 CACHED
+  [nv-config-manager-nautobot] #69 [stage-1 47/47] COPY --from=builder /lib/*-linux-gnu/libzstd.so* /usr/lib/
+  [nv-config-manager-nautobot] #69 CACHED
+  [nv-config-manager-nautobot] #70 exporting to image
+  [nv-config-manager-nautobot] #70 exporting layers 0.0s done
+  [nv-config-manager-nautobot] #70 exporting manifest sha256:ac8cda957aa6f55cc3487fd437015eca7c486188e0d7a58b7e6ba11cab171a4f done
+  [nv-config-manager-nautobot] #70 exporting config sha256:b5ef39bbdeb618824886773fa511b88342195d976fe267fc805b3e202ee36a23 done
+  [nv-config-manager-nautobot] #70 naming to docker.io/library/nv-config-manager-nautobot:local done
+  [nv-config-manager-nautobot] #70 unpacking to docker.io/library/nv-config-manager-nautobot:local 0.0s done
+  [nv-config-manager-nautobot] #70 DONE 0.1s
+  [nv-config-manager-nautobot] completed in 2s
+  Tagged nv-config-manager-nautobot:sha-ac8cda957aa6
+  Tagged nv-config-manager-nats-ready:sha-d853e91dc00e
+  Tagged nv-config-manager:sha-2ee11356ded1
+  Tagged nv-config-manager-ui:sha-57db8b38729e
+  Tagged nv-config-manager-kea:sha-0f6a15b0fe36
+  Tagged nv-config-manager-kea-admin:sha-f89108d884b2
+[*]  Build local images
+[>]  Load images to Kind
+  Loading nv-config-manager-nautobot:sha-ac8cda957aa6 into Kind cluster nv-config-manager...
+  $ kind load docker-image nv-config-manager-nautobot:sha-ac8cda957aa6...
+  Image: "nv-config-manager-nautobot:sha-ac8cda957aa6" with ID "sha256:ac8cda957aa6f55cc3487fd437015eca7c486188e0d7a58b7e6ba11cab171a4f" not yet present on node "nv-config-manager-control-plane", loading...
+  Loading nv-config-manager-nats-ready:sha-d853e91dc00e into Kind cluster nv-config-manager...
+  $ kind load docker-image nv-config-manager-nats-ready:sha-d853e91dc00e...
+  Image: "nv-config-manager-nats-ready:sha-d853e91dc00e" with ID "sha256:d853e91dc00ec44ac15d9cbfd938309254fac94cb1f0e5ea7639131f4d273584" not yet present on node "nv-config-manager-control-plane", loading...
+  Loading nv-config-manager:sha-2ee11356ded1 into Kind cluster nv-config-manager...
+  $ kind load docker-image nv-config-manager:sha-2ee11356ded1...
+  Image: "nv-config-manager:sha-2ee11356ded1" with ID "sha256:2ee11356ded1171a86a81086fb71f54b51226c65cdfb9e81624d62e43160b4bb" not yet present on node "nv-config-manager-control-plane", loading...
+  Loading nv-config-manager-ui:sha-57db8b38729e into Kind cluster nv-config-manager...
+  $ kind load docker-image nv-config-manager-ui:sha-57db8b38729e...
+  Image: "nv-config-manager-ui:sha-57db8b38729e" with ID "sha256:57db8b38729e9b2321312c95c677768314c5b7f2ddb02a0649291cfc01838026" not yet present on node "nv-config-manager-control-plane", loading...
+  Loading nv-config-manager-kea:sha-0f6a15b0fe36 into Kind cluster nv-config-manager...
+  $ kind load docker-image nv-config-manager-kea:sha-0f6a15b0fe36...
+  Image: "nv-config-manager-kea:sha-0f6a15b0fe36" with ID "sha256:0f6a15b0fe366675b57674bd7d4cc069ebf6fbf0de6c518de0b8f68dabb5fb16" not yet present on node "nv-config-manager-control-plane", loading...
+  Loading nv-config-manager-kea-admin:sha-f89108d884b2 into Kind cluster nv-config-manager...
+  $ kind load docker-image nv-config-manager-kea-admin:sha-f89108d884b2...
+  Image: "nv-config-manager-kea-admin:sha-f89108d884b2" with ID "sha256:f89108d884b25f942f5577d0d6e631cf19aab17b179d7ed881f3c0b08d01f21e" not yet present on node "nv-config-manager-control-plane", loading...
+  Pulling helper image docker.io/amd64/busybox:1.36 for platform linux/amd64...
+  $ docker pull --platform linux/amd64...
+  1.36: Pulling from amd64/busybox
+  Digest: sha256:67d0b78bfe6269a83b91d6163c7d26fd6671d2df73199d44458c6e12247f182b
+  Status: Image is up to date for amd64/busybox:1.36
+  docker.io/amd64/busybox:1.36
+  Tagging selected-platform helper image sha256:67d0b78bfe6269a83b91d6163c7d26fd6671d2df73199d44458c6e12247f182b as docker.io/library/busybox:1.36...
+  $ docker tag sha256:67d0b78bfe6269a83b91d6163c7d26fd6671d2df73199d44458c6e12247f182b docker.io/library/busybox:1.36
+  Loading helper image docker.io/library/busybox:1.36 into Kind node nv-config-manager-control-plane...
+  $ docker save --platform linux/amd64... | docker exec --privileged -i...
+  unpacking docker.io/library/busybox:1.36 (sha256:b7f3d86d6e84fc17718c48bcde1450807faa2d56704205c697b4bd5df7b9e29f)...done
+[*]  Load images to Kind
+[>]  Install CRDs / operators
+  Installing Envoy Gateway...
+  Installing Gateway API v1.4.1 CRDs...
+  $ kubectl apply --server-side --force-conflicts...
+  customresourcedefinition.apiextensions.k8s.io/backendtlspolicies.gateway.networking.k8s.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/gatewayclasses.gateway.networking.k8s.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/gateways.gateway.networking.k8s.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/grpcroutes.gateway.networking.k8s.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/httproutes.gateway.networking.k8s.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/referencegrants.gateway.networking.k8s.io serverside-applied
+  $ helm show crds...
+  $ kubectl apply --server-side --force-conflicts...
+  customresourcedefinition.apiextensions.k8s.io/backends.gateway.envoyproxy.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/backendtrafficpolicies.gateway.envoyproxy.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/clienttrafficpolicies.gateway.envoyproxy.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/envoyextensionpolicies.gateway.envoyproxy.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/envoypatchpolicies.gateway.envoyproxy.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/envoyproxies.gateway.envoyproxy.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/httproutefilters.gateway.envoyproxy.io serverside-applied
+  customresourcedefinition.apiextensions.k8s.io/securitypolicies.gateway.envoyproxy.io serverside-applied
+  $ helm upgrade --install eg...
+  Release "eg" does not exist. Installing it now.
+  Pulled: docker.io/envoyproxy/gateway-helm:v1.6.5
+  NAME: eg
+  Digest: sha256:00b99d509f1111bdc0c21cc0512faf09a0e018cb286600cac315b633a72fd73d
+  LAST DEPLOYED: Wed Oct 14 04:59:28 2026
+  NAMESPACE: envoy-gateway-system
+  STATUS: deployed
+  REVISION: 1
+  TEST SUITE: None
+  NOTES:
+  **************************************************************************
+  *** PLEASE BE PATIENT: Envoy Gateway may take a few minutes to install ***
+  **************************************************************************
+  
+  Envoy Gateway is an open source project for managing Envoy Proxy as a standalone or Kubernetes-based application gateway.
+  
+  Thank you for installing Envoy Gateway! 🎉
+  
+  Your release is named: eg. 🎉
+  
+  Your release is in namespace: envoy-gateway-system. 🎉
+  
+  To learn more about the release, try:
+  
+    $ helm status eg -n envoy-gateway-system
+    $ helm get all eg -n envoy-gateway-system
+  
+  To have a quickstart of Envoy Gateway, please refer to https://gateway.envoyproxy.io/latest/tasks/quickstart.
+  
+  To get more details, please visit https://gateway.envoyproxy.io and https://github.com/envoyproxy/gateway.
+  $ kubectl wait --timeout=120s -n...
+  deployment.apps/envoy-gateway condition met
+  Installing cert-manager...
+  $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.2/cert-manager.crds.yaml
+  customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+  customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+  customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+  customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+  customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+  customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+  $ helm upgrade --install cert-manager...
+  Release "cert-manager" does not exist. Installing it now.
+  NAME: cert-manager
+  LAST DEPLOYED: Wed Oct 14 04:59:55 2026
+  NAMESPACE: cert-manager
+  STATUS: deployed
+  REVISION: 1
+  TEST SUITE: None
+  NOTES:
+  cert-manager v1.20.2 has been deployed successfully!
+  
+  In order to begin issuing certificates, you will need to set up a ClusterIssuer
+  or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
+  
+  More information on the different types of issuers and how to configure them
+  can be found in our documentation:
+  
+  https://cert-manager.io/docs/configuration/
+  
+  For information on how to configure cert-manager to automatically provision
+  Certificates for Ingress resources, take a look at the `ingress-shim`
+  documentation:
+  
+  https://cert-manager.io/docs/usage/ingress/
+  
+  For information on how to configure cert-manager to automatically provision
+  Certificates for Gateway API resources, take a look at the `gateway resource`
+  documentation:
+  
+  https://cert-manager.io/docs/usage/gateway/
+  Installing CNPG operator...
+  $ helm upgrade --install cnpg...
+  Release "cnpg" does not exist. Installing it now.
+  NAME: cnpg
+  LAST DEPLOYED: Wed Oct 14 05:00:13 2026
+  NAMESPACE: cnpg-system
+  STATUS: deployed
+  REVISION: 1
+  TEST SUITE: None
+  NOTES:
+  CloudNativePG operator should be installed in namespace "cnpg-system".
+  You can now create a PostgreSQL cluster with 3 nodes as follows:
+  
+  cat <<EOF | kubectl apply -f -
+  # Example of PostgreSQL cluster
+  apiVersion: postgresql.cnpg.io/v1
+  kind: Cluster
+  metadata:
+    name: cluster-example
+    
+  spec:
+    instances: 3
+    storage:
+      size: 1Gi
+  EOF
+  
+  kubectl get -A cluster
+  Installing prometheus-operator CRDs...
+  $ helm upgrade --install nv-config-manager-prom-crds...
+  Release "nv-config-manager-prom-crds" does not exist. Installing it now.
+  NAME: nv-config-manager-prom-crds
+  LAST DEPLOYED: Wed Oct 14 05:00:27 2026
+  NAMESPACE: nv-config-manager-monitoring
+  STATUS: deployed
+  REVISION: 1
+  TEST SUITE: None
+[*]  Install CRDs / operators
+[>]  Create namespace
+  Created: nv-config-manager (context=kind-nv-config-manager)
+[*]  Create namespace
+[>]  Create Kubernetes secrets
+  Created: redis-password
+  Created: nautobot-token
+  Created: cluster-temporal-app
+  Created: cluster-temporal-visibility-app
+  Created: cluster-config-store-app
+  Created: cluster-dhcp-app
+  Created: cluster-nautobot-app
+  Created: nautobot-admin
+  Created: nautobot-django-secret
+  Created: nats-sys
+  Created: nats-nv-config-manager
+  Created: nats-nautobot
+  Created: device-creds
+  Created: nv-config-manager-network-secrets
+[*]  Create Kubernetes secrets
+[>]  Setup custom jobs PVC
+  Loader pod ready, copying jobs tarball...
+  Extracting jobs into PVC...
+[*]  Setup custom jobs PVC
+[>]  Setup template plugins PVC
+  Loader pod ready, copying templates tarball...
+  Extracting template plugins into PVC...
+[*]  Setup template plugins PVC
+[>]  Setup ZTP images PVC
+[*]  Setup ZTP images PVC
+[>]  Generate Helm values
+[*]  Generate Helm values
+[>]  Helm install / upgrade
+  Running: helm dependency update ...
+  $ helm dependency update deploy/helm
+  Getting updates for unmanaged Helm repositories...
+  ...Successfully got an update from the "https://grafana.github.io/helm-charts" chart repository
+  ...Successfully got an update from the "https://grafana.github.io/helm-charts" chart repository
+  ...Successfully got an update from the "https://grafana.github.io/helm-charts" chart repository
+  Hang tight while we grab the latest from your chart repositories...
+  ...Successfully got an update from the "cnpg" chart repository
+  ...Successfully got an update from the "jetstack" chart repository
+  ...Successfully got an update from the "prometheus-community" chart repository
+  Update Complete. ⎈Happy Helming!⎈
+  Saving 4 charts
+  Downloading prometheus from repo https://prometheus-community.github.io/helm-charts
+  Downloading grafana from repo https://grafana.github.io/helm-charts
+  Downloading loki from repo https://grafana.github.io/helm-charts
+  Downloading alloy from repo https://grafana.github.io/helm-charts
+  Deleting outdated charts
+  Layering values-observability.yaml (LOCAL-DEV observability stack)
+  Running: helm upgrade --install nv-config-manager ...
+  $ helm upgrade --install nv-config-manager...
+  Release "nv-config-manager" does not exist. Installing it now.
+  NAME: nv-config-manager
+  LAST DEPLOYED: Wed Oct 14 05:01:11 2026
+  NAMESPACE: nv-config-manager
+  STATUS: deployed
+  REVISION: 1
+  TEST SUITE: None
+[*]  Helm install / upgrade
+[>]  Patch Envoy Gateway
+[*]  Patch Envoy Gateway
+[-]  Restart Nautobot
+[-]  Restart Render Service
+[-]  Run post-deploy jobs
+[-]  Refresh caches
+[-]  Run integration tests
+[>]  Collect endpoints
+  Render Service:   https://render.config-manager.local
+  Network ZTP:      https://ztp.config-manager.local
+  Network DHCP:     https://dhcp.config-manager.local
+  Config Store API: https://config-store.config-manager.local
+  Config Store UI:  https://config-manager.local/configs
+  Workflow API:     https://workflow.config-manager.local
+  Workflow UI:      https://config-manager.local/workflows
+  Temporal UI:      https://temporal.config-manager.local
+  Nautobot:         https://nautobot.config-manager.local
+[*]  Collect endpoints
+
+Deployment completed successfully!
+  Render Service:   https://render.config-manager.local
+  Network ZTP:      https://ztp.config-manager.local
+  Network DHCP:     https://dhcp.config-manager.local
+  Config Store API: https://config-store.config-manager.local
+  Config Store UI:  https://config-manager.local/configs
+  Workflow API:     https://workflow.config-manager.local
+  Workflow UI:      https://config-manager.local/workflows
+  Temporal UI:      https://temporal.config-manager.local
+  Nautobot:         https://nautobot.config-manager.local
+[nvcm] ensuring :local image tags exist in kind (prevents ImagePullBackOff on later restarts) ...
+[nvcm] waiting for the core deployments to become Available ...
+deployment "nv-config-manager-nautobot" successfully rolled out
+deployment "nv-config-manager-render-api" successfully rolled out
+[nvcm] recorded installed NVCM commit (a6af41250fb2cb1353d0788002aede2d351bd531) on namespace 'nv-config-manager' for the next run's version check.
+
+══════════════════════════════════════════════════════════════════════
+  Observability extras — Loki + Alloy log pipeline + durable Prometheus (helm upgrade, --reuse-values)
+══════════════════════════════════════════════════════════════════════
+[nvcm] [INFO] Observability extras are missing from this release; installing version 1.3.0.
+Release "nv-config-manager" has been upgraded. Happy Helming!
+NAME: nv-config-manager
+LAST DEPLOYED: Wed Oct 14 05:09:31 2026
+NAMESPACE: nv-config-manager
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+[nvcm] observability extras applied (loki / alloy logs / grafana datasource / prometheus persistence).
+
+══════════════════════════════════════════════════════════════════════
+  Part I — verify NVCM + Nautobot readiness
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [PASS] all pods Running/Completed
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[nvcm] PART I COMPLETE — NVCM + Nautobot installed and verified. Next: rafay-custom-helm.sh install
+[install] PART I done (scope: nvcm). Add the Rafay layer with:  platform/platform_install.sh rafay --platform-only
+[2026-10-14 05:10:22 UTC] INFO  Stage platform-nvcm-install passed (rc=0, 721s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 03: platform-rafay-install (phase: platform)
+============================================================
+
+[2026-10-14 05:10:22 UTC] INFO  Starting stage platform-rafay-install (timeout 60m, run key 38513899645-1)
+[agent] started platform-rafay-install (pid 80506, timeout 60m)
+[launchpad] stage=platform-rafay-install branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T05:10:23Z
+[install] → platform/rafay-custom-helm.sh install --yes --platform-only
+
+══════════════════════════════════════════════════════════════════════
+  Part II — install the Rafay customization layer
+══════════════════════════════════════════════════════════════════════
+[rafay] toolchain OK (docker/kind/kubectl/helm).
+[rafay] platform preflight OK — both content PVCs present, render-api mounts the templates PVC.
+
+══════════════════════════════════════════════════════════════════════
+  Build the package
+══════════════════════════════════════════════════════════════════════
+[rafay] build mode: GENERIC platform package — no site data (seed a site later: seed_site_jobs.sh).
+[rafay]             baked single-site instead:  /home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/rafay-custom-helm.sh install --blueprint <path>/blueprint_<site>.yaml
+mode: PLATFORM-ONLY — generic engine, no site data (deliver it later: Part 2, seed_site_jobs.sh)
+  platform-only: site designs EXCLUDED; blueprint NOT vendored (Part 2 delivers both)
+staged payload:
+  16K	/home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/files/plugins.tgz
+  196K	/home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/files/jobs.tgz
+  (ConfigMap object limit is ~1 MB total, incl. base64 overhead — keep both well under that)
+Successfully packaged chart and saved it to: /home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/rafay-nvcm-stack-0.2.5.tgz
+[rafay] packaged: /home/ubuntu/rafay_nvcm_poc/charts/rafay-nvcm-stack/rafay-nvcm-stack-0.2.5.tgz (240821 bytes, payload embedded)
+[rafay] no blueprint currently seeded on this cluster — nothing to preserve (a fresh/platform-only install, the usual case).
+
+══════════════════════════════════════════════════════════════════════
+  Helm install — release 'rafay-nvcm' (namespace 'nv-config-manager', --timeout 25m)
+══════════════════════════════════════════════════════════════════════
+NAME: rafay-nvcm
+LAST DEPLOYED: Wed Oct 14 05:10:23 2026
+NAMESPACE: nv-config-manager
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Rafay NVCM customization layer (Part 1) — release rafay-nvcm → namespace nv-config-manager
+
+The post-install hook has (or will shortly):
+  • seeded the Nautobot job packages onto PVC nautobot-custom-jobs
+  • seeded the render plugin + NVUE templates onto PVC render-service-template-plugins, then restarted render-api
+  • suppressed the NVIDIA "Load Bootstrap Data" noise
+  • registered the GitRepository "rafay_nvcm_catalog" if it was absent
+  • synced the GitRepository "rafay_nvcm_catalog" + enabled its git jobs
+
+VERIFY:
+  kubectl -n nv-config-manager logs job -l app.kubernetes.io/instance=rafay-nvcm,rafay.io/hook=ops
+  kubectl -n nv-config-manager get pods -l app.kubernetes.io/name=nv-config-manager-render-api   # render-api Running
+  kubectl -n nv-config-manager exec deploy/nv-config-manager-render-api >/dev/null 2>&1 || true
+
+The numbered runbook (0.1 … 7.1) should be registered + enabled in the Nautobot Jobs UI.
+
+GitRepository registration is now AUTOMATIC (gitRepo.register). The bootstrap repo is public by default, so no
+secret is needed. For a PRIVATE repo, create a k8s Secret with the git token and reference it — the chart never
+embeds the token in values:
+  kubectl -n nv-config-manager create secret generic rafay-git --from-literal=token=<PAT>
+  helm upgrade rafay-nvcm <chart> -n nv-config-manager --set gitRepo.tokenSecret.name=rafay-git
+
+══════════════════════════════════════════════════════════════════════
+  Verify — post-install acceptance check (read-only)
+══════════════════════════════════════════════════════════════════════
+== Part 1 install verification — ns=nv-config-manager release=rafay-nvcm ==
+1) Helm release deployed?
+   [PASS] helm release 'rafay-nvcm' STATUS=deployed
+2) Target PVCs present?
+   [PASS] PVC 'nautobot-custom-jobs' present
+   [PASS] PVC 'render-service-template-plugins' present
+3) render-api wired for template plugins?
+   [PASS] render-api mounts 'render-service-template-plugins'
+   [PASS] render-api has the install-template-plugins init container
+4-6) Nautobot jobs / suppress / GitOps (read-only ORM)...
+   [PASS] 25 numbered runbook job(s) registered + enabled
+          - 0.1 · Load foundation catalog (generic)
+          - 1a · Validate blueprint
+          - 2.0 · Foundation (locations/roles/device-types from blueprint)
+          - 2.1 · Devices (switches + edge)
+          - 2.2 · Cables
+          - 2.3 · Devices + Cables
+          - 3.1 · Tenant — Create / Delete (gated)
+          - 3.2 · Tenant — Onboard (overlay engine)
+          - 3.3 · Tenant — Offboard (overlay engine)
+          - 3.4 · Tenant — Drift Check (desired vs intent)
+          - 3.5 · Tenant — Reap Abandoned Workflows
+          - 3.6 · Tenant — List
+          - 3.7 · Tenant — Get
+          - 4.1 · Register (add to free pool)
+          - 4.1a · Set availability
+          - 4.1b · Unregister (retire)
+          - 4.2 · Attach to tenant
+          - 4.3 · Move to another tenant
+          - 4.4 · Detach from tenant
+          - 4.5 · Assign GPU to tenant
+          - 4.6 · Release GPU to free pool
+          - 4.7 · Server — Drift Check (desired vs intent)
+          - 5.1 · PKey + SR-IOV rails (config-ready)
+          - 6.1 · Deploy Whole DC (render + push all)
+          - 7.1 · Drift — Detect (running vs intent)
+   [PASS] package blueprint_validate: 1 job(s) registered
+   [PASS] package site_provision: 4 job(s) registered
+   [PASS] package tenant: 2 job(s) registered
+   [PASS] package lifecycle: 6 job(s) registered
+   [PASS] package server: 9 job(s) registered
+   [PASS] package ib: 1 job(s) registered
+   [PASS] package provision: 1 job(s) registered
+   [PASS] package drift: 1 job(s) registered
+   [PASS] NVIDIA 'Load Bootstrap Data' loader suppressed
+   [PASS] GitRepository 'rafay_nvcm_catalog' registered (a2538839-8e74-4ee4-813b-428f4832d990)
+   [PASS] 1 git-synced job(s) enabled
+   [PASS] cluster history: clean (no 'STC ' names, no '… (2)' collisions)
+7) render-api healthy?
+   [PASS] render-api availableReplicas=1
+8) tenant-number reservation pool database provisioned?
+   [PASS] Database 'rafay-nvcm-rafay-nvcm-stack-tenant-reservations' (pg database 'tenant_reservations') applied=true
+
+==============  INSTALL VERIFIED (20 checks) — Part 1 is installed and ready to use  ==============
+[rafay] PART II COMPLETE — Rafay layer installed and verified. Full verdict any time: platform/verify_platform_install.sh all
+[install] → platform/verify_platform_install.sh all
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part I: NVCM + Nautobot
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [PASS] all pods Running/Completed
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[verify] Part I: READY
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part II: Rafay customization layer (the acceptance test)
+══════════════════════════════════════════════════════════════════════
+== Part 1 install verification — ns=nv-config-manager release=rafay-nvcm ==
+1) Helm release deployed?
+   [PASS] helm release 'rafay-nvcm' STATUS=deployed
+2) Target PVCs present?
+   [PASS] PVC 'nautobot-custom-jobs' present
+   [PASS] PVC 'render-service-template-plugins' present
+3) render-api wired for template plugins?
+   [PASS] render-api mounts 'render-service-template-plugins'
+   [PASS] render-api has the install-template-plugins init container
+4-6) Nautobot jobs / suppress / GitOps (read-only ORM)...
+   [PASS] 25 numbered runbook job(s) registered + enabled
+          - 0.1 · Load foundation catalog (generic)
+          - 1a · Validate blueprint
+          - 2.0 · Foundation (locations/roles/device-types from blueprint)
+          - 2.1 · Devices (switches + edge)
+          - 2.2 · Cables
+          - 2.3 · Devices + Cables
+          - 3.1 · Tenant — Create / Delete (gated)
+          - 3.2 · Tenant — Onboard (overlay engine)
+          - 3.3 · Tenant — Offboard (overlay engine)
+          - 3.4 · Tenant — Drift Check (desired vs intent)
+          - 3.5 · Tenant — Reap Abandoned Workflows
+          - 3.6 · Tenant — List
+          - 3.7 · Tenant — Get
+          - 4.1 · Register (add to free pool)
+          - 4.1a · Set availability
+          - 4.1b · Unregister (retire)
+          - 4.2 · Attach to tenant
+          - 4.3 · Move to another tenant
+          - 4.4 · Detach from tenant
+          - 4.5 · Assign GPU to tenant
+          - 4.6 · Release GPU to free pool
+          - 4.7 · Server — Drift Check (desired vs intent)
+          - 5.1 · PKey + SR-IOV rails (config-ready)
+          - 6.1 · Deploy Whole DC (render + push all)
+          - 7.1 · Drift — Detect (running vs intent)
+   [PASS] package blueprint_validate: 1 job(s) registered
+   [PASS] package site_provision: 4 job(s) registered
+   [PASS] package tenant: 2 job(s) registered
+   [PASS] package lifecycle: 6 job(s) registered
+   [PASS] package server: 9 job(s) registered
+   [PASS] package ib: 1 job(s) registered
+   [PASS] package provision: 1 job(s) registered
+   [PASS] package drift: 1 job(s) registered
+   [PASS] NVIDIA 'Load Bootstrap Data' loader suppressed
+   [PASS] GitRepository 'rafay_nvcm_catalog' registered (a2538839-8e74-4ee4-813b-428f4832d990)
+   [PASS] 1 git-synced job(s) enabled
+   [PASS] cluster history: clean (no 'STC ' names, no '… (2)' collisions)
+7) render-api healthy?
+   [PASS] render-api availableReplicas=1
+8) tenant-number reservation pool database provisioned?
+   [PASS] Database 'rafay-nvcm-rafay-nvcm-stack-tenant-reservations' (pg database 'tenant_reservations') applied=true
+
+==============  INSTALL VERIFIED (20 checks) — Part 1 is installed and ready to use  ==============
+[verify] Part II: READY
+[verify] env-backed Secrets (report-only — a platform-config gap surfaces at job RUN time, not here):
+    env-backed Secrets that do NOT resolve: 0
+[verify] unresolved = INFORMATIONAL here; jobs that read them (e.g. 1b Discover) fail at RUN time. Fix:
+[verify]    inject the variables into the Nautobot + celery deployments via NVCM's Helm values —
+[verify]    exact steps: docs/gitops_repo_design.md §10, 'G1 — the action that closes it, concretely'.
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Telemetry: NVCM's own stack + the Rafay-layer extras (deep check, not part of 'nvcm')
+══════════════════════════════════════════════════════════════════════
+  NVCM telemetry — Prometheus + Alloy + PodMonitors (namespace nv-config-manager):
+   [PASS] Prometheus running (metric store)
+   [PASS] Grafana Alloy running (scrapes every pod; also the log pipeline)
+   [PASS] 11 PodMonitor(s) defined (what Alloy scrapes)
+   [INFO] Grafana not present — query Prometheus directly instead
+   [PASS] Tempo present (trace store)
+[verify] Telemetry (NVCM stack): READY
+  Telemetry extras added by the Rafay layer (report-only):
+   [PASS] Loki present — pod logs are being stored (they survive a pod restart)
+   [PASS] grafana route present (reachable without an SSH tunnel)
+   [PASS] prometheus route present (reachable without an SSH tunnel)
+
+══════════════════════════════════════════════════════════════════════
+  Cluster state (report-only — never fails; act on it with platform/platform_cluster.sh)
+══════════════════════════════════════════════════════════════════════
+[verify] PVC module layouts (a package under BOTH /jobs and /jobs/custom registers twice):
+    /opt/nautobot/jobs: blueprint_validate, common, drift, ib, lifecycle, nv_config_manager_jobs, provision, server, site_provision, tenant
+    /opt/nautobot/jobs/custom: (none)
+[verify] STALE records (installed=False — module gone, cannot run; 'platform/platform_cluster.sh clean' deletes these):
+    total: 0
+[verify] name COLLISIONS (enabled '… (2)' / 'STC ' records; 'clean --collisions' deletes those with no history):
+    total: 0
+[verify] LEGACY bootstrap-repo jobs (repo retired from this codebase; live records are YOUR call — guide A0):
+    total: 0
+
+══════════════════════════════════════════════════════════════════════
+  Verdict
+══════════════════════════════════════════════════════════════════════
+[verify] PLATFORM VERIFIED — NVCM + Nautobot + the Rafay layer + telemetry are installed and ready on this OCI.
+
+[install] PLATFORM READY — installed and verified (scope: rafay).
+[install] Next → Part 2 (data-center bring-up, when a customer's blueprint exists):
+[install]        DC_BLUEPRINT=<site>/blueprint_<site>.yaml deploy_scripts/fabric/seed_site_jobs.sh && deploy_scripts/dc-up.sh --blueprint <file>
+[2026-10-14 05:14:23 UTC] INFO  Stage platform-rafay-install passed (rc=0, 241s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 04: platform-verify (phase: platform)
+============================================================
+
+[2026-10-14 05:14:23 UTC] INFO  Starting stage platform-verify (timeout 20m, run key 38513899645-1)
+[agent] started platform-verify (pid 89430, timeout 20m)
+[launchpad] stage=platform-verify branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T05:14:24Z
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part I: NVCM + Nautobot
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [PASS] all pods Running/Completed
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[verify] Part I: READY
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Part II: Rafay customization layer (the acceptance test)
+══════════════════════════════════════════════════════════════════════
+== Part 1 install verification — ns=nv-config-manager release=rafay-nvcm ==
+1) Helm release deployed?
+   [PASS] helm release 'rafay-nvcm' STATUS=deployed
+2) Target PVCs present?
+   [PASS] PVC 'nautobot-custom-jobs' present
+   [PASS] PVC 'render-service-template-plugins' present
+3) render-api wired for template plugins?
+   [PASS] render-api mounts 'render-service-template-plugins'
+   [PASS] render-api has the install-template-plugins init container
+4-6) Nautobot jobs / suppress / GitOps (read-only ORM)...
+   [PASS] 25 numbered runbook job(s) registered + enabled
+          - 0.1 · Load foundation catalog (generic)
+          - 1a · Validate blueprint
+          - 2.0 · Foundation (locations/roles/device-types from blueprint)
+          - 2.1 · Devices (switches + edge)
+          - 2.2 · Cables
+          - 2.3 · Devices + Cables
+          - 3.1 · Tenant — Create / Delete (gated)
+          - 3.2 · Tenant — Onboard (overlay engine)
+          - 3.3 · Tenant — Offboard (overlay engine)
+          - 3.4 · Tenant — Drift Check (desired vs intent)
+          - 3.5 · Tenant — Reap Abandoned Workflows
+          - 3.6 · Tenant — List
+          - 3.7 · Tenant — Get
+          - 4.1 · Register (add to free pool)
+          - 4.1a · Set availability
+          - 4.1b · Unregister (retire)
+          - 4.2 · Attach to tenant
+          - 4.3 · Move to another tenant
+          - 4.4 · Detach from tenant
+          - 4.5 · Assign GPU to tenant
+          - 4.6 · Release GPU to free pool
+          - 4.7 · Server — Drift Check (desired vs intent)
+          - 5.1 · PKey + SR-IOV rails (config-ready)
+          - 6.1 · Deploy Whole DC (render + push all)
+          - 7.1 · Drift — Detect (running vs intent)
+   [PASS] package blueprint_validate: 1 job(s) registered
+   [PASS] package site_provision: 4 job(s) registered
+   [PASS] package tenant: 2 job(s) registered
+   [PASS] package lifecycle: 6 job(s) registered
+   [PASS] package server: 9 job(s) registered
+   [PASS] package ib: 1 job(s) registered
+   [PASS] package provision: 1 job(s) registered
+   [PASS] package drift: 1 job(s) registered
+   [PASS] NVIDIA 'Load Bootstrap Data' loader suppressed
+   [PASS] GitRepository 'rafay_nvcm_catalog' registered (a2538839-8e74-4ee4-813b-428f4832d990)
+   [PASS] 1 git-synced job(s) enabled
+   [PASS] cluster history: clean (no 'STC ' names, no '… (2)' collisions)
+7) render-api healthy?
+   [PASS] render-api availableReplicas=1
+8) tenant-number reservation pool database provisioned?
+   [PASS] Database 'rafay-nvcm-rafay-nvcm-stack-tenant-reservations' (pg database 'tenant_reservations') applied=true
+
+==============  INSTALL VERIFIED (20 checks) — Part 1 is installed and ready to use  ==============
+[verify] Part II: READY
+[verify] env-backed Secrets (report-only — a platform-config gap surfaces at job RUN time, not here):
+    env-backed Secrets that do NOT resolve: 0
+[verify] unresolved = INFORMATIONAL here; jobs that read them (e.g. 1b Discover) fail at RUN time. Fix:
+[verify]    inject the variables into the Nautobot + celery deployments via NVCM's Helm values —
+[verify]    exact steps: docs/gitops_repo_design.md §10, 'G1 — the action that closes it, concretely'.
+
+══════════════════════════════════════════════════════════════════════
+  Verify — Telemetry: NVCM's own stack + the Rafay-layer extras (deep check, not part of 'nvcm')
+══════════════════════════════════════════════════════════════════════
+  NVCM telemetry — Prometheus + Alloy + PodMonitors (namespace nv-config-manager):
+   [PASS] Prometheus running (metric store)
+   [PASS] Grafana Alloy running (scrapes every pod; also the log pipeline)
+   [PASS] 11 PodMonitor(s) defined (what Alloy scrapes)
+   [INFO] Grafana not present — query Prometheus directly instead
+   [PASS] Tempo present (trace store)
+[verify] Telemetry (NVCM stack): READY
+  Telemetry extras added by the Rafay layer (report-only):
+   [PASS] Loki present — pod logs are being stored (they survive a pod restart)
+   [PASS] grafana route present (reachable without an SSH tunnel)
+   [PASS] prometheus route present (reachable without an SSH tunnel)
+
+══════════════════════════════════════════════════════════════════════
+  Cluster state (report-only — never fails; act on it with platform/platform_cluster.sh)
+══════════════════════════════════════════════════════════════════════
+[verify] PVC module layouts (a package under BOTH /jobs and /jobs/custom registers twice):
+    /opt/nautobot/jobs: blueprint_validate, common, drift, ib, lifecycle, nv_config_manager_jobs, provision, server, site_provision, tenant
+    /opt/nautobot/jobs/custom: (none)
+[verify] STALE records (installed=False — module gone, cannot run; 'platform/platform_cluster.sh clean' deletes these):
+    total: 0
+[verify] name COLLISIONS (enabled '… (2)' / 'STC ' records; 'clean --collisions' deletes those with no history):
+    total: 0
+[verify] LEGACY bootstrap-repo jobs (repo retired from this codebase; live records are YOUR call — guide A0):
+    total: 0
+
+══════════════════════════════════════════════════════════════════════
+  Verdict
+══════════════════════════════════════════════════════════════════════
+[verify] PLATFORM VERIFIED — NVCM + Nautobot + the Rafay layer + telemetry are installed and ready on this OCI.
+[2026-10-14 05:15:31 UTC] INFO  Stage platform-verify passed (rc=0, 68s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 05: blueprint-generate (phase: blueprint)
+============================================================
+
+[2026-10-14 05:16:16 UTC] INFO  Starting stage blueprint-generate (timeout 20m, run key 38513899645-1)
+[agent] started blueprint-generate (pid 92936, timeout 20m)
+[launchpad] stage=blueprint-generate branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T05:16:16Z
+wrote /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml — 11 switches, 18 policy keys, no TODO(confirm) values left
+  All known sections present — run verify_blueprint.sh to confirm.
+[launchpad] blueprint generated: /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml
+[2026-10-14 05:16:37 UTC] INFO  Stage blueprint-generate passed (rc=0, 21s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 06: blueprint-verify (phase: blueprint)
+============================================================
+
+[2026-10-14 05:16:37 UTC] INFO  Starting stage blueprint-verify (timeout 10m, run key 38513899645-1)
+[agent] started blueprint-verify (pid 93473, timeout 10m)
+[launchpad] stage=blueprint-verify branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T05:16:38Z
+[launchpad] verifying (generate) blueprint: /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml
+== preflight: /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'GPU' is declared in foundation.roles
+  PASS  server gpu-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server gpu-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server gpu-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server gpu-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  rack elevations are computed at 1U for them — no u_height is declared for 'Cumulus VX', 'Generic Server', so a taller device reserves one U and the next placement above it overlaps. Declare u_height in foundation.device_types for anything that is not 1U.
+  PASS  rack elevations fit and do not overlap (13 placed device(s))
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (16 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see supported_topologies/clos-leaf-spine.md
+
+PREFLIGHT: all 188 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+[2026-10-14 05:16:58 UTC] INFO  Stage blueprint-verify passed (rc=0, 21s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 07: substrate (phase: substrate)
+============================================================
+
+[2026-10-14 05:17:49 UTC] INFO  Starting stage substrate (timeout 120m, run key 38513899645-1)
+[agent] started substrate (pid 95107, timeout 120m)
+[launchpad] stage=substrate branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T05:17:50Z
+[fetch-image] present: /var/lib/libvirt/images/cumulus-vx-5.6.0-base.qcow2 (skip)
+[fetch-image] present: /var/lib/libvirt/images/ubuntu-22.04-server-cloudimg-amd64.qcow2 (skip)
+[fetch-image] base images ready under /var/lib/libvirt/images
+╔════════════════════════════════════════════════════════════════════╗
+║  one-click bring-up    mode=apply  approve=auto  from=substrate to=substrate
+║  blueprint=/home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml   oci=10.0.0.133   tenants=3-20
+╚════════════════════════════════════════════════════════════════════╝
+== preflight: /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'GPU' is declared in foundation.roles
+  PASS  server gpu-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server gpu-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server gpu-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server gpu-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  tenant set '3-20' within 3..100 (bad: none)
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..20 (top 129)
+  PASS  NFS VLAN stays in 1..4094 for T=3..20 (top 331)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..20 (top 529)
+  PASS  Internet VLAN stays in 1..4094 for T=3..20 (top 629)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..20 (top 3020)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..20
+  PASS  IB PKey stays 16-bit for T=3..20 (top 0x8014)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  rack elevations are computed at 1U for them — no u_height is declared for 'Cumulus VX', 'Generic Server', so a taller device reserves one U and the next placement above it overlaps. Declare u_height in foundation.device_types for anything that is not 1U.
+  PASS  rack elevations fit and do not overlap (13 placed device(s))
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (16 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see supported_topologies/clos-leaf-spine.md
+
+PREFLIGHT: all 189 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 0 Substrate — blueprint-driven bridges + VMs + NICs
+════════════════════════════════════════════════════════════════════
+[deploy_cabling] mode=apply action=create blueprint=blueprint_blr-dc01.yaml — 24 fabric bridges (MTU 9000)
+
+[deploy_cabling] DONE (create 24 bridges). Next: deploy_fabric_vms.sh --apply (VMs + NICs onto these bridges).
+[deploy_fabric_vms] mode=apply blueprint=blueprint_blr-dc01.yaml — 16 VMs
+[deploy_fabric_vms] mgmt net bl-mgmt exists
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-spine01' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-spine01 (image=cumulus, data-NICs=6, mgmt=192.168.94.11)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-spine02' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-spine02 (image=cumulus, data-NICs=6, mgmt=192.168.94.12)
+[deploy_fabric_vms] bridge bl-svr1 is missing — creating it at MTU 9000 (cabling not run yet, or a port facing a server)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-leaf01' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-leaf01 (image=cumulus, data-NICs=3, mgmt=192.168.94.13)
+[deploy_fabric_vms] bridge bl-svr2 is missing — creating it at MTU 9000 (cabling not run yet, or a port facing a server)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-leaf02' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-leaf02 (image=cumulus, data-NICs=3, mgmt=192.168.94.14)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-leaf03' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-leaf03 (image=cumulus, data-NICs=2, mgmt=192.168.94.15)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-leaf04' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-leaf04 (image=cumulus, data-NICs=2, mgmt=192.168.94.16)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-leaf05' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-leaf05 (image=cumulus, data-NICs=8, mgmt=192.168.94.17)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'blr-dc01-leaf06' marked as autostarted
+
+[deploy_fabric_vms] created blr-dc01-leaf06 (image=cumulus, data-NICs=8, mgmt=192.168.94.18)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'oob01' marked as autostarted
+
+[deploy_fabric_vms] created oob01 (image=cumulus, data-NICs=2, mgmt=192.168.94.19)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'oob02' marked as autostarted
+
+[deploy_fabric_vms] created oob02 (image=cumulus, data-NICs=2, mgmt=192.168.94.20)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'oob03' marked as autostarted
+
+[deploy_fabric_vms] created oob03 (image=cumulus, data-NICs=2, mgmt=192.168.94.21)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'dcgw01' marked as autostarted
+
+[deploy_fabric_vms] created dcgw01 (image=cumulus, data-NICs=3, mgmt=192.168.94.22)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'dcgw02' marked as autostarted
+
+[deploy_fabric_vms] created dcgw02 (image=cumulus, data-NICs=2, mgmt=192.168.94.23)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'vfw01' marked as autostarted
+
+[deploy_fabric_vms] created vfw01 (image=cumulus, data-NICs=2, mgmt=192.168.94.24)
+[deploy_fabric_vms] skip gpu-01 — a server, not fabric (Servers layer creates it)
+[deploy_fabric_vms] skip gpu-02 — a server, not fabric (Servers layer creates it)
+
+[deploy_fabric_vms] DONE. Next: setup_device_access.sh, then the underlay (simulate_dc.sh --from underlay).
+
+── L1 Switches + NICs — VMs running + NIC count == blueprint ──
+  PASS  blr-dc01-spine01 running, 7 NICs (mgmt + 6 data)
+  PASS  blr-dc01-spine02 running, 7 NICs (mgmt + 6 data)
+  PASS  blr-dc01-leaf01 running, 4 NICs (mgmt + 3 data)
+  PASS  blr-dc01-leaf02 running, 4 NICs (mgmt + 3 data)
+  PASS  blr-dc01-leaf03 running, 3 NICs (mgmt + 2 data)
+  PASS  blr-dc01-leaf04 running, 3 NICs (mgmt + 2 data)
+  PASS  blr-dc01-leaf05 running, 9 NICs (mgmt + 8 data)
+  PASS  blr-dc01-leaf06 running, 9 NICs (mgmt + 8 data)
+  PASS  oob01 running, 3 NICs (mgmt + 2 data)
+  PASS  oob02 running, 3 NICs (mgmt + 2 data)
+  PASS  oob03 running, 3 NICs (mgmt + 2 data)
+  PASS  dcgw01 running, 4 NICs (mgmt + 3 data)
+  PASS  dcgw02 running, 3 NICs (mgmt + 2 data)
+  PASS  vfw01 running, 3 NICs (mgmt + 2 data)
+  SKIP  gpu-01 (server — created by the Servers layer; not part of L1)
+  SKIP  gpu-02 (server — created by the Servers layer; not part of L1)
+GATE L1: PASS
+
+── L2 Wiring — bridges present, MTU 9000, correct endpoints ──
+  PASS  bridge bl-l1s1 present, MTU 9000
+  PASS  bridge bl-l1s2 present, MTU 9000
+  PASS  bridge bl-l2s1 present, MTU 9000
+  PASS  bridge bl-l2s2 present, MTU 9000
+  PASS  bridge bl-l3s1 present, MTU 9000
+  PASS  bridge bl-l3s2 present, MTU 9000
+  PASS  bridge bl-l4s1 present, MTU 9000
+  PASS  bridge bl-l4s2 present, MTU 9000
+  PASS  bridge bl-l5fw present, MTU 9000
+  PASS  bridge bl-l5g1 present, MTU 9000
+  PASS  bridge bl-l5g2 present, MTU 9000
+  PASS  bridge bl-l5s1 present, MTU 9000
+  PASS  bridge bl-l5s2 present, MTU 9000
+  PASS  bridge bl-l6fw present, MTU 9000
+  PASS  bridge bl-l6g1 present, MTU 9000
+  PASS  bridge bl-l6g2 present, MTU 9000
+  PASS  bridge bl-l6s1 present, MTU 9000
+  PASS  bridge bl-l6s2 present, MTU 9000
+  PASS  bridge bl-o1l1 present, MTU 9000
+  PASS  bridge bl-o1l2 present, MTU 9000
+  PASS  bridge bl-o2l1 present, MTU 9000
+  PASS  bridge bl-o2l2 present, MTU 9000
+  PASS  bridge bl-o3l1 present, MTU 9000
+  PASS  bridge bl-o3l2 present, MTU 9000
+  SKIP  bridge bl-svr1 (server link — Servers layer)
+  SKIP  bridge bl-svr2 (server link — Servers layer)
+  PASS  endpoints of bl-l1s1 correct (blr-dc01-leaf01:1 <-> blr-dc01-spine01:1)
+  PASS  endpoints of bl-l1s2 correct (blr-dc01-leaf01:2 <-> blr-dc01-spine02:1)
+  PASS  endpoints of bl-l2s1 correct (blr-dc01-leaf02:1 <-> blr-dc01-spine01:2)
+  PASS  endpoints of bl-l2s2 correct (blr-dc01-leaf02:2 <-> blr-dc01-spine02:2)
+  PASS  endpoints of bl-l3s1 correct (blr-dc01-leaf03:1 <-> blr-dc01-spine01:3)
+  PASS  endpoints of bl-l3s2 correct (blr-dc01-leaf03:2 <-> blr-dc01-spine02:3)
+  PASS  endpoints of bl-l4s1 correct (blr-dc01-leaf04:1 <-> blr-dc01-spine01:4)
+  PASS  endpoints of bl-l4s2 correct (blr-dc01-leaf04:2 <-> blr-dc01-spine02:4)
+  PASS  endpoints of bl-l5s1 correct (blr-dc01-leaf05:1 <-> blr-dc01-spine01:5)
+  PASS  endpoints of bl-l5s2 correct (blr-dc01-leaf05:2 <-> blr-dc01-spine02:5)
+  PASS  endpoints of bl-l6s1 correct (blr-dc01-leaf06:1 <-> blr-dc01-spine01:6)
+  PASS  endpoints of bl-l6s2 correct (blr-dc01-leaf06:2 <-> blr-dc01-spine02:6)
+  PASS  endpoints of bl-l5g1 correct (dcgw01:1 <-> blr-dc01-leaf05:3)
+  PASS  endpoints of bl-l6g1 correct (dcgw01:3 <-> blr-dc01-leaf06:3)
+  PASS  endpoints of bl-l5g2 correct (dcgw02:1 <-> blr-dc01-leaf05:4)
+  PASS  endpoints of bl-l6g2 correct (dcgw02:2 <-> blr-dc01-leaf06:4)
+  PASS  endpoints of bl-l5fw correct (vfw01:1 <-> blr-dc01-leaf05:8)
+  PASS  endpoints of bl-l6fw correct (vfw01:2 <-> blr-dc01-leaf06:8)
+  PASS  endpoints of bl-o1l1 correct (oob01:1 <-> blr-dc01-leaf05:5)
+  PASS  endpoints of bl-o1l2 correct (oob01:2 <-> blr-dc01-leaf06:5)
+  PASS  endpoints of bl-o2l1 correct (oob02:1 <-> blr-dc01-leaf05:6)
+  PASS  endpoints of bl-o2l2 correct (oob02:2 <-> blr-dc01-leaf06:6)
+  PASS  endpoints of bl-o3l1 correct (oob03:1 <-> blr-dc01-leaf05:7)
+  PASS  endpoints of bl-o3l2 correct (oob03:2 <-> blr-dc01-leaf06:7)
+  SKIP  link blr-dc01-leaf01:3 <-> gpu-01:1 (server not created yet — Servers layer)
+  SKIP  link blr-dc01-leaf02:3 <-> gpu-02:1 (server not created yet — Servers layer)
+GATE L2: PASS
+
+[dc-up] DONE — all stages + gates passed.
+[2026-10-14 05:18:32 UTC] INFO  Stage substrate passed (rc=0, 43s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 08: site-bringup (phase: bringup)
+============================================================
+
+[2026-10-14 05:19:14 UTC] INFO  Starting stage site-bringup (timeout 300m, run key 38513899645-1)
+[agent] started site-bringup (pid 104366, timeout 300m)
+[launchpad] stage=site-bringup branch=prototype_fixes sha=9c423ed3aa46593ffb563f7d07cfc2ac2564d850 started=2026-10-14T05:19:15Z
+MISSING domain gpu-01 (rebuild: deploy_fabric_vms.sh --apply)
+MISSING domain gpu-02 (rebuild: deploy_fabric_vms.sh --apply)
+--- state ---
+ Id   Name               State
+----------------------------------
+ 1    blr-dc01-spine01   running
+ 2    blr-dc01-spine02   running
+ 3    blr-dc01-leaf01    running
+ 4    blr-dc01-leaf02    running
+ 5    blr-dc01-leaf03    running
+ 6    blr-dc01-leaf04    running
+ 7    blr-dc01-leaf05    running
+ 8    blr-dc01-leaf06    running
+ 9    oob01              running
+ 10   oob02              running
+ 11   oob03              running
+ 12   dcgw01             running
+ 13   dcgw02             running
+ 14   vfw01              running
+
+╔════════════════════════════════════════════════════════════════════╗
+║  one-click bring-up    mode=apply  approve=auto  from=underlay to=accept
+║  blueprint=/home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml   oci=10.0.0.133   tenants=3-20
+╚════════════════════════════════════════════════════════════════════╝
+== preflight: /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'GPU' is declared in foundation.roles
+  PASS  server gpu-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server gpu-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server gpu-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server gpu-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  tenant set '3-20' within 3..100 (bad: none)
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..20 (top 129)
+  PASS  NFS VLAN stays in 1..4094 for T=3..20 (top 331)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..20 (top 529)
+  PASS  Internet VLAN stays in 1..4094 for T=3..20 (top 629)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..20 (top 3020)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..20
+  PASS  IB PKey stays 16-bit for T=3..20 (top 0x8014)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  rack elevations are computed at 1U for them — no u_height is declared for 'Cumulus VX', 'Generic Server', so a taller device reserves one U and the next placement above it overlaps. Declare u_height in foundation.device_types for anything that is not 1U.
+  PASS  rack elevations fit and do not overlap (13 placed device(s))
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (16 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see supported_topologies/clos-leaf-spine.md
+
+PREFLIGHT: all 189 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 1 Underlay — fabric intent + BGP-unnumbered
+════════════════════════════════════════════════════════════════════
+[nvue-bootstrap] mode: blueprint blueprint_blr-dc01.yaml — 14 device(s); creating NVUE user 'nv-config-manager' + verifying REST :8765
+  RMDC-GPU-SETH01    192.168.94.11   NVUE_REST=200  ok
+  RMDC-GPU-SETH02    192.168.94.12   NVUE_REST=200  ok
+  RMDC-GPU-LETH01    192.168.94.13   NVUE_REST=200  ok
+  RMDC-GPU-LETH02    192.168.94.14   NVUE_REST=200  ok
+  RMDC-GPU-LETH03    192.168.94.15   NVUE_REST=200  ok
+  RMDC-GPU-LETH04    192.168.94.16   NVUE_REST=200  ok
+  RMDC-GPU-LETH05    192.168.94.17   NVUE_REST=200  ok
+  RMDC-GPU-LETH06    192.168.94.18   NVUE_REST=200  ok
+  RMDC-GPU-OOB01     192.168.94.19   NVUE_REST=200  ok
+  RMDC-GPU-OOB02     192.168.94.20   NVUE_REST=200  ok
+  RMDC-GPU-OOB03     192.168.94.21   NVUE_REST=200  ok
+  RMDC-DC-R-01       192.168.94.22   NVUE_REST=200  ok
+  RMDC-DC-R-02       192.168.94.23   NVUE_REST=200  ok
+  RMDC-VFW-01        192.168.94.24   NVUE_REST=200  ok
+[nvue-bootstrap] seed-nvcm-cred: set [site.blr-dc01] api_user_key_r1
+[nvue-bootstrap] seed-nvcm-cred: consumers restarted to reload the credential
+
+[nvue-bootstrap] OK: all 14 device(s) return NVUE REST 200 — NVCM can authenticate.
+╔════════════════════════════════════════════════════════════════════╗
+║  site bring-up   mode=apply   approve=auto
+║  blueprint=/home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml
+╚════════════════════════════════════════════════════════════════════╝
+[provision-site] NOTE: designed for INITIAL site bring-up. Re-applying cables on an already-built fabric hits the create-once limitation (stc_review §4.3) — the supported re-apply is decommission → recreate.
+
+══ 1/5  validate blueprint + generate fabric designs → /tmp/dc-site-designs ══
+== preflight: /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'GPU' is declared in foundation.roles
+  PASS  server gpu-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server gpu-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server gpu-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server gpu-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  rack elevations are computed at 1U for them — no u_height is declared for 'Cumulus VX', 'Generic Server', so a taller device reserves one U and the next placement above it overlaps. Declare u_height in foundation.device_types for anything that is not 1U.
+  PASS  rack elevations fit and do not overlap (13 placed device(s))
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (16 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see supported_topologies/clos-leaf-spine.md
+
+PREFLIGHT: all 188 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+wrote /tmp/dc-site-designs/foundation.design.yaml
+wrote /tmp/dc-site-designs/edge.design.yaml
+wrote /tmp/dc-site-designs/underlay.design.yaml
+wrote /tmp/dc-site-designs/cables.design.yaml
+wrote /tmp/dc-site-designs/servers.design.yaml
+
+══ 1b/5  seed the site data to the cluster (jobs PVC: packages + vendored blueprint + designs) ══
+== regenerating site_provision designs from the blueprint (/home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml) ==
+== seeding JOBS_ROOT packages onto PVC nautobot-custom-jobs: common blueprint_validate drift ib lifecycle provision server tenant site_provision ==
+== vendored tenant policy: /home/ubuntu/launchpad/runs/38513899645-1/blueprint_blr-dc01.yaml -> tenant/blueprint.yaml ==
+pod/dc-jobs-writer condition met
+command terminated with exit code 1
+   no pre-rename job packages on the PVC (expected — nothing to clean)
+   seeded common
+   seeded blueprint_validate
+   seeded drift
+   seeded ib
+   seeded lifecycle
+   seeded provision
+   seeded server
+   seeded tenant
+   seeded site_provision
+== restarting celery + web + render-api + temporal worker to load the jobs ==
+deployment.apps/nv-config-manager-nautobot-celery restarted
+deployment.apps/nv-config-manager-nautobot restarted
+deployment.apps/nv-config-manager-render-api restarted
+deployment.apps/nv-config-manager-temporal-nv-config-manager-worker restarted
+== restarting dhcp-refresh + temporal-scheduler (stale-connection reconnect, best-effort) ==
+deployment.apps/nv-config-manager-dhcp-refresh restarted
+deployment.apps/nv-config-manager-temporal-scheduler restarted
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment spec update to be observed...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-nautobot" successfully rolled out
+deployment "nv-config-manager-render-api" successfully rolled out
+deployment "nv-config-manager-temporal-nv-config-manager-worker" successfully rolled out
+Waiting for deployment "nv-config-manager-dhcp-refresh" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-dhcp-refresh" successfully rolled out
+Waiting for deployment "nv-config-manager-temporal-scheduler" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-temporal-scheduler" successfully rolled out
+== enabling the seeded lifecycle jobs (modules matching (^|\.)(common|blueprint_validate|drift|ib|lifecycle|provision|server|tenant|site_provision)\.) ==
+   RESULT installed=25 newly_enabled=0 (attempt 1/60)
+== done. JOBS_ROOT jobs seeded + enabled (25 installed). ==
+
+══ 2/5  apply fabric designs into the Nautobot SoT (foundation + underlay + edge + cables) ══
+Building design from /tmp/design.yaml
+2026-10-14T05:22:13.110964Z [info     ] Updated LocationType Provider  [nautobot_design_builder.design]
+2026-10-14T05:22:13.155407Z [info     ] Updated LocationType Region    [nautobot_design_builder.design]
+2026-10-14T05:22:13.168728Z [info     ] Updated LocationType Site      [nautobot_design_builder.design]
+2026-10-14T05:22:13.255608Z [info     ] Created LocationType Building  [nautobot_design_builder.design]
+2026-10-14T05:22:13.366020Z [info     ] Created LocationType Room      [nautobot_design_builder.design]
+2026-10-14T05:22:13.391160Z [info     ] Created Location Rafay         [nautobot_design_builder.design]
+2026-10-14T05:22:13.445879Z [info     ] Created Location India         [nautobot_design_builder.design]
+2026-10-14T05:22:13.485565Z [info     ] Created Location blr-dc01      [nautobot_design_builder.design]
+2026-10-14T05:22:13.571671Z [info     ] Created Location blr-building001 [nautobot_design_builder.design]
+2026-10-14T05:22:13.669481Z [info     ] Created Location blr-building001-room001 [nautobot_design_builder.design]
+2026-10-14T05:22:13.682974Z [info     ] Created RackGroup row-01       [nautobot_design_builder.design]
+2026-10-14T05:22:13.702593Z [info     ] Created Rack rack-fabric-01    [nautobot_design_builder.design]
+2026-10-14T05:22:13.744488Z [info     ] Created Rack rack-fabric-02    [nautobot_design_builder.design]
+2026-10-14T05:22:13.758415Z [info     ] Created Rack rack-oob-01       [nautobot_design_builder.design]
+2026-10-14T05:22:13.773729Z [info     ] Created Rack rack-server-01    [nautobot_design_builder.design]
+2026-10-14T05:22:13.781162Z [info     ] Updated Manufacturer NVIDIA    [nautobot_design_builder.design]
+2026-10-14T05:22:13.784436Z [info     ] Created Manufacturer Generic   [nautobot_design_builder.design]
+2026-10-14T05:22:13.794405Z [info     ] Created DeviceType Cumulus VX  [nautobot_design_builder.design]
+2026-10-14T05:22:13.800040Z [info     ] Created DeviceType Generic Server [nautobot_design_builder.design]
+2026-10-14T05:22:13.808208Z [info     ] Created Role spine             [nautobot_design_builder.design]
+2026-10-14T05:22:13.842760Z [info     ] Created Role leaf              [nautobot_design_builder.design]
+2026-10-14T05:22:13.851027Z [info     ] Updated Role GPU               [nautobot_design_builder.design]
+2026-10-14T05:22:13.862153Z [info     ] Updated Namespace Global       [nautobot_design_builder.design]
+[provision-site] applied foundation.design.yaml
+Building design from /tmp/design.yaml
+2026-10-14T05:22:29.927351Z [info     ] Updated Platform Cumulus Linux [nautobot_design_builder.design]
+2026-10-14T05:22:29.951533Z [info     ] Created Prefix 172.23.0.0/24   [nautobot_design_builder.design]
+2026-10-14T05:22:29.961491Z [info     ] Created VLAN placeholder (100) [nautobot_design_builder.design]
+2026-10-14T05:22:30.023996Z [info     ] Created Device RMDC-GPU-SETH01 [nautobot_design_builder.design]
+2026-10-14T05:22:30.148039Z [info     ] Created Device RMDC-GPU-SETH02 [nautobot_design_builder.design]
+2026-10-14T05:22:30.258389Z [info     ] Created Device RMDC-GPU-LETH01 [nautobot_design_builder.design]
+2026-10-14T05:22:30.345356Z [info     ] Created Device RMDC-GPU-LETH02 [nautobot_design_builder.design]
+2026-10-14T05:22:30.433361Z [info     ] Created Device RMDC-GPU-LETH03 [nautobot_design_builder.design]
+2026-10-14T05:22:30.515628Z [info     ] Created Device RMDC-GPU-LETH04 [nautobot_design_builder.design]
+2026-10-14T05:22:30.598249Z [info     ] Created Device RMDC-GPU-LETH05 [nautobot_design_builder.design]
+2026-10-14T05:22:30.700547Z [info     ] Created Device RMDC-GPU-LETH06 [nautobot_design_builder.design]
+2026-10-14T05:22:30.801321Z [info     ] Created Device RMDC-GPU-OOB01  [nautobot_design_builder.design]
+2026-10-14T05:22:30.890908Z [info     ] Created Device RMDC-GPU-OOB02  [nautobot_design_builder.design]
+2026-10-14T05:22:30.978936Z [info     ] Created Device RMDC-GPU-OOB03  [nautobot_design_builder.design]
+[provision-site] applied underlay.design.yaml
+Building design from /tmp/design.yaml
+2026-10-14T05:22:46.368355Z [info     ] Updated Platform Cumulus Linux [nautobot_design_builder.design]
+2026-10-14T05:22:46.420060Z [info     ] Created Device RMDC-DC-R-01    [nautobot_design_builder.design]
+2026-10-14T05:22:46.455547Z [info     ] Created Device RMDC-DC-R-02    [nautobot_design_builder.design]
+2026-10-14T05:22:46.489744Z [info     ] Created Device RMDC-VFW-01     [nautobot_design_builder.design]
+[provision-site] applied edge.design.yaml
+2026-10-14T05:23:01.294667Z [info     ] Updated Device RMDC-GPU-SETH01 [nautobot_design_builder.design]
+2026-10-14T05:23:01.564827Z [info     ] Updated Device RMDC-GPU-SETH02 [nautobot_design_builder.design]
+2026-10-14T05:23:01.678682Z [info     ] Updated Device RMDC-GPU-LETH01 [nautobot_design_builder.design]
+2026-10-14T05:23:01.764156Z [info     ] Created Cable #724ef4f7-d722-408c-b4a4-41bc5efabac0 [nautobot_design_builder.design]
+2026-10-14T05:23:01.835312Z [info     ] Created Cable #5ea37950-6d55-4ff2-bc2b-d7b51c6c4afd [nautobot_design_builder.design]
+2026-10-14T05:23:01.859069Z [info     ] Updated Device RMDC-GPU-LETH02 [nautobot_design_builder.design]
+2026-10-14T05:23:01.925756Z [info     ] Created Cable #e610a585-a747-4351-90c9-660e340a633f [nautobot_design_builder.design]
+2026-10-14T05:23:01.987050Z [info     ] Created Cable #d09fa4c3-73f2-4993-b869-a61b41a86b7f [nautobot_design_builder.design]
+2026-10-14T05:23:02.009295Z [info     ] Updated Device RMDC-GPU-LETH03 [nautobot_design_builder.design]
+2026-10-14T05:23:02.076044Z [info     ] Created Cable #291adc89-c595-4221-ad6c-345bf5ca9266 [nautobot_design_builder.design]
+2026-10-14T05:23:02.142138Z [info     ] Created Cable #e698f23e-2653-4037-9bdf-648ee8ed1a0e [nautobot_design_builder.design]
+2026-10-14T05:23:02.165059Z [info     ] Updated Device RMDC-GPU-LETH04 [nautobot_design_builder.design]
+2026-10-14T05:23:02.228773Z [info     ] Created Cable #8519b4d6-f787-4f26-ac1e-838692cef9b0 [nautobot_design_builder.design]
+2026-10-14T05:23:02.294701Z [info     ] Created Cable #7d91ef6b-b5c8-4857-a1a5-bba98314e290 [nautobot_design_builder.design]
+2026-10-14T05:23:02.317650Z [info     ] Updated Device RMDC-GPU-LETH05 [nautobot_design_builder.design]
+2026-10-14T05:23:02.382424Z [info     ] Created Cable #14d75b31-d456-46a9-a434-32be21685574 [nautobot_design_builder.design]
+2026-10-14T05:23:02.445052Z [info     ] Created Cable #c40030dd-9d40-4ba0-97ee-9ad5c07f2758 [nautobot_design_builder.design]
+2026-10-14T05:23:02.529688Z [info     ] Updated Device RMDC-GPU-LETH06 [nautobot_design_builder.design]
+2026-10-14T05:23:02.599046Z [info     ] Created Cable #1d8dec3d-2bf3-4573-b82c-a2282f0a35a0 [nautobot_design_builder.design]
+2026-10-14T05:23:02.662568Z [info     ] Created Cable #ae12ed35-b43f-44c8-997d-cc56da629db7 [nautobot_design_builder.design]
+2026-10-14T05:23:02.738659Z [info     ] Updated Device RMDC-DC-R-01    [nautobot_design_builder.design]
+2026-10-14T05:23:02.800355Z [info     ] Created Cable #08cf9c98-bf87-4958-8294-84ba25cc6296 [nautobot_design_builder.design]
+2026-10-14T05:23:02.854599Z [info     ] Created Cable #3b5c6608-c8b1-492f-8585-40f401aadd08 [nautobot_design_builder.design]
+2026-10-14T05:23:02.870262Z [info     ] Updated Device RMDC-DC-R-02    [nautobot_design_builder.design]
+2026-10-14T05:23:02.932183Z [info     ] Created Cable #54bee1fb-90e4-4889-ab78-00b1916e85d8 [nautobot_design_builder.design]
+2026-10-14T05:23:02.985313Z [info     ] Created Cable #c2a7b512-2181-4b31-b04e-6408d2c861e8 [nautobot_design_builder.design]
+2026-10-14T05:23:03.000343Z [info     ] Updated Device RMDC-VFW-01     [nautobot_design_builder.design]
+2026-10-14T05:23:03.060898Z [info     ] Created Cable #3b881602-abc2-4dc8-a75e-155a9b6ca6d3 [nautobot_design_builder.design]
+2026-10-14T05:23:03.118230Z [info     ] Created Cable #f84368b1-5a5f-45d9-899d-5f33bfa209b7 [nautobot_design_builder.design]
+2026-10-14T05:23:03.142302Z [info     ] Updated Device RMDC-GPU-OOB01  [nautobot_design_builder.design]
+2026-10-14T05:23:03.204592Z [info     ] Created Cable #f8c6495f-034e-41f9-9aec-a87142c04727 [nautobot_design_builder.design]
+2026-10-14T05:23:03.263411Z [info     ] Created Cable #0af92e58-b07b-4e79-a35a-468a69ac2cef [nautobot_design_builder.design]
+2026-10-14T05:23:03.287966Z [info     ] Updated Device RMDC-GPU-OOB02  [nautobot_design_builder.design]
+2026-10-14T05:23:03.352132Z [info     ] Created Cable #1c07272c-7497-4d8f-a75b-d1e6cd877ded [nautobot_design_builder.design]
+2026-10-14T05:23:03.414126Z [info     ] Created Cable #e07e9f3b-e0ac-45e4-9158-0ead50205379 [nautobot_design_builder.design]
+2026-10-14T05:23:03.439351Z [info     ] Updated Device RMDC-GPU-OOB03  [nautobot_design_builder.design]
+2026-10-14T05:23:03.505221Z [info     ] Created Cable #c55b6bbc-f379-4a87-8211-5c5185e60a28 [nautobot_design_builder.design]
+2026-10-14T05:23:03.574014Z [info     ] Created Cable #1c0fc107-eafe-4523-bede-63573912b617 [nautobot_design_builder.design]
+APPLIED design from /tmp/design.yaml
+[provision-site] applied cables.design.yaml
+[provision-site] servers: add per node via '4.1 · Register (add to free pool)' + Attach (not part of fabric bring-up)
+
+══ 2b/5  set mgmt eth0 + primary_ip4 + render/deploy-enable (from the blueprint) ══
+== backfill-mgmt: stamping eth0 + primary_ip4 (+ render/deploy-enable) for 14 device(s) ==
+mgmt stamped: 14 device(s), 0 not-in-SoT, render-enabled: 14
+
+══ 3/5  configure switches (NVCM gate: auto) ══
+[provision-site] deploy scope: 13 blueprint device(s) (never 'all' on a shared SoT)
+== configure-devices: DC_APPROVE=auto, 13 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render c5592902 201 in 1.8s
+  render 6e374d11 201 in 1.9s
+  render dee6fb25 201 in 1.4s
+  render 87ec9d5b 201 in 1.3s
+  render 24d3a994 201 in 1.5s
+  render 31487e96 201 in 1.5s
+  render ce834bab 201 in 2.0s
+  render 8eea8b4d 201 in 2.1s
+  render b0b65078 201 in 1.1s
+  render 34569468 201 in 1.3s
+  render 3a8151e1 201 in 1.9s
+  render 4d2fa96b 201 in 1.7s
+  render 152ec3fe 201 in 0.7s
+  == render phase: 13 device(s) in 10s (concurrency 2) ==
+== BATCH MODE: deploying 13 device(s) with width 2 (R1: independent devices, auto gate) ==
+  c5592902: COMPLETED failed_stage=False in 21s
+  6e374d11: COMPLETED failed_stage=False in 21s
+  dee6fb25: COMPLETED failed_stage=False in 21s
+  87ec9d5b: COMPLETED failed_stage=False in 25s
+  24d3a994: COMPLETED failed_stage=False in 22s
+  31487e96: COMPLETED failed_stage=False in 17s
+  ce834bab: COMPLETED failed_stage=False in 20s
+  8eea8b4d: COMPLETED failed_stage=False in 21s
+  b0b65078: COMPLETED failed_stage=False in 16s
+  34569468: COMPLETED failed_stage=False in 21s
+  3a8151e1: COMPLETED failed_stage=False in 17s
+  4d2fa96b: COMPLETED failed_stage=False in 17s
+  152ec3fe: COMPLETED failed_stage=False in 13s
+== SUMMARY: 13/13 configured, 0 awaiting review, 0 NOT CONFIGURED in 134s (width 2) ==
+== deploy phase: 13 device(s) = 7 wave(s) at width 2, median 21s/device (fastest 13s, slowest 25s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 148s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+
+══ 4/5  tenants ══
+== reconcile: desired=18 (3-20) gate=auto guard=49 ==
+   to ADD: 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+   to REMOVE: none
+   NOTE: tenant intent will be written AND the switch deploy applied without holding (auto-approved).
+         For no writes at all, re-run with --dry-run.
+tenant3 +compiled
+tenant4 +compiled
+tenant5 +compiled
+tenant6 +compiled
+tenant7 +compiled
+tenant8 +compiled
+tenant9 +compiled
+tenant10 +compiled
+tenant11 +compiled
+tenant12 +compiled
+tenant13 +compiled
+tenant14 +compiled
+tenant15 +compiled
+tenant16 +compiled
+tenant17 +compiled
+tenant18 +compiled
+tenant19 +compiled
+tenant20 +compiled
+== deploying affected devices (gate=auto; auto-stage any that exceed the VX diff limit) ==
+== configure-devices: DC_APPROVE=auto, 4 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render dee6fb25 200 in 1.6s
+  render 87ec9d5b 200 in 1.6s
+  render ce834bab 200 in 1.9s
+  render 8eea8b4d 200 in 1.8s
+  == render phase: 4 device(s) in 3s (concurrency 2) ==
+== BATCH MODE: deploying 4 device(s) with width 2 (R1: independent devices, auto gate) ==
+  dee6fb25: COMPLETED failed_stage=False in 22s
+  87ec9d5b: COMPLETED failed_stage=False in 23s
+  ce834bab: COMPLETED failed_stage=False in 21s
+  8eea8b4d: COMPLETED failed_stage=False in 23s
+== SUMMARY: 4/4 configured, 0 awaiting review, 0 NOT CONFIGURED in 46s (width 2) ==
+== deploy phase: 4 device(s) = 2 wave(s) at width 2, median 23s/device (fastest 21s, slowest 23s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 53s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+  RMDC-DC-R-01: gateway (dcgw.peers in intent) -> staged deploy (skip doomed one-shot)
+== stage-deploy: RMDC-DC-R-01 dcgw-peers entries=36 batches=3 sizes=12 24 36 ==
+--- dcgw-peers -> first 12 of 36 ---
+set 12
+== configure-devices: DC_APPROVE=auto, 1 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render c5592902 201 in 1.0s
+  == render phase: 1 device(s) in 1s (concurrency 1) ==
+  c5592902: COMPLETED failed_stage=False in 12s
+== SUMMARY: 1/1 configured, 0 awaiting review, 0 NOT CONFIGURED in 12s (width 1) ==
+== deploy phase: 1 device(s) = 1 wave(s) at width 1, median 12s/device (fastest 12s, slowest 12s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 17s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+--- dcgw-peers -> first 24 of 36 ---
+set 24
+== configure-devices: DC_APPROVE=auto, 1 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render c5592902 201 in 0.9s
+  == render phase: 1 device(s) in 1s (concurrency 1) ==
+  c5592902: COMPLETED failed_stage=False in 12s
+== SUMMARY: 1/1 configured, 0 awaiting review, 0 NOT CONFIGURED in 12s (width 1) ==
+== deploy phase: 1 device(s) = 1 wave(s) at width 1, median 12s/device (fastest 12s, slowest 12s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 17s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+--- dcgw-peers -> first 36 of 36 ---
+set 36
+== configure-devices: DC_APPROVE=auto, 1 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render c5592902 201 in 0.9s
+  == render phase: 1 device(s) in 1s (concurrency 1) ==
+  c5592902: COMPLETED failed_stage=False in 17s
+== SUMMARY: 1/1 configured, 0 awaiting review, 0 NOT CONFIGURED in 17s (width 1) ==
+== deploy phase: 1 device(s) = 1 wave(s) at width 1, median 17s/device (fastest 17s, slowest 17s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 21s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+== stage-deploy done: RMDC-DC-R-01 full 36-entry dcgw-peers ==
+  RMDC-DC-R-02: gateway (dcgw.peers in intent) -> staged deploy (skip doomed one-shot)
+== stage-deploy: RMDC-DC-R-02 dcgw-peers entries=36 batches=3 sizes=12 24 36 ==
+--- dcgw-peers -> first 12 of 36 ---
+set 12
+== configure-devices: DC_APPROVE=auto, 1 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 6e374d11 201 in 1.3s
+  == render phase: 1 device(s) in 1s (concurrency 1) ==
+  6e374d11: COMPLETED failed_stage=False in 12s
+== SUMMARY: 1/1 configured, 0 awaiting review, 0 NOT CONFIGURED in 12s (width 1) ==
+== deploy phase: 1 device(s) = 1 wave(s) at width 1, median 12s/device (fastest 12s, slowest 12s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 17s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+--- dcgw-peers -> first 24 of 36 ---
+set 24
+== configure-devices: DC_APPROVE=auto, 1 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 6e374d11 201 in 1.3s
+  == render phase: 1 device(s) in 1s (concurrency 1) ==
+  6e374d11: COMPLETED failed_stage=False in 17s
+== SUMMARY: 1/1 configured, 0 awaiting review, 0 NOT CONFIGURED in 17s (width 1) ==
+== deploy phase: 1 device(s) = 1 wave(s) at width 1, median 17s/device (fastest 17s, slowest 17s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 21s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+--- dcgw-peers -> first 36 of 36 ---
+set 36
+== configure-devices: DC_APPROVE=auto, 1 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 6e374d11 201 in 0.9s
+  == render phase: 1 device(s) in 1s (concurrency 1) ==
+  6e374d11: COMPLETED failed_stage=False in 16s
+== SUMMARY: 1/1 configured, 0 awaiting review, 0 NOT CONFIGURED in 16s (width 1) ==
+== deploy phase: 1 device(s) = 1 wave(s) at width 1, median 16s/device (fastest 16s, slowest 16s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 21s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+== stage-deploy done: RMDC-DC-R-02 full 36-entry dcgw-peers ==
+== tag + verify ==
+tagged Deployed=18 Reserved=0 (VRF->Tenant links: 0 in place, 18 newly linked)
+== overlay verify (topology clos-leaf-spine: realization measured as L2VNIs) ==
+  PASS: RMDC-GPU-LETH01 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: RMDC-GPU-LETH02 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: both switches carry the same L2VNIs
+  SKIP: gpu data-plane ping — no host is attached to the tenant data plane (172.23.129.22);
+        the switches carry the tenant, but a host needs an interface on that VLAN (Servers layer)
+== verify: 3 passed, 0 failed, 1 skipped ==
+== reconcile done ==
+
+══ 5/5  verify SoT vs switch ══
+== overlay verify (topology clos-leaf-spine: realization measured as L2VNIs) ==
+  PASS: RMDC-GPU-LETH01 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: RMDC-GPU-LETH02 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: both switches carry the same L2VNIs
+  SKIP: gpu data-plane ping — no host is attached to the tenant data plane (172.23.129.22);
+        the switches carry the tenant, but a host needs an interface on that VLAN (Servers layer)
+== verify: 3 passed, 0 failed, 1 skipped ==
+== 3-way consistency (leaf RMDC-GPU-LETH01; topology clos-leaf-spine, measured as VNIs) ==
+   desired(tag)=18 intent=18 realized(VNIs)=36
+   OK    [A1 desired!in intent] none
+   OK    [A2 intent!in desired] none
+   OK    [B1 intent!on switch] none
+   OK    [B2 stale VNIs] none
+== CLEAN — 3 layers agree ==
+== on-demand full-config drift scan (read-only, site-scoped from blueprint_blr-dc01.yaml, fresh_backup=true) ==
+   devices: RMDC-GPU-SETH01,RMDC-GPU-SETH02,RMDC-GPU-LETH01,RMDC-GPU-LETH02,RMDC-GPU-LETH03,RMDC-GPU-LETH04,RMDC-GPU-LETH05,RMDC-GPU-LETH06,RMDC-GPU-OOB01,RMDC-GPU-OOB02,RMDC-GPU-OOB03,RMDC-DC-R-01,RMDC-DC-R-02,RMDC-VFW-01
+[05:35:55] Running drift.jobs.DriftDetect...
+		info: 7.1 · Drift — Detect (running vs intent): Running job
+		info: RMDC-DC-R-01: CLEAN (running matches intent)
+		info: RMDC-DC-R-02: CLEAN (running matches intent)
+		info: RMDC-GPU-LETH01: CLEAN (running matches intent)
+		info: RMDC-GPU-LETH02: CLEAN (running matches intent)
+		info: RMDC-GPU-LETH03: CLEAN (running matches intent)
+		info: RMDC-GPU-LETH04: CLEAN (running matches intent)
+		info: RMDC-GPU-LETH05: CLEAN (running matches intent)
+		info: RMDC-GPU-LETH06: CLEAN (running matches intent)
+		info: RMDC-GPU-OOB01: CLEAN (running matches intent)
+		info: RMDC-GPU-OOB02: CLEAN (running matches intent)
+		info: RMDC-GPU-OOB03: CLEAN (running matches intent)
+		info: RMDC-GPU-SETH01: CLEAN (running matches intent)
+		info: RMDC-GPU-SETH02: CLEAN (running matches intent)
+		info: RMDC-VFW-01: no startup.yaml config in store (intended=True, backup=False) — skipping
+		info: DRIFT SUMMARY: 13 checked, 0 drifted, 1 skipped — all devices match intent
+{'checked': 13, 'drifted': [], 'skipped': 1}
+[05:40:52] drift.jobs.DriftDetect: SUCCESS
+[05:40:52] drift.jobs.DriftDetect: Duration 4 minutes, 56.73 seconds
+
+[provision-site] DONE. If the deploy HELD at the NVCM gate, approve the diff in the NVCM UI to apply to switches.
+[configure_vfw] mode=apply blueprint=blueprint_blr-dc01.yaml — 1 vFW device(s)
+  RMDC-VFW-01  config_context.vfw = asn 65103 | peers 4 | advertise ['198.51.100.0/24'] | accept ['203.0.113.0/24']
+[configure_vfw]   ✓ config_context.vfw set on RMDC-VFW-01 (5e6dbdbf-0768-4048-b1a0-9f941e894bab)
+== configure-devices: DC_APPROVE=auto, 1 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 1 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 5e6dbdbf 201 in 0.9s
+  == render phase: 1 device(s) in 1s (concurrency 1) ==
+  5e6dbdbf: COMPLETED failed_stage=False in 17s
+== SUMMARY: 1/1 configured, 0 awaiting review, 0 NOT CONFIGURED in 17s (width 1) ==
+== deploy phase: 1 device(s) = 1 wave(s) at width 1, median 17s/device (fastest 17s, slowest 17s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+== configure-devices total: 21s (render + deploy + overhead) ==
+== auto: diffs approved + applied ==
+[configure_vfw]   ✓ deployed RMDC-VFW-01
+
+[configure_vfw] DONE — vFW config_context set + deployed (DC_APPROVE=auto).
+
+── L5 Underlay — fabric peering up (BGP for Clos, MLAG for a collapsed core) + RoCE intent ──
+  PASS  blr-dc01-spine01: all BGP sessions Established
+  PASS  blr-dc01-spine02: all BGP sessions Established
+  PASS  blr-dc01-leaf01: all BGP sessions Established
+  PASS  blr-dc01-leaf02: all BGP sessions Established
+  PASS  blr-dc01-leaf03: all BGP sessions Established
+  PASS  blr-dc01-leaf04: all BGP sessions Established
+  PASS  blr-dc01-leaf05: all BGP sessions Established
+  PASS  blr-dc01-leaf06: all BGP sessions Established
+  PASS  RoCE blr-dc01-spine01: on — matches qos.roce.roles
+  PASS  RoCE blr-dc01-spine02: on — matches qos.roce.roles
+  PASS  RoCE blr-dc01-leaf01: on — matches qos.roce.roles
+  PASS  RoCE blr-dc01-leaf02: on — matches qos.roce.roles
+  PASS  RoCE blr-dc01-leaf03: on — matches qos.roce.roles
+  PASS  RoCE blr-dc01-leaf04: on — matches qos.roce.roles
+  PASS  RoCE blr-dc01-leaf05: off — matches qos.roce.roles
+  PASS  RoCE blr-dc01-leaf06: off — matches qos.roce.roles
+  PASS  RoCE oob01: off — matches qos.roce.roles
+  PASS  RoCE oob02: off — matches qos.roce.roles
+  PASS  RoCE oob03: off — matches qos.roce.roles
+GATE L5: PASS
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 2 Overlay — all tenants (bulk intent, single apply/device)
+════════════════════════════════════════════════════════════════════
+== reconcile: desired=18 (3-20) gate=auto guard=49 ==
+   to ADD: none
+   to REMOVE: none
+   NOTE: tenant intent will be written AND the switch deploy applied without holding (auto-approved).
+         For no writes at all, re-run with --dry-run.
+== already converged (zero delta) ==
+== tag + verify ==
+tagged Deployed=18 Reserved=0 (VRF->Tenant links: 18 in place, 0 newly linked)
+== overlay verify (topology clos-leaf-spine: realization measured as L2VNIs) ==
+  PASS: RMDC-GPU-LETH01 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: RMDC-GPU-LETH02 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: both switches carry the same L2VNIs
+  SKIP: gpu data-plane ping — no host is attached to the tenant data plane (172.23.129.22);
+        the switches carry the tenant, but a host needs an interface on that VLAN (Servers layer)
+== verify: 3 passed, 0 failed, 1 skipped ==
+== reconcile done ==
+
+── L6 Overlay — VRF/VNI on-switch + EVPN type-2/5 (control plane) ──
+== 3-way consistency (leaf RMDC-GPU-LETH01; topology clos-leaf-spine, measured as VNIs) ==
+   desired(tag)=18 intent=18 realized(VNIs)=36
+   OK    [A1 desired!in intent] none
+   OK    [A2 intent!in desired] none
+   OK    [B1 intent!on switch] none
+   OK    [B2 stale VNIs] none
+== CLEAN — 3 layers agree ==
+  PASS  3-way consistency (desired==intent==realized)
+  PASS  EVPN active: 37 tenant L2VNIs on blr-dc01-leaf01
+  PASS  EVPN type-2/5 routes received on blr-dc01-leaf01 (366 prefixes)
+  PASS  DC-GW dcgw01: BGP Established (egress up)
+  PASS  DC-GW dcgw02: BGP Established (egress up)
+GATE L6: PASS
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 3 Servers — attach the GPU verification harness
+════════════════════════════════════════════════════════════════════
+[deploy-server-vms] bridge bl-svr1 exists
+[deploy-server-vms] blr-dc01-leaf01 already has a NIC on bl-svr1
+[deploy-server-vms] ── gpu-01 (1 attachment(s)) ──
+[deploy-server-vms] mgmt reservation for gpu-01 exists (192.168.94.25)
+[deploy-server-vms] create gpu-01 (mgmt0 52:54:00:36:0e:00 on bl-mgmt; data0 52:54:00:5a:00:01 -> bl-svr1; login stc)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'gpu-01' marked as autostarted
+
+[deploy-server-vms] bridge bl-svr2 exists
+[deploy-server-vms] blr-dc01-leaf02 already has a NIC on bl-svr2
+[deploy-server-vms] ── gpu-02 (1 attachment(s)) ──
+[deploy-server-vms] mgmt reservation for gpu-02 exists (192.168.94.26)
+[deploy-server-vms] create gpu-02 (mgmt0 52:54:00:36:0f:00 on bl-mgmt; data0 52:54:00:5a:00:02 -> bl-svr2; login stc)
+WARNING  Using --osinfo generic, VM performance may suffer. Specify an accurate OS for optimal results.
+
+Starting install...
+Creating domain...                                          |    0 B  00:00     
+Domain creation completed.
+Domain 'gpu-02' marked as autostarted
+
+[deploy-server-vms] done. Next: register + attach via the server jobs ('4.1 · Register' + Attach), then apply_host_ip.sh.
+[server-op] registering gpu-01 (leaf=RMDC-GPU-LETH01 port=swp3 mac=52:54:00:5a:00:01 deviceType=gpu) ...
+Defaulted container "nautobot" out of: nautobot, nginx, wait-redis (init), wait-postgres (init), run-migrations (init)
+[05:42:51] Running server.jobs.ServerRegister...
+	_run_locked: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: registered gpu-01 (gpu, free pool): cabled data0 -> RMDC-GPU-LETH01:swp3
+	initialization: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: 4.1 · Register (add to free pool): Running job
+	post_run: 0 debug, 0 info, 1 success, 0 warning, 0 failure, 0 error, 0 critical
+		success: Job completed
+{'server': 'gpu-01', 'leaf': 'RMDC-GPU-LETH01', 'port': 'swp3', 'op': 'register', 'status': 'created', 'note': 'cabled data0 -> RMDC-GPU-LETH01:swp3', 'deviceType': 'gpu', 'available': True, 'allocated': False}
+[05:42:51] server.jobs.ServerRegister: SUCCESS
+[05:42:51] server.jobs.ServerRegister: Duration 0 minutes, 0.79 seconds
+[05:42:51] Finished
+[server-op] ✓ registered (or adopted) gpu-01
+[server-op] running Nautobot job server.jobs.ServerAttach (auto_approve=true) ...
+Defaulted container "nautobot" out of: nautobot, nginx, wait-redis (init), wait-postgres (init), run-migrations (init)
+[05:43:15] Running server.jobs.ServerAttach...
+	_attempt: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: RMDC-GPU-LETH01: COMPLETED (failed_stage=False)
+	_run_locked: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: attached gpu-01 -> tenant4 (hgx VLAN 113) on RMDC-GPU-LETH01:swp3
+	host_ip_guidance: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: HOST — align data0 to the tenant IP; run ONE command on the OCI host (reads the SoT + f(T), flushes the old IP — no manual down/up):
+    deploy_scripts/servers/apply_host_ip.sh gpu-01
+  (explicit form: MGMT_IP=<gpu-01-mgmt-ip> DATA_IP=172.23.129.21 PLEN=24 GW=172.23.129.1 EXT_ROUTES=203.0.113.0/24 deploy_scripts/servers/apply_server_netplan.sh)
+	initialization: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: 4.2 · Attach to tenant: Running job
+	post_run: 0 debug, 0 info, 1 success, 0 warning, 0 failure, 0 error, 0 critical
+		success: Job completed
+	sync_host_ip_sot: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: gpu-01: recorded data0 172.23.129.21/24 in the SoT (primary IPv4 set)
+{'server': 'gpu-01', 'leaf': 'RMDC-GPU-LETH01', 'port': 'swp3', 'tenant': 'tenant4', 'op': 'attach', 'status': 'COMPLETED'}
+[05:43:33] server.jobs.ServerAttach: SUCCESS
+[05:43:33] server.jobs.ServerAttach: Duration 0 minutes, 18.25 seconds
+[05:43:33] Finished
+[server-op] aligning host: data0 -> tenant4's f(T) IP ...
+[apply-host-ip] gpu-01 (192.168.94.25): data0 -> 172.23.129.21/24 gw 172.23.129.1 ext 203.0.113.0/24
+[netplan] 192.168.94.25: data0 -> 172.23.129.21/24 gw 172.23.129.1
+Warning: Permanently added '192.168.94.25' (ED25519) to the list of known hosts.
+data0            UP             172.23.129.21/24 fe80::5054:ff:fe5a:1/64 
+[apply-host-ip] done.
+[server-op] registering gpu-02 (leaf=RMDC-GPU-LETH02 port=swp3 mac=52:54:00:5a:00:02 deviceType=gpu) ...
+Defaulted container "nautobot" out of: nautobot, nginx, wait-redis (init), wait-postgres (init), run-migrations (init)
+[05:44:06] Running server.jobs.ServerRegister...
+	_run_locked: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: registered gpu-02 (gpu, free pool): cabled data0 -> RMDC-GPU-LETH02:swp3
+	initialization: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: 4.1 · Register (add to free pool): Running job
+	post_run: 0 debug, 0 info, 1 success, 0 warning, 0 failure, 0 error, 0 critical
+		success: Job completed
+{'server': 'gpu-02', 'leaf': 'RMDC-GPU-LETH02', 'port': 'swp3', 'op': 'register', 'status': 'created', 'note': 'cabled data0 -> RMDC-GPU-LETH02:swp3', 'deviceType': 'gpu', 'available': True, 'allocated': False}
+[05:44:07] server.jobs.ServerRegister: SUCCESS
+[05:44:07] server.jobs.ServerRegister: Duration 0 minutes, 1.17 seconds
+[05:44:07] Finished
+[server-op] ✓ registered (or adopted) gpu-02
+[server-op] running Nautobot job server.jobs.ServerAttach (auto_approve=true) ...
+Defaulted container "nautobot" out of: nautobot, nginx, wait-redis (init), wait-postgres (init), run-migrations (init)
+[05:44:33] Running server.jobs.ServerAttach...
+	_attempt: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: RMDC-GPU-LETH02: COMPLETED (failed_stage=False)
+	_run_locked: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: attached gpu-02 -> tenant4 (hgx VLAN 113) on RMDC-GPU-LETH02:swp3
+	host_ip_guidance: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: HOST — align data0 to the tenant IP; run ONE command on the OCI host (reads the SoT + f(T), flushes the old IP — no manual down/up):
+    deploy_scripts/servers/apply_host_ip.sh gpu-02
+  (explicit form: MGMT_IP=<gpu-02-mgmt-ip> DATA_IP=172.23.129.22 PLEN=24 GW=172.23.129.1 EXT_ROUTES=203.0.113.0/24 deploy_scripts/servers/apply_server_netplan.sh)
+	initialization: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: 4.2 · Attach to tenant: Running job
+	post_run: 0 debug, 0 info, 1 success, 0 warning, 0 failure, 0 error, 0 critical
+		success: Job completed
+	sync_host_ip_sot: 0 debug, 1 info, 0 success, 0 warning, 0 failure, 0 error, 0 critical
+		info: gpu-02: recorded data0 172.23.129.22/24 in the SoT (primary IPv4 set)
+{'server': 'gpu-02', 'leaf': 'RMDC-GPU-LETH02', 'port': 'swp3', 'tenant': 'tenant4', 'op': 'attach', 'status': 'COMPLETED'}
+[05:44:52] server.jobs.ServerAttach: SUCCESS
+[05:44:52] server.jobs.ServerAttach: Duration 0 minutes, 18.24 seconds
+[05:44:52] Finished
+[server-op] aligning host: data0 -> tenant4's f(T) IP ...
+[apply-host-ip] gpu-02 (192.168.94.26): data0 -> 172.23.129.22/24 gw 172.23.129.1 ext 203.0.113.0/24
+[netplan] 192.168.94.26: data0 -> 172.23.129.22/24 gw 172.23.129.1
+Warning: Permanently added '192.168.94.26' (ED25519) to the list of known hosts.
+data0            UP             172.23.129.22/24 fe80::5054:ff:fe5a:2/64 
+[apply-host-ip] done.
+
+── L6 hosts — GPU access port on-switch + data-plane ping ──
+  PASS  gpu-01: swp3 carries a VLAN on-switch
+  PASS  gpu-02: swp3 carries a VLAN on-switch
+== overlay verify (topology clos-leaf-spine: realization measured as L2VNIs) ==
+  PASS: RMDC-GPU-LETH01 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: RMDC-GPU-LETH02 all 36 intended L2VNIs on-switch (36 realized)
+  PASS: both switches carry the same L2VNIs
+  PASS: gpu-01->gpu-02 0% loss
+== verify: 4 passed, 0 failed, 0 skipped ==
+  PASS  overlay data-plane verify (stretch + GPU ping)
+GATE L6H: PASS
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 4 Acceptance — egress + isolation + full-config
+════════════════════════════════════════════════════════════════════
+
+── L7 External egress — DC-GW sessions + egress + isolation + drift ──
+  PASS  DC-GW dcgw01: tenant eBGP Established
+  PASS  DC-GW dcgw02: tenant eBGP Established
+  PASS  drift scan CLEAN (running == intent, site-scoped)
+GATE L7: PASS
+
+── L8 OOB — OOB switches reachable + BGP up ──
+  PASS  OOB oob01 (192.168.94.19): reachable
+  PASS  OOB oob01: BGP Established (this OOB does peer with the fabric)
+  PASS  OOB oob02 (192.168.94.20): reachable
+  PASS  OOB oob02: BGP Established (this OOB does peer with the fabric)
+  PASS  OOB oob03 (192.168.94.21): reachable
+  PASS  OOB oob03: BGP Established (this OOB does peer with the fabric)
+GATE L8: PASS
+[dc-up] ACCEPTANCE: fabric + all tenants + all servers + egress + isolation proven. The fabric is UP on 10.0.0.133.
+
+[dc-up] DONE — all stages + gates passed.
+[2026-10-14 05:46:45 UTC] INFO  Stage site-bringup passed (rc=0, 1651s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+WORKFLOW STATUS: PASSED
+============================================================
