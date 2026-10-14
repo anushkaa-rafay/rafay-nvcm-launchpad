@@ -6,18 +6,28 @@
 Mail configuration, set by the workflow step from repository variables / secrets:
   MAIL_TO        comma-separated recipients — unset: nothing is sent (a notice, not an error)
   SMTP_USERNAME  the sending account (e.g. a Gmail address); also the From address
-  SMTP_PASSWORD  its password — for Gmail an App Password, never the account password. A secret
   SMTP_SERVER    default smtp.gmail.com
   SMTP_PORT      default 465 (implicit TLS); 587 = STARTTLS; anything else = plain SMTP (local testing only)
+and ONE way to log in — OAuth2 wins when its refresh token is set:
+  SMTP_OAUTH_CLIENT_ID, SMTP_OAUTH_CLIENT_SECRET (secret), SMTP_OAUTH_REFRESH_TOKEN (secret)
+                 a Google OAuth client + a refresh token issued to SMTP_USERNAME with the https://mail.google.com/
+                 scope: each send trades the refresh token for a short-lived access token (SMTP_OAUTH_TOKEN_URL,
+                 default Google's; overridden only by local tests), then logs in with AUTH XOAUTH2
+  SMTP_PASSWORD  its password — for Gmail an App Password, never the account password. A secret
 """
+import json
 import os
 import re
 import smtplib
 import ssl
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 from email.message import EmailMessage
 
 ATTACH_GZIP_OVER = 5 * 1024 * 1024   # Gmail rejects a message over 25 MB; logs compress ~10x
+OAUTH_VARS = ("SMTP_OAUTH_CLIENT_ID", "SMTP_OAUTH_CLIENT_SECRET", "SMTP_OAUTH_REFRESH_TOKEN")
 
 
 def stage_section(workflow_log, stage):
@@ -52,11 +62,40 @@ def mail_configured():
     if not os.environ.get("MAIL_TO", "").strip():
         print("::notice::no mail sent — the MAIL_TO repository variable is not set")
         return False
-    missing = [v for v in ("SMTP_USERNAME", "SMTP_PASSWORD") if not os.environ.get(v)]
+    if os.environ.get("SMTP_OAUTH_REFRESH_TOKEN"):
+        need, hint = ("SMTP_USERNAME",) + OAUTH_VARS, "SMTP_OAUTH_CLIENT_SECRET and SMTP_OAUTH_REFRESH_TOKEN must be secrets"
+    else:
+        need, hint = ("SMTP_USERNAME", "SMTP_PASSWORD"), "SMTP_PASSWORD must be a secret — or log in with OAuth2: SMTP_OAUTH_*"
+    missing = [v for v in need if not os.environ.get(v)]
     if missing:
-        print("::warning::no mail sent — MAIL_TO is set but %s is not (SMTP_PASSWORD must be a secret)" % " and ".join(missing))
+        print("::warning::no mail sent — MAIL_TO is set but %s is not (%s)" % (", ".join(missing), hint))
         return False
     return True
+
+
+def oauth_access_token():
+    """Trade SMTP_OAUTH_REFRESH_TOKEN for a short-lived access token (Google's OAuth2 token endpoint)."""
+    url = os.environ.get("SMTP_OAUTH_TOKEN_URL") or "https://oauth2.googleapis.com/token"
+    body = urllib.parse.urlencode({
+        "grant_type": "refresh_token",
+        "client_id": os.environ["SMTP_OAUTH_CLIENT_ID"],
+        "client_secret": os.environ["SMTP_OAUTH_CLIENT_SECRET"],
+        "refresh_token": os.environ["SMTP_OAUTH_REFRESH_TOKEN"],
+    }).encode()
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, data=body), timeout=60) as r:
+            return json.load(r)["access_token"]
+    except urllib.error.HTTPError as e:
+        # Google answers {"error": "invalid_grant", …} for a revoked/expired refresh token — print only that code
+        try:
+            code = json.load(e).get("error", "")
+        except ValueError:
+            code = ""
+        fail("mail not sent: the OAuth token endpoint refused the refresh token (HTTP %d %s) — it was revoked or "
+             "expired (an OAuth app left in 'Testing' expires them after 7 days); issue a new SMTP_OAUTH_REFRESH_TOKEN"
+             % (e.code, code))
+    except (OSError, ValueError, KeyError) as e:
+        fail("mail not sent: could not get an OAuth access token from %s: %s" % (url, e))
 
 
 def send_mail(subject, html, files=()):
@@ -83,6 +122,8 @@ def send_mail(subject, html, files=()):
         else:
             msg.add_attachment(data, maintype="text", subtype="plain", filename=name)
 
+    oauth = bool(os.environ.get("SMTP_OAUTH_REFRESH_TOKEN"))
+    token = oauth_access_token() if oauth else None
     try:
         if port == 465:
             smtp = smtplib.SMTP_SSL(server, port, context=ssl.create_default_context(), timeout=60)
@@ -91,9 +132,18 @@ def send_mail(subject, html, files=()):
             if port == 587:
                 smtp.starttls(context=ssl.create_default_context())
         with smtp:
-            smtp.login(user, os.environ["SMTP_PASSWORD"])
+            if oauth:
+                # XOAUTH2 (RFC 7628-style): on a refusal the server sends a 334 challenge first, answered with ""
+                xoauth = "user=%s\1auth=Bearer %s\1\1" % (user, token)
+                smtp.ehlo()
+                smtp.auth("XOAUTH2", lambda challenge=None: xoauth if challenge is None else "")
+            else:
+                smtp.login(user, os.environ["SMTP_PASSWORD"])
             smtp.send_message(msg)
     except smtplib.SMTPAuthenticationError:
+        if oauth:
+            fail("mail not sent: %s:%d refused the OAuth login for %s — the refresh token must be issued to that same "
+                 "account, with the https://mail.google.com/ scope" % (server, port, user))
         fail("mail not sent: %s:%d refused the login for %s — for Gmail, SMTP_PASSWORD must be an App Password "
              "(Google Account → Security → App passwords), not the account password" % (server, port, user))
     except (OSError, smtplib.SMTPException) as e:
