@@ -38,7 +38,7 @@ report, and power the instance back off — every time, including on failure.
 
 - Two GitHub Actions workflows (`nvcm-greenfield`, `nvcm-brownfield`) orchestrating the **existing** OCI lab
   host via the OCI CLI (power) and SSH (execution) — never provisioning a new instance.
-- The stage-catalogue system: shared platform bring-up (`host-prep`, `nvcm-install`, `rafay-install`,
+- The stage-catalogue system: shared platform bring-up (`host-prep`, `platform-nvcm-install`, `platform-rafay-install`,
   `platform-verify`), plus mode-specific stages (`blueprint-generate`/`blueprint-verify`/`substrate`/`site-bringup` for greenfield;
   `bf-discover`/`bf-blueprint-generate`/`bf-adopt` for brownfield).
 - The brownfield review gate: discover and blueprint are read-only; adopting (the only write) is a
@@ -61,8 +61,8 @@ report, and power the instance back off — every time, including on failure.
 ## 4. Proposed Solution
 
 A separate repository, `rafay_nvcm_launchpad`, holding only orchestration: GitHub Actions workflows and a
-small set of shell scripts. It drives the OCI lab host over SSH and the OCI CLI, cloning the requested
-`rafay_nvcm_poc` branch fresh on every run and invoking its documented entry-point scripts stage by stage.
+small set of shell scripts. It drives the OCI lab host over SSH and the OCI CLI, bringing `rafay_nvcm_poc`
+on the host to the latest commit of the requested branch on every run and invoking its documented entry-point scripts stage by stage.
 Two parallel workflows mirror `rafay_nvcm_poc`'s own greenfield/brownfield onboarding model — see
 `onboarding/README.md` in that repo for the model this mirrors.
 
@@ -107,7 +107,7 @@ Once inputs land on the lab host, the run itself follows a fixed pipeline:
 
 ```
 Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settled
-        ─ SSH ─────▶ ~/launchpad/agent.sh prepare   (move old checkout aside, clone <branch> → ~/rafay_nvcm_poc)
+        ─ SSH ─────▶ ~/launchpad/agent.sh [clean] prepare   (greenfield: delete kind + VMs; git pull <branch> in ~/rafay_nvcm_poc)
                      for each stage:  agent.sh start → detached on the host; runner streams the log + polls
         ─ always ──▶ SOFTSTOP instance (unless shutdown=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
@@ -150,7 +150,7 @@ instance never calls back into GitHub Actions, and nothing listens on the runner
                  │  ④ git clone │ Lab instance  (INSTANCE_ID)                   │
                  └──────────────│   ~/launchpad/agent.sh + stages.sh  (scp'd ③) │
                     over SSH,   │   stages run DETACHED (setsid + timeout)      │
-                    deploy key  │   ~/rafay_nvcm_poc  (fresh clone per run)     │
+                    deploy key  │   ~/rafay_nvcm_poc  (pulled to latest per run)│
                     forwarded   │   run logs ──────────── ⑤ polled over SSH ──▶ │
                     from runner └───────────────────────────────────────────────┘
 ```
@@ -160,7 +160,7 @@ instance never calls back into GitHub Actions, and nothing listens on the runner
 | ① | launchpad repo → runner | `actions/checkout` (HTTPS) | `GITHUB_TOKEN` | This repo's workflows, scripts and stage catalogue, checked out by every job |
 | ② | runner → cloud API | HTTPS, via OCI CLI or AWS CLI (picked by the shape of `INSTANCE_ID`) | `OCI_*` (API key) or `AWS_*` (access key), written to `~/.oci` / `~/.aws` on the runner only | Start the instance, wait for it to run, look up its public IP (unless `SSH_HOST` is set), stop it at the end |
 | ③ | runner → instance | SSH, port 22 | `SSH_PRIVATE_KEY` in an ssh-agent; host key checked against `SSH_KNOWN_HOSTS` | `scp` of `agent.sh`, `common.sh` and the stage catalogue; `agent.sh prepare` / `start` / `status` commands |
-| ④ | instance → `rafay_nvcm_poc` repo | `git clone git@github.com:…` (SSH) | `POC_DEPLOY_KEY`, **forwarded** from the runner's agent (`ssh -A`) for the clone only; it is never written to the instance | The selected POC branch into `~/rafay_nvcm_poc` |
+| ④ | instance → `rafay_nvcm_poc` repo | `git fetch` (or `git clone` the first time) `git@github.com:…` (SSH) | `POC_DEPLOY_KEY`, **forwarded** from the runner's agent (`ssh -A`) for that command only; it is never written to the instance | The selected POC branch into `~/rafay_nvcm_poc` |
 | ⑤ | instance → runner | The same SSH connection as ③, opened by the runner: `tail -c +N` of the stage log, plus a status poll | as ③ | Live stage output into the job log, and each stage's exit code |
 | ⑥ | job → job | `actions/upload-artifact` / `download-artifact` | `GITHUB_TOKEN` | Each job's logs and metadata (`meta.env`, `status.tsv`), collected by the report job. Work in progress needs no hand-off: it keeps running on the instance between jobs |
 | ⑦ | runner → launchpad repo | `git push` from the report job | `GITHUB_TOKEN` with `contents: write` (that job only) | The dated `logs/<Mon-YYYY>/<DD-Mon-YYYY>/…` commit for the run |
@@ -202,16 +202,20 @@ Full internals, including *why* each of these design choices was made, live in [
 2. Inputs are validated; the run queues behind any other active run against the same lab host.
 3. The OCI CLI starts the lab instance (a no-op if it's already running) and the runner waits until it's
    reachable over SSH and has finished booting.
-4. The requested `rafay_nvcm_poc` branch is cloned fresh onto the host — any previous checkout is moved
-   aside, not deleted.
-5. The stage catalogue and host agent are copied onto the host.
-6. Each selected stage is started **detached** on the host; the runner polls its status and streams its log
+4. The stage catalogue and host agent are copied onto the host.
+5. *(Greenfield, `clean_lab` — on by default, always on for the daily run)* the lab is cleaned: the kind
+   cluster `nv-config-manager` and **every** VM on the host (with its storage) are deleted, so the run
+   installs and builds from scratch. Brownfield never cleans — it adopts the fabric that is running.
+6. `~/rafay_nvcm_poc` is updated in place to the latest commit of the requested branch ("git pull"; local
+   edits to tracked files are saved to the run dir as `local-changes.patch`, then discarded). If it isn't a
+   clone of `POC_REPO`, it is moved aside and the branch is cloned fresh.
+7. Each selected stage is started **detached** on the host; the runner polls its status and streams its log
    into the Actions UI as it runs.
-7. *(Brownfield only)* discovery and blueprint generation are read-only and, by default, the run stops
+8. *(Brownfield only)* discovery and blueprint generation are read-only and, by default, the run stops
    there for a human to review the generated blueprint before anything is written.
-8. Whatever happens — success, failure, or cancellation — the OCI instance is powered off (unless disabled
+9. Whatever happens — success, failure, or cancellation — the OCI instance is powered off (unless disabled
    for that run) and a report is always produced.
-9. Results land in the Step Summary, as downloadable artifacts, and as a permanent dated commit under
+10. Results land in the Step Summary, as downloadable artifacts, and as a permanent dated commit under
    `logs/`.
 
 **What should happen automatically**
@@ -230,9 +234,9 @@ pipeline should do:
         ↓
 5. SSH into host
         ↓
-6. Move previous rafay_nvcm_poc checkout aside
+6. Greenfield: delete the kind cluster + every VM (clean_lab)
         ↓
-7. Clone requested POC branch
+7. Pull the requested POC branch into rafay_nvcm_poc
         ↓
 8. Run host-prep
         ↓
@@ -244,7 +248,7 @@ pipeline should do:
         ↓
 12. Blueprint: generate (or take the existing one) → verify
         ↓
-13. Substrate: recover it if it exists, otherwise create it
+13. Substrate: create it (fabric VMs + cabling)
         ↓
 14. Site bring-up
         ↓
@@ -357,7 +361,7 @@ logs/
     └── <DD-Mon-YYYY>/                             e.g. 04-Oct-2026       — one per day
         └── <HHMMSS>Z-<lab>-run<id>.<attempt>-<STATUS>/  e.g. 220415Z-lab-1-run36606934354.1-FAILED  — one per run
             ├── workflow.log              every stage's output, in run order (below)
-            ├── boot.log                  start OCI → wait operational → clone
+            ├── boot.log                  power on → wait operational → cleanup → pull the POC branch
             ├── diagnostics-<job>.txt     host snapshot, only when a stage in that job failed (e.g. diagnostics-bringup.txt)
             ├── status.tsv                one row per catalogue stage
             ├── summary.json              machine-readable result — the contract for notifiers
@@ -388,8 +392,8 @@ greenfield is explicitly documented as:
 
 ```
 host-prep
-→ nvcm-install
-→ rafay-install
+→ platform-nvcm-install
+→ platform-rafay-install
 → platform-verify
 → blueprint-generate
 → blueprint-verify
@@ -406,7 +410,7 @@ failure.
 | Situation | Behavior |
 |---|---|
 | OCI CLI auth is misconfigured | Fails fast in a preflight check with a clear, named-secret error, rather than surfacing as a confusing downstream SSH failure. |
-| Repository clone fails | The `boot` job fails; later phases run but do nothing; the instance is still powered off and a report is still produced. |
+| Lab cleanup, or the repository pull/clone, fails | The `boot` job fails; later phases run but do nothing; the instance is still powered off and a report is still produced. |
 | A stage's own readiness check fails because pods haven't finished starting yet | Recognized as non-fatal and the pipeline continues — the later `platform-verify` stage is the real gate once more time has passed. Any other failure from that same command still stops the stage normally. |
 | An installation stage fails for a real reason | The pipeline stops at that stage; later stages are recorded `skipped` (or `interrupted` if they were themselves running when the job died); the failure is never hidden by a later job. |
 | A stage times out or hangs | Each stage has its own timeout, enforced on the host independent of the GitHub job's own budget, so a hung install is killed cleanly rather than silently continuing forever. |

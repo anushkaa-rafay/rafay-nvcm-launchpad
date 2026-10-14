@@ -48,7 +48,7 @@ scenario(){
   local name="$1" rcs="$2"; shift 2
   export FIXTURES="$T/$name/fixtures"; mkdir -p "$FIXTURES" "$T/$name/collected/logs-boot"
   rm -rf "$T/home/launchpad/runs"
-  local i=0 s; for s in host-prep nvcm-install rafay-install platform-verify blueprint-generate blueprint-verify substrate site-bringup; do
+  local i=0 s; for s in host-prep platform-nvcm-install platform-rafay-install platform-verify blueprint-generate blueprint-verify substrate site-bringup; do
     i=$((i+1)); fixture "$s" "$(cut -d, -f$i <<< "$rcs")"
   done
   printf 'POC_BRANCH=main\nPOC_SHA=0123456789abcdef\nSTARTED_AT=2026-10-04T22:04:15Z\n' > "$T/$name/collected/logs-boot/meta.env"
@@ -67,7 +67,7 @@ scenario(){
 
 stage_order(){ grep -oE '^STAGE [0-9]{2}: [a-z0-9-]+' "$1" | paste -sd, -; }
 status_order(){ grep -oE '^STAGE STATUS: [A-Z-]+' "$1" | cut -d' ' -f3 | paste -sd, -; }
-ALL="STAGE 01: host-prep,STAGE 02: nvcm-install,STAGE 03: rafay-install,STAGE 04: platform-verify,STAGE 05: blueprint-generate,STAGE 06: blueprint-verify,STAGE 07: substrate,STAGE 08: site-bringup"
+ALL="STAGE 01: host-prep,STAGE 02: platform-nvcm-install,STAGE 03: platform-rafay-install,STAGE 04: platform-verify,STAGE 05: blueprint-generate,STAGE 06: blueprint-verify,STAGE 07: substrate,STAGE 08: site-bringup"
 
 # ── 1. all stages pass ──────────────────────────────────────────────────────────────────────────────────
 echo "scenario: all stages pass"

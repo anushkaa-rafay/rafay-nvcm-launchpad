@@ -7,7 +7,7 @@ itself. If you just want to run a workflow, see [`User_Guide.md`](User_Guide.md)
 
 ```
 Actions ─ OCI CLI ─▶ start instance ─▶ wait RUNNING + SSH + boot settled
-        ─ SSH ─────▶ ~/launchpad/agent.sh prepare   (move old checkout aside, clone <branch> → ~/rafay_nvcm_poc)
+        ─ SSH ─────▶ ~/launchpad/agent.sh [clean] prepare   (greenfield: delete kind + VMs; git pull <branch> in ~/rafay_nvcm_poc)
                      for each stage:  agent.sh start → detached on the host; runner streams the log + polls
         ─ always ──▶ SOFTSTOP instance (unless shutdown=false) ─▶ report: artifact + logs/<Mon-YYYY>/<DD-Mon-YYYY> commit
 ```
@@ -68,7 +68,7 @@ there are `tests/selftest.sh` — run it before pushing (see "Validating a chang
 config/common.sh                        the 4 platform stages, shared by both catalogues (SITE/TENANTS defaults too)
 config/stages-greenfield.sh             greenfield-only stages (blueprint-generate/blueprint-verify/substrate/site-bringup) + LAUNCHPAD_STAGES
 config/stages-brownfield.sh             brownfield-only stages (bf-discover/bf-blueprint-generate/bf-adopt) + LAUNCHPAD_STAGES
-remote/agent.sh                         runs ON the host: preflight, prepare/clone, detached stage runner, diag
+remote/agent.sh                         runs ON the host: preflight, clean (greenfield), prepare (pull/clone), detached stage runner, diag
 scripts/lab.sh                          runner: OCI power (start/stop/state), SSH connect + readiness, pushes the selected catalogue
 scripts/run-stages.sh                   runner: drive a phase (from $LAUNCHPAD_CATALOGUE), stream into the phase's workflow.log, record status.tsv
 scripts/build-report.sh                 merge job logs → one workflow.log + summary.md / summary.json
@@ -85,7 +85,7 @@ tests/selftest.sh                       every offline check in one: bash -n, she
 ## The stage-catalogue system
 
 Both onboarding modes need the identical bare NVCM+Nautobot platform before anything mode-specific happens,
-so the four platform stages (`host-prep`, `nvcm-install`, `rafay-install`, `platform-verify`) are
+so the four platform stages (`host-prep`, `platform-nvcm-install`, `platform-rafay-install`, `platform-verify`) are
 defined **once**, in `config/common.sh`, and sourced by both `config/stages-greenfield.sh` and
 `config/stages-brownfield.sh`. Neither catalogue reimplements them.
 
@@ -100,21 +100,21 @@ to know which mode is active.
 | Stage | Job | Calls (in `rafay_nvcm_poc`) | Timeout |
 |---|---|---|---|
 | host-prep | platform | `deploy_scripts/platform/nvcm-host-prep.sh` | 45m |
-| nvcm-install | platform | `platform/platform_install.sh nvcm --yes` | 150m |
-| rafay-install | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
-| platform-verify | platform | `platform/verify_platform_install.sh all` | 20m |
+| platform-nvcm-install | platform | `platform/platform_install.sh nvcm --yes` | 150m |
+| platform-rafay-install | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
+| platform-verify | platform | `platform/verify_platform_install.sh all`, re-run every 3 min for up to 15 min until it passes (pods still starting) | 20m |
 | blueprint-generate | blueprint | `blueprint/xlsx_to_blueprint.py` (STC workbook → `blr-dc01`); with `blueprint_source=existing` it generates nothing and just confirms `stc/blueprint_stc.yaml` is there | 20m |
 | blueprint-verify | blueprint | `verify_blueprint.sh` on whichever blueprint this run uses (generated or existing) | 10m |
-| substrate | substrate | counts this blueprint's fabric VMs (`plan_substrate.py` + `virsh dominfo`): **all exist** → `recover_substrate.sh` + `verify_layers.sh L1`/`L2`; **none** → `vm_image_operations.sh fetch` + `simulate_dc.sh --apply --from substrate --to substrate`; **some** → recover, then create the rest | 120m |
-| site-bringup | bringup | `simulate_dc.sh --apply --auto-approve --from underlay --to accept` | 300m |
+| substrate | substrate | `vm_image_operations.sh fetch` + `simulate_dc.sh --apply --from substrate --to substrate` (creates the fabric VMs + cabling, gates L1/L2). No recover path: on a full run `clean_lab` has just removed every VM | 120m |
+| site-bringup | bringup | `recover_substrate.sh` (site-scoped, idempotent), then `simulate_dc.sh --apply --auto-approve --tenants … --dc up --from underlay` — `--dc up` must come **before** `--from` (it resets `--from` to `substrate`) | 300m |
 
 ### Brownfield catalogue (`config/stages-brownfield.sh`)
 
 | Stage | Job | Calls (in `rafay_nvcm_poc`) | Timeout |
 |---|---|---|---|
 | host-prep | platform | `deploy_scripts/platform/nvcm-host-prep.sh` | 45m |
-| nvcm-install | platform | `platform/platform_install.sh nvcm --yes` | 150m |
-| rafay-install | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
+| platform-nvcm-install | platform | `platform/platform_install.sh nvcm --yes` | 150m |
+| platform-rafay-install | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
 | platform-verify | platform | `platform/verify_platform_install.sh all` | 20m |
 | bf-discover | blueprint | `onboarding/brownfield/scripts/bf-onboard.sh discover` — **read-only** | 30m |
 | bf-blueprint-generate | blueprint | `bf-onboard.sh blueprint` → `blueprint_<site>.yaml` — **read-only**, prints the blueprint for review | 20m |
@@ -137,7 +137,7 @@ them after real runs.
    `common.sh`'s `lp_continue_if_not_ready "<description>" <cmd...>` rather than letting the stage fail on a
    timing fluke: it treats a matching "not ready yet" signal as non-fatal and continues (the operator's own
    call — pods just need more time, and a later stage re-checks full readiness once they've had it), while
-   any other failure from the same command still propagates normally. See `stage_nvcm_install`/`stage_rafay_install`
+   any other failure from the same command still propagates normally. See `stage_platform_nvcm_install`/`stage_platform_rafay_install`
    for the pattern.
 4. Update the catalogue table above, and if you also changed a workflow input, its input table in
    `User_Guide.md` too.
@@ -145,10 +145,12 @@ them after real runs.
 
 ## Cleanup semantics (read before relying on "clean state")
 
-At the start of every run (either workflow), the existing `~/rafay_nvcm_poc` is **moved** to
-`~/launchpad/previous-clones/` (the newest 5 are kept) and a fresh clone of the requested branch replaces
-it. Files in `PRESERVE_FILES` (currently the gitignored `deploy_scripts/params-secrets.env`) are carried
-into the new clone. Run workspaces are kept under `~/launchpad/runs/<run_id>-<attempt>/` (the newest 14).
+At the start of every run (either workflow), if `~/rafay_nvcm_poc` is already a clone of `POC_REPO` it is
+**updated in place** ("git pull"): the requested branch is fetched and checked out at exactly
+`origin/<branch>`, so the run tests the latest commit. Tracked local edits are saved to the run dir as
+`local-changes.patch` before being discarded; untracked and gitignored files (`params-secrets.env`, `.venv`)
+stay. Anything else at that path is **moved** to `~/launchpad/previous-clones/` (the newest 5 are kept) and
+freshly cloned, carrying `PRESERVE_FILES` (currently `deploy_scripts/params-secrets.env`) across. Run workspaces are kept under `~/launchpad/runs/<run_id>-<attempt>/` (the newest 14).
 
 Brownfield's discovered blueprints live separately, under `~/launchpad/bf-discover/` — deliberately **not**
 `bf-onboard.sh`'s own `/tmp` default, and **not** cleaned up by the policy above: a brownfield run spans two
@@ -156,10 +158,13 @@ workflow invocations (discover+blueprint, human review, then adopt) with the OCI
 between by default (`shutdown`), and `/tmp` on some cloud images is tmpfs — it would not survive that
 power cycle. `~/launchpad/bf-discover/` is on the persistent home-directory filesystem.
 
-The installed state is **not** reset by any of this. The kind cluster, NVCM, the Rafay chart, and the lab
-VMs are left as they are, and the POC scripts are idempotent against them. A deeper reset belongs to
-`rafay_nvcm_poc` (for example `undeploy_site.sh --apply --destroy-substrate`) — add it as a stage only once
-the team agrees it's safe.
+**Greenfield only** (`clean_lab`, on by default and always on for the daily run): before the checkout is
+updated, `agent.sh clean` runs the preflight (passwordless sudo, no stage still running), then
+`kind delete cluster --name nv-config-manager`, then stops and undefines **every** libvirt domain on the host
+with `--remove-all-storage`. The platform and substrate are therefore rebuilt from nothing each run. Untick
+`clean_lab` when running only later stages against an already-installed lab — the boot job's option check
+warns when `clean_lab` is on and `stages` is neither `all` nor includes `platform-nvcm-install`. Brownfield
+never cleans — it adopts the fabric that is running.
 
 ## Failures, timeouts, logs — the internals
 

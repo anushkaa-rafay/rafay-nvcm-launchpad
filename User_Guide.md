@@ -203,19 +203,32 @@ below → Run**.
 |---|---|---|
 | `lab` | *(blank)* | which OCI lab to run on — the name of a GitHub Environment set up as in [One-time setup](#one-time-setup). Blank uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
 | `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
-| `stages` | `all` | or a comma list, for example `blueprint-generate,blueprint-verify,substrate,site-bringup` to rerun only the DC part on an installed platform |
+| `stages` | `all` | or a comma list, for example `blueprint-generate,blueprint-verify,substrate,site-bringup` (with `clean_lab` unticked) to rerun only the DC part on an installed platform |
 | `blueprint_source` | `generate` | `generate` builds the blueprint in this run's `blueprint-generate` stage; `existing` uses `stc/blueprint_stc.yaml` from `rafay_nvcm_poc` instead. Either way `blueprint-verify` checks it before anything is built |
 | `tenants` | `3-11,84-100` | passed to `simulate_dc.sh --tenants` |
+| `clean_lab` | ✔ | delete the kind cluster and **every** VM on the host before the run, so it installs and builds from scratch. Untick when `stages` skips the platform install |
 | `shutdown` | ✔ | untick to leave the instance up for debugging |
 
-What it does — four jobs, in order:
+Before the stages, **Boot Lab** powers the instance on and runs **Cleanup**:
+
+- with `clean_lab` ticked (the default, and always on the daily run) it deletes the kind cluster
+  `nv-config-manager` and **every** VM on the lab host, with its storage — anything you built on that host
+  by hand is gone too;
+- it then brings `~/rafay_nvcm_poc` to the latest commit of `poc_branch` ("git pull"). Edits you made to
+  tracked files on the host are **discarded** — saved first as `~/launchpad/runs/<run>/local-changes.patch`.
+  Untracked and gitignored files (`params-secrets.env`, `.venv`) are kept.
+
+If `clean_lab` is ticked but `stages` doesn't include `platform-nvcm-install`, the run shows a **warning**:
+the cleanup deletes the platform those stages need. Untick `clean_lab` for such a rerun.
+
+What it does next — four jobs, in order:
 
 | Job | Stages | |
 |---|---|---|
-| 1 · Installation | `host-prep` → `nvcm-install` → `rafay-install` → `platform-verify` | dependencies, NVCM + Nautobot, the Rafay layer, then one verdict for the whole platform |
+| 1 · Installation | `host-prep` → `platform-nvcm-install` → `platform-rafay-install` → `platform-verify` | dependencies, NVCM + Nautobot, the Rafay layer, then one verdict for the whole platform (re-checked every 3 min for up to 15 min while pods finish starting) |
 | 2 · Blueprint | `blueprint-generate` → `blueprint-verify` | generate from the workbook (or take the existing one), then verify it offline |
-| 3 · Substrate | `substrate` | if this blueprint's fabric VMs already exist → recover them; if none exist → stage images and create them; if only some exist → recover those, create the rest |
-| 4 · Site bring-up | `site-bringup` | underlay → overlay → servers → accept, gated at every layer |
+| 3 · Substrate | `substrate` | stage the VM images, then create this blueprint's fabric VMs and cabling (gated at L1 and L2) |
+| 4 · Site BringUp | `site-bringup` | `recover_substrate.sh` (a no-op right after Substrate), then underlay → overlay → servers → accept, gated at every layer |
 
 See `Dev_Guide.md` if you want the exact command each stage runs.
 
@@ -227,7 +240,7 @@ manual trigger. A scheduled run has no form to fill in, so it takes:
 - the lab from `SCHEDULE_LAB` (blank → `DEFAULT_LAB`) and the branch from `SCHEDULE_POC_BRANCH` (blank →
   `POC_DEFAULT_BRANCH` → `main`);
 - every other input at its default: `stages=all`, `blueprint_source=generate`, `tenants=3-11,84-100`;
-- and it always powers the instance off at the end.
+- it always cleans the lab first (`clean_lab`) and always powers the instance off at the end.
 
 > **Set `SCHEDULE_POC_BRANCH` before relying on the daily run** — e.g. `prototype_fixes`. Left blank, the
 > daily run tests `POC_DEFAULT_BRANCH`, or `main` if that isn't set either — not the branch you're working on.
@@ -255,6 +268,9 @@ any activity in the repository.
 | `policy_from` | `stc/blueprint_stc.yaml` | reference blueprint to carry `tenant_policy`/supernets from — **a running switch can't reveal design policy**; blank leaves `TODO(confirm)` markers for a genuinely new DC |
 | `tenants` | `3-11,84-100` | passed to `provision_site.sh --tenants` at the `bf-adopt` stage |
 | `shutdown` | ✔ | untick to leave the instance up for debugging |
+
+Brownfield never cleans the lab (it has no `clean_lab`): it adopts the fabric that is already running. Its
+Boot Lab only brings `~/rafay_nvcm_poc` to the latest commit of `poc_branch`, as greenfield does.
 
 ### The review gate — read this before onboarding a real DC
 

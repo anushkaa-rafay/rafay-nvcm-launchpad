@@ -31,7 +31,7 @@ on:
         default: ""
         type: string
       stages:
-        description: "Stages: 'all' or a comma list — host-prep,nvcm-install,rafay-install,platform-verify,bf-discover,bf-blueprint-generate,bf-adopt. Default stops BEFORE bf-adopt (the review gate) — see the note above."
+        description: "Stages: 'all' or a comma list — host-prep,platform-nvcm-install,platform-rafay-install,platform-verify,bf-discover,bf-blueprint-generate,bf-adopt. Default stops BEFORE bf-adopt (the review gate) — see the note above."
         required: true
         default: "bf-discover,bf-blueprint-generate"
         type: string
@@ -89,7 +89,7 @@ jobs:
   # Environment behind and fail later with a confusing "INSTANCE_ID not configured". Every job that touches
   # the lab (boot, the phases, poweroff) runs in this Environment, so vars.* / secrets.* resolve per lab.
   lab:
-    name: Resolve lab
+    name: Get Lab
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -111,7 +111,7 @@ jobs:
           echo "lab: $LAB"
 
   boot:
-    name: Boot lab + get the repository (§5)
+    name: Boot Lab
     needs: lab
     environment: ${{ needs.lab.outputs.name }}
     runs-on: ubuntu-latest
@@ -177,7 +177,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
 
-      - name: Start lab instance
+      - name: Power On
         id: start
         # set -o pipefail: a run: step with no explicit `shell:` key is NOT pipefail by default (verified
         # empirically, not assumed — see Dev_Guide.md's design-decisions section). Without it, a failing
@@ -185,14 +185,14 @@ jobs:
         # even though the instance never actually started.
         run: set -o pipefail; scripts/lab.sh start 2>&1 | tee -a "$OUT/boot.log"
 
-      - name: Wait until operational
+      - name: Power On · wait for SSH + boot
         id: connect
         run: |
-          set -o pipefail   # see the note on "Start OCI instance" above
+          set -o pipefail   # see the note on "Power On" above
           scripts/lab.sh connect 2>&1 | tee -a "$OUT/boot.log"
           scripts/lab.sh push-agent
 
-      - name: Clean workspace + clone rafay_nvcm_poc (setup_guide §5)
+      - name: Update rafay_nvcm_poc (setup_guide §5)
         env:
           KEY:      ${{ steps.opts.outputs.run_key }}
           POC_REPO: ${{ steps.opts.outputs.POC_REPO }}
@@ -206,7 +206,7 @@ jobs:
           SEED_B64: ${{ steps.opts.outputs.SEED_B64 }}
           LAB_IP: ${{ vars.LAB_IP }}
         run: |
-          set -o pipefail   # see "Start OCI instance" above
+          set -o pipefail   # see "Power On" above
           # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
           # SITE/LOCATION/DEVICE_TYPE/POLICY_FROM can legitimately contain spaces (e.g. "Cumulus VX") — %q-escape
           # each before it joins the single remote command line, so the remote shell sees one word per K=V pair.
@@ -259,7 +259,7 @@ jobs:
     secrets: inherit
 
   bringup:
-    name: 4 · Site bring-up (adopt)
+    name: 4 · Site BringUp (adopt)
     needs: [lab, boot, blueprint]
     if: ${{ !cancelled() && needs.boot.result == 'success' && needs.blueprint.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
@@ -267,7 +267,7 @@ jobs:
     secrets: inherit
 
   poweroff:
-    name: Power off lab
+    name: Power Off Lab
     needs: [lab, boot, platform, blueprint, bringup]
     environment: ${{ needs.lab.outputs.name }}
     # !cancelled(): also after a failure or a skipped phase — see the note above the `platform` job.
@@ -289,11 +289,11 @@ jobs:
           aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ vars.AWS_REGION }}
-      - name: Stop lab instance
+      - name: Power Off
         run: scripts/lab.sh stop
 
   report:
-    name: Report + commit logs
+    name: Report
     needs: [lab, boot, platform, blueprint, bringup, poweroff]
     # !cancelled(), not always() — see the note on the poweroff job above.
     if: ${{ !cancelled() }}

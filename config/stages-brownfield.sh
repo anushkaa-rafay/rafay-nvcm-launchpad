@@ -23,8 +23,8 @@
 # shellcheck disable=SC2034
 LAUNCHPAD_STAGES=(                 # same flow as stages-greenfield.sh, minus Substrate: the fabric already runs
   host-prep:platform:45            # 1 Installation — dependencies: OS packages, KVM/libvirt, docker, k8s tools   §6
-  nvcm-install:platform:150        # 1 Installation — NVCM + Nautobot (+ telemetry)                                §8
-  rafay-install:platform:60        # 1 Installation — Rafay customization                                          §10
+  platform-nvcm-install:platform:150        # 1 Installation — NVCM + Nautobot (+ telemetry)                                §8
+  platform-rafay-install:platform:60        # 1 Installation — Rafay customization                                          §10
   platform-verify:platform:20      # 1 Installation — verify the whole platform (verify … all)                     §9/§11/§19
   bf-discover:blueprint:30         # 2 Blueprint — discover the running fabric — READ-ONLY                         III-4
   bf-blueprint-generate:blueprint:20  # 2 Blueprint — derive the blueprint (review gate: III-5) — READ-ONLY       III-4
@@ -50,7 +50,7 @@ bf_blueprint_path(){
   echo "$bp"
 }
 
-# ── stage bodies (host-prep / nvcm-install / rafay-install / platform-verify: common.sh) ───────
+# ── stage bodies (host-prep / platform-nvcm-install / platform-rafay-install / platform-verify: common.sh) ───────
 stage_bf_discover(){         # READ-ONLY: nothing written to Nautobot or any switch
   mkdir -p "$OUT"
   if [ "$BF_MODE" = real ]; then
