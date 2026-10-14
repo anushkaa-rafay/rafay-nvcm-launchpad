@@ -77,7 +77,8 @@ scripts/lib-log.sh                      the log format + committed path, shared 
 scripts/summary-logs.py                 report job: each failed stage's last 100 lines → the run's Summary tab (collapsible)
 scripts/failure-mail.py                 report job, on FAILED: mail the result, the failed stage's tail, the logs attached
 scripts/weekly-report.py                weekly-report.yml: runs (Actions API) + committed summary.json → report.md / report.html / mail
-scripts/lplib.py                        Python helpers: a stage's section of workflow.log, send_mail (SMTP from MAIL_TO/SMTP_*)
+scripts/lplib.py                        Python helpers: a stage's section of workflow.log, send_mail (SMTP from MAIL_TO/SMTP_*),
+                                        the mails' links (repo_url, dashboard_url, logs_url)
 tests/logging.sh                        self-test of that pipeline against a fake lab
 tests/selftest.sh                       every offline check in one: bash -n, shellcheck, both catalogues' stage logic, logging.sh
 ```
@@ -193,7 +194,9 @@ never cleans — it adopts the fabric that is running.
   report's logs; any further notifier (shared drive, Slack) belongs beside it, reading the same file — never
   the workflow's own state. Mail goes through `scripts/lplib.py` (stdlib `smtplib`, config from `MAIL_TO` /
   `SMTP_*`, a notice and no send when `MAIL_TO` is unset; it logs in with OAuth2 `XOAUTH2` — a refresh token
-  traded for an access token per send — when `SMTP_OAUTH_REFRESH_TOKEN` is set, else with `SMTP_PASSWORD`). The step is `continue-on-error`, so a mail
+  traded for an access token per send — when `SMTP_OAUTH_REFRESH_TOKEN` is set, else with `SMTP_PASSWORD`). Both mails link the dashboard
+  (`DASHBOARD_URL`, else the repo's GitHub Pages URL) and `logs/`; the failure mail links the run's own folder,
+  named by the same `lp_run_dir` that `commit-logs.sh` uses, so the two can't drift. The step is `continue-on-error`, so a mail
   problem never changes a run's result. `scripts/commit-logs.sh` is the one piece to replace if logs move to
   external storage.
 

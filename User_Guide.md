@@ -144,6 +144,7 @@ action ever sees the credentials). Until `MAIL_TO` is set nothing is sent and no
 | `MAIL_TO` | variable | comma-separated recipients, e.g. `a@rafay.co,b@rafay.co` |
 | `SMTP_USERNAME` | variable | the Gmail address that sends — also the mail's From. Example: `nvcm-launchpad-alerts@gmail.com` (or a Google Workspace address such as `nvcm-alerts@rafay.co`) |
 | `SMTP_SERVER`, `SMTP_PORT` | variable | optional — default `smtp.gmail.com` and `465` (TLS); `587` uses STARTTLS |
+| `DASHBOARD_URL` | variable | optional — the dashboard link the mails carry. Default: where GitHub Pages serves this repo, `https://<owner>.github.io/<repo>/` (e.g. `https://anushkaa-rafay.github.io/rafay-nvcm-launchpad/`); set it only if the dashboard lives elsewhere |
 
 Then **one** way to log in. OAuth2 is what Google recommends; an App Password is the quick start. If the
 OAuth2 refresh token is set, OAuth2 is used and `SMTP_PASSWORD` is ignored.
@@ -308,7 +309,8 @@ DC. Use the two-run pattern there.
 - A **failed** run (either workflow, manual or daily) also sends an **email** to `MAIL_TO` (see step 6 of
   setup): which stage failed, on which lab and branch, the stage table, the failed stage's last 60 lines, and
   `workflow.log` plus that phase's `diagnostics-*.txt` attached (`boot.log` if it died before any stage; a
-  file over 5 MB is attached gzipped). Passed and cancelled runs send nothing.
+  file over 5 MB is attached gzipped), with links to the run, to its folder under `logs/` and to the
+  dashboard. Passed and cancelled runs send nothing.
 - Only one run (of either workflow) is ever active against the lab at a time — a second trigger queues
   behind it rather than clashing.
 
@@ -317,6 +319,8 @@ DC. Use the two-run pattern there.
 Every **Monday at 09:00 IST** the `weekly-report` workflow summarizes the last 7 days of greenfield and
 brownfield runs and mails it to `MAIL_TO` (the same mail setup as failure mails — step 6 of setup). The same
 report is on that run's **Summary** tab, so it's readable even before mail is set up. It shows:
+
+- links to the dashboard and to the `logs/` folder;
 
 - runs, passed / failed / cancelled and the pass rate, per workflow;
 - the daily greenfield run's week, day by day;

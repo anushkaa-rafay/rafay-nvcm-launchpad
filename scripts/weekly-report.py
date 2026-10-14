@@ -158,7 +158,9 @@ def md_cell(v):
     return str(v).replace("|", "\\|")
 
 
+links = [(n, u) for n, u in (("Dashboard", lplib.dashboard_url()), ("Logs folder", lplib.logs_url())) if u]
 md = ["## NVCM weekly report — %s" % period, "", "**%s**%s" % (headline, " · %d still running" % running if running else ""), ""]
+md += [" · ".join("[%s](%s)" % l for l in links), ""] if links else []
 for title, head, body, note in tables:
     md += ["### " + title, "", "| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     md += ["| " + " | ".join(md_cell(c) for c in row) + " |" for row in body]
@@ -178,6 +180,8 @@ td = 'style="padding:3px 10px 3px 0;border-bottom:1px solid #eaeef2;vertical-ali
 parts = ['<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:14px">',
          "<h2 style=\"margin:0 0 4px\">NVCM weekly report</h2><div style=\"color:#57606a\">%s · %s</div>" % (e(period), e(repo)),
          "<p style=\"font-size:16px\"><b>%s</b>%s</p>" % (e(headline), e(" · %d still running" % running) if running else "")]
+if links:
+    parts.append("<p>%s</p>" % " · ".join('<a href="%s">%s</a>' % (e(u), e(n)) for n, u in links))
 for title, head, body, note in tables:
     parts.append("<h3 style=\"margin:20px 0 6px\">%s</h3>" % e(title))
     parts.append("<table style=\"border-collapse:collapse\"><tr>%s</tr>%s</table>" % (

@@ -333,6 +333,7 @@ jobs:
         continue-on-error: true
         env:
           MAIL_TO:       ${{ vars.MAIL_TO }}
+          DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}   # optional; default https://<owner>.github.io/<repo>/
           SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_OAUTH_CLIENT_ID:     ${{ vars.SMTP_OAUTH_CLIENT_ID }}
