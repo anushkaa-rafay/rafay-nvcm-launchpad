@@ -11,6 +11,7 @@ import glob
 import html
 import json
 import os
+import subprocess
 import sys
 
 import lplib
@@ -49,6 +50,11 @@ rows = "".join(
         x["index"], e(x["name"]), e(x["phase"]), icon.get(x["result"], "❌"), e(x["result"]),
         "" if x.get("seconds") is None else "%dm %02ds" % divmod(x["seconds"], 60))
     for x in s.get("stages", []))
+# this run's folder under logs/, named exactly as commit-logs.sh files it (lp_run_dir, scripts/lib-log.sh)
+run_dir = subprocess.run(["bash", "-c", '. "$1/lib-log.sh" && lp_run_dir "$2"', "_", os.path.dirname(os.path.abspath(__file__)),
+                          os.path.join(rep, "summary.json")], capture_output=True, text=True).stdout.strip()
+links = [(n, u) for n, u in (("Run logs folder", lplib.logs_url(run_dir) if run_dir else lplib.logs_url()),
+                             ("Dashboard", lplib.dashboard_url())) if u]
 td = 'style="padding:2px 10px 2px 0;vertical-align:top"'
 facts = [
     ("Failed at", where),
@@ -57,7 +63,7 @@ facts = [
     ("Run", '<a href="%s">%s #%s</a> · %s by %s' % (e(run.get("url", "")), e(run.get("id", "")), e(run.get("attempt", "")),
                                                    e(run.get("trigger", "")), e(run.get("actor", "")))),
     ("Started → finished (UTC)", "%s → %s" % (e(run.get("started") or "?"), e(run.get("finished") or "?"))),
-]
+] + [(n, '<a href="%s">%s</a>' % (e(u), e(u))) for n, u in links]
 body = """<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:14px">
 <h2 style="margin:0 0 8px">❌ %s failed</h2>
 <table>%s</table>
@@ -66,7 +72,7 @@ body = """<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-se
 <th align=left>Result</th><th align=left>Duration</th></tr>%s</table>
 <h3 style="margin:16px 0 4px">Last %d lines of %s</h3>
 <pre style="background:#f6f8fa;padding:8px;font-size:12px;white-space:pre-wrap">%s</pre>
-<p>Attached: %s. The full report is also in the run's <i>run-report</i> artifact and committed under <code>logs/</code>.</p>
+<p>Attached: %s. The full report is also in the run's <i>run-report</i> artifact and committed under <code>logs/</code> (the folder linked above).</p>
 </div>""" % (e(workflow), "".join("<tr><td %s>%s</td><td>%s</td></tr>" % (td, k, v) for k, v in facts), rows,
              len(lines), "the stage" if stage else "boot.log", e("\n".join(lines)) or "(no output captured)",
              ", ".join(e(os.path.basename(f)) for f in files if os.path.isfile(f)) or "nothing (no log files were produced)")

@@ -2,6 +2,7 @@
 
   stage_section(workflow_log, stage)  one stage's section of a run's workflow.log, as scripts/lib-log.sh writes it
   send_mail(subject, html, files)     send through SMTP, configured by the environment (below)
+  repo_url(), dashboard_url(), logs_url(path)   the links every mail carries (GitHub repo, dashboard, logs/ folder)
 
 Mail configuration, set by the workflow step from repository variables / secrets:
   MAIL_TO        comma-separated recipients — unset: nothing is sent (a notice, not an error)
@@ -20,6 +21,7 @@ import os
 import re
 import smtplib
 import ssl
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -149,6 +151,32 @@ def send_mail(subject, html, files=()):
     except (OSError, smtplib.SMTPException) as e:
         fail("mail not sent via %s:%d: %s" % (server, port, e))
     print("mail sent to %d recipient(s): %s" % (len(to), subject))
+
+
+def repo_url():
+    """https://github.com/<owner>/<repo>, from GITHUB_REPOSITORY (set on every runner), else the git origin."""
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not repo:
+        origin = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True).stdout.strip()
+        m = re.search(r"github\.com[:/]([^/]+/[^/]+?)(\.git)?$", origin)
+        repo = m.group(1) if m else None
+    return "%s/%s" % (os.environ.get("GITHUB_SERVER_URL") or "https://github.com", repo) if repo else None
+
+
+def dashboard_url():
+    """The Workflow Operations dashboard: the DASHBOARD_URL variable, else where GitHub Pages serves the
+    `dashboard` branch for this repo (https://<owner>.github.io/<repo>/)."""
+    if os.environ.get("DASHBOARD_URL"):
+        return os.environ["DASHBOARD_URL"]
+    repo = (repo_url() or "").split("/")[-2:]
+    return "https://%s.github.io/%s/" % (repo[0].lower(), repo[1]) if len(repo) == 2 and all(repo) else None
+
+
+def logs_url(path="logs"):
+    """A logs/ folder on GitHub, on the branch the report job commits to (this checkout's)."""
+    branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True).stdout.strip()
+    base = repo_url()
+    return "%s/tree/%s/%s" % (base, urllib.parse.quote(branch or "main"), urllib.parse.quote(path)) if base else None
 
 
 def fail(message):
