@@ -25,7 +25,7 @@ on:
         default: ""
         type: string
       stages:
-        description: "Stages: 'all' or a comma list — host-prep,nvcm-install,rafay-install,platform-verify,blueprint-generate,blueprint-verify,substrate,site-bringup"
+        description: "Stages: 'all' or a comma list — host-prep,platform-nvcm-install,platform-rafay-install,platform-verify,blueprint-generate,blueprint-verify,substrate,site-bringup"
         required: true
         default: all
         type: string
@@ -38,6 +38,10 @@ on:
         description: "Tenant spec passed to simulate_dc.sh --tenants"
         default: "3-11,84-100"
         type: string
+      clean_lab:
+        description: "Clean the lab first: delete the kind cluster (nv-config-manager) and EVERY libvirt VM with its storage. Untick when running only later stages (e.g. stages=site-bringup) against an already-installed lab"
+        default: true
+        type: boolean
       shutdown:
         description: "Power the lab instance off at the end (untick to keep it up for debugging)"
         default: true
@@ -69,7 +73,7 @@ jobs:
   # Environment behind and fail later with a confusing "INSTANCE_ID not configured". Every job that touches
   # the lab (boot, the phases, poweroff) runs in this Environment, so vars.* / secrets.* resolve per lab.
   lab:
-    name: Resolve lab
+    name: Get Lab
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -91,7 +95,7 @@ jobs:
           echo "lab: $LAB"
 
   boot:
-    name: Boot lab + get the repository (§5)
+    name: Boot Lab
     needs: lab
     environment: ${{ needs.lab.outputs.name }}
     runs-on: ubuntu-latest
@@ -115,6 +119,7 @@ jobs:
           STAGES:   ${{ inputs.stages || 'all' }}
           BP_SRC:   ${{ inputs.blueprint_source || 'generate' }}
           TENANTS:  ${{ inputs.tenants || '3-11,84-100' }}
+          CLEAN:    ${{ github.event_name != 'workflow_dispatch' || inputs.clean_lab }}
           POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
           RUN_KEY:  ${{ github.run_id }}-${{ github.run_attempt }}
         run: |
@@ -124,11 +129,14 @@ jobs:
           [[ "$BP_SRC"   =~ ^(generate|existing)$ ]]                   || { echo "::error::invalid blueprint_source '$BP_SRC' (generate | existing)"; exit 1; }
           [[ "$TENANTS"  =~ ^[0-9,-]+$ ]]                            || { echo "::error::invalid tenants '$TENANTS'"; exit 1; }
           STAGES="${STAGES// /}"; scripts/run-stages.sh validate "$STAGES"
+          if [ "$CLEAN" = true ] && [ "$STAGES" != all ] && [[ ",$STAGES," != *",platform-nvcm-install,"* ]]; then
+            echo "::warning::clean_lab deletes the kind cluster + all VMs, but stages '$STAGES' do not reinstall the platform — later stages will likely fail. Untick clean_lab for a partial run."
+          fi
           # branch existence is checked by the clone on the host (the repo is private to this runner)
           mkdir -p "$OUT"
           {
             echo "RUN_KEY=$RUN_KEY"; echo "POC_REPO=$POC_REPO"; echo "POC_BRANCH=$BRANCH"; echo "STAGES=$STAGES"
-            echo "BLUEPRINT_SOURCE=$BP_SRC"; echo "TENANTS=$TENANTS"; echo "STARTED_AT=$(date -u +%FT%TZ)"
+            echo "BLUEPRINT_SOURCE=$BP_SRC"; echo "TENANTS=$TENANTS"; echo "CLEAN_LAB=$CLEAN"; echo "STARTED_AT=$(date -u +%FT%TZ)"
           } > "$OUT/meta.env"
           cat "$OUT/meta.env" >> "$GITHUB_OUTPUT"   # expression property names are case-insensitive
 
@@ -147,7 +155,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           poc-deploy-key:  ${{ secrets.POC_DEPLOY_KEY }}
 
-      - name: Start lab instance
+      - name: Power On
         id: start
         # set -o pipefail: a run: step with no explicit `shell:` key is NOT pipefail by default (verified
         # empirically, not assumed — see Dev_Guide.md's design-decisions section). Without it, a failing
@@ -155,15 +163,16 @@ jobs:
         # even though the instance never actually started.
         run: set -o pipefail; scripts/lab.sh start 2>&1 | tee -a "$OUT/boot.log"
 
-      - name: Wait until operational
+      - name: Power On · wait for SSH + boot
         id: connect
         run: |
-          set -o pipefail   # see the note on "Start OCI instance" above
+          set -o pipefail   # see the note on "Power On" above
           scripts/lab.sh connect 2>&1 | tee -a "$OUT/boot.log"
           scripts/lab.sh push-agent
 
-      - name: Clean workspace + clone rafay_nvcm_poc (setup_guide §5)
+      - name: Cleanup
         env:
+          CLEAN:    ${{ steps.opts.outputs.CLEAN_LAB }}
           KEY:      ${{ steps.opts.outputs.run_key }}
           POC_REPO: ${{ steps.opts.outputs.POC_REPO }}
           BRANCH:   ${{ steps.opts.outputs.POC_BRANCH }}
@@ -171,11 +180,14 @@ jobs:
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
           LAB_IP: ${{ vars.LAB_IP }}
         run: |
-          set -o pipefail   # see "Start OCI instance" above
+          set -o pipefail   # see "Power On" above
           # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
           # BP_SRC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
           # to plain charsets with no spaces (see "Resolve + validate options"), so plain interpolation is safe.
-          scripts/lab.sh ssh -A "LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
+          # Cleanup is greenfield-only (brownfield adopts the running fabric): preflight (inside clean) → delete the
+          # kind cluster → delete every VM; then prepare pulls the latest <branch> into the existing checkout.
+          clean=""; [ "$CLEAN" = true ] && clean="launchpad/agent.sh clean && "
+          scripts/lab.sh ssh -A "${clean}LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
             2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
 
@@ -213,7 +225,7 @@ jobs:
     secrets: inherit
 
   blueprint:
-    name: 2 · Blueprint (generate or existing → verify)
+    name: 2 · Blueprint
     needs: [lab, boot, platform]
     if: ${{ !cancelled() && needs.boot.result == 'success' && needs.platform.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
@@ -221,7 +233,7 @@ jobs:
     secrets: inherit
 
   substrate:
-    name: 3 · Substrate (recover if present, else create)
+    name: 3 · Substrate
     needs: [lab, boot, blueprint]
     if: ${{ !cancelled() && needs.boot.result == 'success' && needs.blueprint.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
@@ -229,7 +241,7 @@ jobs:
     secrets: inherit
 
   bringup:
-    name: 4 · Site bring-up
+    name: 4 · Site BringUp
     needs: [lab, boot, substrate]
     if: ${{ !cancelled() && needs.boot.result == 'success' && needs.substrate.result == 'success' }}
     uses: ./.github/workflows/_phase.yml
@@ -237,7 +249,7 @@ jobs:
     secrets: inherit
 
   poweroff:
-    name: Power off lab
+    name: Power Off Lab
     needs: [lab, boot, platform, blueprint, substrate, bringup]
     environment: ${{ needs.lab.outputs.name }}
     # !cancelled(): also after a failure or a skipped phase — see the note above the `platform` job.
@@ -260,11 +272,11 @@ jobs:
           aws-access-key-id:     ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ vars.AWS_REGION }}
-      - name: Stop lab instance
+      - name: Power Off
         run: scripts/lab.sh stop
 
   report:
-    name: Report + commit logs
+    name: Report
     needs: [lab, boot, platform, blueprint, substrate, bringup, poweroff]
     # !cancelled(), not always() — see the note on the poweroff job above.
     if: ${{ !cancelled() }}

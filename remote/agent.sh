@@ -6,20 +6,28 @@
 # install. The runner polls `status` and streams the log.
 #
 #   agent.sh preflight                                        # sudo -n works, no stage already running
-#   agent.sh prepare <run_key> <owner/repo> <branch> [K=V..]  # workspace + fresh clone (needs ssh -A)
+#   agent.sh clean                                            # GREENFIELD ONLY: delete the kind cluster + every libvirt VM
+#   agent.sh prepare <run_key> <owner/repo> <branch> [K=V..]  # workspace + update/clone the checkout (needs ssh -A)
 #   agent.sh start   <run_key> <stage> <timeout_minutes>      # launch detached; returns immediately
 #   agent.sh status  <run_key> <stage>                        # running | done <rc> | absent
 #   agent.sh diag    <run_key>                                # read-only host snapshot for a failed run
 #
-# CLEANUP POLICY (deliberately non-destructive): an existing ~/rafay_nvcm_poc is MOVED to
-# ~/launchpad/previous-clones/ (newest $KEEP_CLONES kept), never deleted in place, and the operator's
-# gitignored files in PRESERVE_FILES are carried into the fresh clone. Installed state (kind cluster, NVCM,
-# VMs) is NOT touched — resetting that is a rafay_nvcm_poc decision (undeploy_site.sh), not ours.
+# CHECKOUT POLICY: an existing ~/rafay_nvcm_poc that is a clone of the SAME repo is updated IN PLACE ("git
+# pull"): fetch <branch> and check it out at exactly origin/<branch>, so the run always tests the latest commit.
+# Tracked local edits are saved to the run dir as local-changes.patch first; untracked + gitignored files
+# (params-secrets.env, .venv, …) are left alone. Anything else at that path (not a git repo, another repo) is
+# MOVED to ~/launchpad/previous-clones/ (newest $KEEP_CLONES kept) and freshly cloned, carrying PRESERVE_FILES.
+#
+# INSTALLED STATE: `clean` (greenfield only — brownfield must never run it: it adopts the fabric that is
+# running) deletes the kind cluster ($KIND_CLUSTER) and undefines EVERY libvirt domain on the host with its
+# storage, so the run installs the platform and builds the substrate from nothing.
 #
 set -uo pipefail
 LP="$HOME/launchpad"
 RUNS="$LP/runs"
 POC_DIR="$HOME/rafay_nvcm_poc"           # the platform scripts default --repo to exactly this path
+KIND_CLUSTER="${KIND_CLUSTER:-nv-config-manager}"   # rafay_nvcm_poc deploy_scripts/_nvcm-common.sh default
+VIRSH=(sudo -n virsh -c qemu:///system)
 KEEP_CLONES=5
 KEEP_RUNS=14
 PRESERVE_FILES=(deploy_scripts/params-secrets.env)
@@ -43,27 +51,77 @@ cmd_preflight(){
   log "preflight ok: $(hostname) · $(. /etc/os-release && echo "$PRETTY_NAME") · $(nproc) cpu · $(free -g | awk '/Mem/{print $2}') GiB · $(df -h "$HOME" | awk 'NR==2{print $4}') free"
 }
 
+cmd_clean(){
+  cmd_preflight
+  # ssh runs a non-login shell: make sure kind (often ~/.local/bin or /usr/local/bin) is on PATH
+  PATH="$PATH:$HOME/.local/bin:/usr/local/bin"
+  if command -v kind >/dev/null; then
+    log "deleting kind cluster '$KIND_CLUSTER'"
+    kind delete cluster --name "$KIND_CLUSTER" 2>&1 \
+      || sudo -n env "PATH=$PATH" kind delete cluster --name "$KIND_CLUSTER" 2>&1 \
+      || die "kind delete cluster --name $KIND_CLUSTER failed"
+  else
+    log "kind not installed — no cluster to delete (fresh host?)"
+  fi
+
+  if command -v virsh >/dev/null; then
+    local vm failed=0 n=0
+    while IFS= read -r vm; do
+      [ -n "$vm" ] || continue
+      n=$((n+1))
+      # a running domain must be stopped first: undefine on a live VM only makes it transient (it keeps running)
+      [ "$("${VIRSH[@]}" domstate "$vm" 2>/dev/null)" = "shut off" ] || "${VIRSH[@]}" destroy "$vm" >/dev/null 2>&1 || true
+      if "${VIRSH[@]}" undefine "$vm" --remove-all-storage >/dev/null 2>&1 \
+         || "${VIRSH[@]}" undefine "$vm" --remove-all-storage --nvram --snapshots-metadata >/dev/null 2>&1; then
+        log "deleted VM $vm (+ storage)"
+      else
+        echo "[agent] could not undefine VM $vm" >&2; failed=$((failed+1))
+      fi
+    done < <("${VIRSH[@]}" list --all --name)
+    [ "$failed" -eq 0 ] || die "$failed of $n VM(s) could not be deleted (see above)"
+    log "deleted $n VM(s)"
+  else
+    log "virsh not installed — no VMs to delete (fresh host?)"
+  fi
+}
+
+# owner/repo of a git remote URL (git@github.com:o/r.git | https://github.com/o/r[.git] | ssh://git@github.com/o/r)
+repo_of(){ sed -E 's#^.*github\.com[:/]+##; s#/+$##; s#\.git$##' <<< "$1"; }
+
 cmd_prepare(){
   local key="$1" repo="$2" branch="$3"; shift 3
   local run="$RUNS/$key" ts; ts="$(date -u +%Y%m%dT%H%M%SZ)"
   cmd_preflight
   mkdir -p "$run" "$LP/previous-clones"
 
-  local old=""
-  if [ -e "$POC_DIR" ]; then
-    old="$LP/previous-clones/rafay_nvcm_poc.$ts"
-    mv "$POC_DIR" "$old" && log "moved previous checkout aside -> $old"
+  export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes"
+  local url="git@github.com:${repo}.git" old=""
+  if [ -d "$POC_DIR/.git" ] && [ "$(repo_of "$(git -C "$POC_DIR" config --get remote.origin.url 2>/dev/null)")" = "$repo" ]; then
+    # existing clone of the same repo → pull the latest <branch> in place. Fetch by explicit URL + refspec: the
+    # host's origin may be https (no creds here) or a --single-branch clone of a different branch.
+    log "updating existing checkout in place: $(git -C "$POC_DIR" rev-parse --abbrev-ref HEAD)@$(git -C "$POC_DIR" rev-parse --short HEAD)"
+    git -C "$POC_DIR" fetch --quiet "$url" "+refs/heads/${branch}:refs/remotes/origin/${branch}" \
+      || die "fetch of ${repo}@${branch} failed (deploy key forwarded? branch exists?)"
+    if ! git -C "$POC_DIR" diff --quiet HEAD --; then
+      git -C "$POC_DIR" diff HEAD > "$run/local-changes.patch"
+      echo "[agent] WARNING: tracked local edits in $POC_DIR discarded — saved to $run/local-changes.patch" >&2
+    fi
+    git -C "$POC_DIR" checkout --quiet -f -B "$branch" "refs/remotes/origin/${branch}" \
+      || die "checkout of origin/${branch} failed"
+    git -C "$POC_DIR" branch --quiet --set-upstream-to="origin/${branch}" "$branch" 2>/dev/null || true
+  else
+    if [ -e "$POC_DIR" ]; then
+      old="$LP/previous-clones/rafay_nvcm_poc.$ts"
+      mv "$POC_DIR" "$old" && log "not a clone of $repo — moved it aside -> $old"
+    fi
+    git clone --quiet --branch "$branch" --single-branch "$url" "$POC_DIR" \
+      || die "clone of ${repo}@${branch} failed (deploy key forwarded? branch exists?)"
+    local f
+    for f in "${PRESERVE_FILES[@]}"; do
+      [ -n "$old" ] && [ -f "$old/$f" ] || continue
+      mkdir -p "$(dirname "$POC_DIR/$f")" && cp -p "$old/$f" "$POC_DIR/$f" && log "carried forward $f"
+    done
   fi
-
-  GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes" \
-    git clone --quiet --branch "$branch" --single-branch "git@github.com:${repo}.git" "$POC_DIR" \
-    || die "clone of ${repo}@${branch} failed (deploy key forwarded? branch exists?)"
-
-  local f
-  for f in "${PRESERVE_FILES[@]}"; do
-    [ -n "$old" ] && [ -f "$old/$f" ] || continue
-    mkdir -p "$(dirname "$POC_DIR/$f")" && cp -p "$old/$f" "$POC_DIR/$f" && log "carried forward $f"
-  done
 
   {
     printf 'RUN_KEY=%q\nRUN_DIR=%q\nPOC_DIR=%q\nPOC_REPO=%q\nPOC_BRANCH=%q\n' "$key" "$run" "$POC_DIR" "$repo" "$branch"
@@ -119,6 +177,7 @@ cmd_diag(){
 sub="${1:-}"; shift || true
 case "$sub" in
   preflight) cmd_preflight ;;
+  clean)     cmd_clean ;;
   prepare)   [ $# -ge 3 ] || die "usage: prepare <run_key> <owner/repo> <branch> [K=V..]"; cmd_prepare "$@" ;;
   start)     [ $# -eq 3 ] || die "usage: start <run_key> <stage> <timeout_minutes>"; cmd_start "$@" ;;
   status)    [ $# -eq 2 ] || die "usage: status <run_key> <stage>"; cmd_status "$@" ;;

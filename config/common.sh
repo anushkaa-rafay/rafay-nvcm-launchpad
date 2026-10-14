@@ -56,6 +56,23 @@ lp_run_stage(){
 
 # setup_guide.md Part II: §6 host prep, §8 NVCM + Nautobot, §10 Rafay customization, §9/§11/§19 verify
 stage_host_prep(){           bash deploy_scripts/platform/nvcm-host-prep.sh; }   # group changes apply from the next stage (new login)
-stage_nvcm_install(){  lp_continue_if_not_ready "nvcm-install" bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
-stage_rafay_install(){  lp_continue_if_not_ready "rafay-install" bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }
-stage_platform_verify(){     bash deploy_scripts/platform/verify_platform_install.sh all; }
+stage_platform_nvcm_install(){  lp_continue_if_not_ready "platform-nvcm-install" bash deploy_scripts/platform/platform_install.sh nvcm --yes; }
+stage_platform_rafay_install(){  lp_continue_if_not_ready "platform-rafay-install" bash deploy_scripts/platform/platform_install.sh rafay --platform-only --yes; }
+# platform-verify: right after the two installs some pods are often still starting, so a NOT READY verdict is
+# usually transient. The verifier is read-only, so re-run it every LP_VERIFY_RETRY_SECS (3 min) until it prints
+# VERIFIED or LP_VERIFY_MAX_WAIT runs out — kept under the stage's 20 min timeout so the LAST verdict is the
+# verifier's own, not a timeout kill.
+stage_platform_verify(){
+  local every="${LP_VERIFY_RETRY_SECS:-180}" max="${LP_VERIFY_MAX_WAIT:-900}" n=0 deadline
+  deadline=$((SECONDS + max))
+  while :; do
+    n=$((n+1))
+    bash deploy_scripts/platform/verify_platform_install.sh all && return 0
+    if [ $((SECONDS + every)) -ge "$deadline" ]; then
+      echo "[launchpad] platform-verify: still NOT READY after $n attempt(s) over $((SECONDS / 60)) min — giving up" >&2
+      return 1
+    fi
+    echo "[launchpad] platform-verify: NOT READY (attempt $n) — pods may still be starting; re-checking in ${every}s" >&2
+    sleep "$every"
+  done
+}

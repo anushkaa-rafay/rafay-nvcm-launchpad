@@ -30,7 +30,7 @@ scripts/run-stages.sh validate all
 scripts/run-stages.sh validate host-prep,blueprint-generate
 # an unknown stage name must be rejected — `!` would skip -e on a regression here, so check explicitly
 scripts/run-stages.sh validate not-a-stage 2>/dev/null && { echo "FAIL: validate accepted an unknown stage name"; exit 1; }
-[ "$(scripts/run-stages.sh plan platform all | tr '\n' ,)" = "host-prep,nvcm-install,rafay-install,platform-verify," ]
+[ "$(scripts/run-stages.sh plan platform all | tr '\n' ,)" = "host-prep,platform-nvcm-install,platform-rafay-install,platform-verify," ]
 [ "$(scripts/run-stages.sh plan blueprint all | tr '\n' ,)" = "blueprint-generate,blueprint-verify," ]
 [ "$(scripts/run-stages.sh plan substrate all)" = "substrate" ]
 [ "$(scripts/run-stages.sh plan bringup all)" = "site-bringup" ]
@@ -41,7 +41,7 @@ export LAUNCHPAD_CATALOGUE=config/stages-brownfield.sh
 scripts/run-stages.sh validate all
 scripts/run-stages.sh validate bf-discover,bf-blueprint-generate
 scripts/run-stages.sh validate not-a-stage 2>/dev/null && { echo "FAIL: validate accepted an unknown stage name"; exit 1; }
-[ "$(scripts/run-stages.sh plan platform all | tr '\n' ,)" = "host-prep,nvcm-install,rafay-install,platform-verify," ]
+[ "$(scripts/run-stages.sh plan platform all | tr '\n' ,)" = "host-prep,platform-nvcm-install,platform-rafay-install,platform-verify," ]
 # the review-gate default (bf-discover,bf-blueprint-generate) must plan NOTHING for bringup — see
 # config/stages-brownfield.sh's header. A regression here would silently skip the safety stop.
 [ -z "$(scripts/run-stages.sh plan bringup bf-discover,bf-blueprint-generate)" ]

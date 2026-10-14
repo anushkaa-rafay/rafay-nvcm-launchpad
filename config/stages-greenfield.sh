@@ -17,7 +17,7 @@
 # function (dashes become underscores). Phases map 1:1 to workflow jobs — the four steps of the flow:
 #   platform   1 · Installation        host deps → NVCM + Nautobot → Rafay layer → verify       (guide Part II)
 #   blueprint  2 · Blueprint           generate (or take the existing one) → verify            (guide Part III)
-#   substrate  3 · Substrate           recover it if it already exists, otherwise create it    (guide Part IV S2 + S4 slice)
+#   substrate  3 · Substrate           stage images + create the fabric VMs and cabling       (guide Part IV S2 + S4 slice)
 #   bringup    4 · Site bring-up       underlay → overlay → servers → accept                   (guide Part IV S4–S5)
 # Keep each phase's timeouts summed under ~340 min — GitHub-hosted jobs are hard-capped at 6 h.
 
@@ -26,12 +26,12 @@
 # shellcheck disable=SC2034  # consumed by every file that sources this one (run-stages.sh, build-report.sh, agent.sh)
 LAUNCHPAD_STAGES=(
   host-prep:platform:45            # 1 Installation — dependencies: OS packages, KVM/libvirt, docker, k8s tools   §6
-  nvcm-install:platform:150        # 1 Installation — NVCM + Nautobot (+ telemetry)                                §8
-  rafay-install:platform:60        # 1 Installation — Rafay customization                                          §10
+  platform-nvcm-install:platform:150        # 1 Installation — NVCM + Nautobot (+ telemetry)                                §8
+  platform-rafay-install:platform:60        # 1 Installation — Rafay customization                                          §10
   platform-verify:platform:20      # 1 Installation — verify the whole platform (verify … all)                     §9/§11/§19
   blueprint-generate:blueprint:20  # 2 Blueprint — generate from the workbook, or take the existing one           III-2
   blueprint-verify:blueprint:10    # 2 Blueprint — verify whichever blueprint this run uses (offline door)         III-3
-  substrate:substrate:120          # 3 Substrate — exists → recover it; missing → stage images + create it         S2 + S4
+  substrate:substrate:120          # 3 Substrate — stage images + create the fabric VMs and cabling (gates L1+L2)  S2 + S4
   site-bringup:bringup:300         # 4 Site bring-up — underlay → overlay → servers → accept, gated per layer      S4–S5
 )
 
@@ -60,22 +60,7 @@ lp_venv(){
   .venv/bin/python3 -m pip install -q -r test/render/requirements.txt
 }
 
-# Does this blueprint's substrate already exist on the host? Echoes "<defined> <planned>" for the FABRIC VMs
-# (the ones deploy_fabric_vms.sh builds — server VMs arrive later, in the servers layer, so they don't count).
-# The plan comes from rafay_nvcm_poc's own plan_substrate.py — the same source recover/deploy use.
-lp_substrate_count(){
-  local bp="$1" plan
-  plan="$(python3 deploy_scripts/substrate/plan_substrate.py --blueprint "$bp" --emit bash)" || return 1
-  ( eval "$plan"; have=0; want=0
-    for vm in "${VMS[@]}"; do
-      [ "${IMAGES[$vm]:-}" = ubuntu ] && continue
-      want=$((want+1))
-      sudo virsh -c qemu:///system dominfo "$vm" >/dev/null 2>&1 && have=$((have+1))
-    done
-    echo "$have $want" )
-}
-
-# ── stage bodies (host-prep / nvcm-install / rafay-install / platform-verify: common.sh) ─────────────────
+# ── stage bodies (host-prep / platform-nvcm-install / platform-rafay-install / platform-verify: common.sh) ─────────────────
 stage_blueprint_generate(){  # setup_guide.md III-2
   if [ "$BLUEPRINT_SOURCE" = existing ]; then
     local bp; bp="$(lp_blueprint)"
@@ -96,23 +81,8 @@ stage_blueprint_verify(){    # setup_guide.md III-3 — the offline acceptance d
   bash deploy_scripts/verify_blueprint.sh --blueprint "$bp"
 }
 
-stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice of S4 — recover OR create
-  local bp counts have want; bp="$(lp_blueprint)"
-  counts="$(lp_substrate_count "$bp")" || { echo "could not plan the substrate from $bp" >&2; return 1; }
-  read -r have want <<< "$counts"
-  if [ "$want" -gt 0 ] && [ "$have" -eq "$want" ]; then
-    echo "[launchpad] substrate EXISTS ($have/$want fabric VMs defined) → recover it"
-    sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh
-    DC_BLUEPRINT="$bp" bash deploy_scripts/verify/verify_layers.sh L1   # same proof the create path ends with
-    DC_BLUEPRINT="$bp" bash deploy_scripts/verify/verify_layers.sh L2
-    return 0
-  fi
-  if [ "$have" -eq 0 ]; then
-    echo "[launchpad] substrate MISSING (0/$want fabric VMs) → create it"
-  else
-    echo "[launchpad] substrate PARTIAL ($have/$want fabric VMs) → recover what exists, then create the rest"
-    sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh
-  fi
+stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice of S4 — always built fresh (clean_lab removed the VMs)
+  local bp; bp="$(lp_blueprint)"
   sudo bash deploy_scripts/substrate/vm_image_operations.sh fetch      # S2 — no-op once the images are staged
   bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
       --tenants "$TENANTS" --from substrate --to substrate             # builds cabling + VMs, gates L1 + L2
@@ -120,6 +90,13 @@ stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice o
 
 stage_site_bringup(){        # setup_guide.md Part IV S4 (rest) + S5: underlay → overlay → servers → accept, each behind a hard gate
   local bp; bp="$(lp_blueprint)"
+  # Recover first: site-scoped and idempotent (recreates this blueprint's missing bridges, sets autostart, starts
+  # its VMs). A no-op straight after the substrate stage; it is what makes a stages=site-bringup rerun work on a lab
+  # that was powered off since its substrate was built (runtime bridges don't survive a host reboot).
+  sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh
+  # --dc up turns the servers layer ON (without it simulate_dc.sh SKIPS servers: "fabric is the deliverable").
+  # ORDER MATTERS: simulate_dc.sh parses left to right and `--dc up` resets --from to substrate, so it must come
+  # BEFORE `--from underlay` — the other way round would rebuild the substrate the previous phase just made.
   bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
-      --tenants "$TENANTS" --from underlay --to accept
+      --tenants "$TENANTS" --dc up --from underlay
 }
