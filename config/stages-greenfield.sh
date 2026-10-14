@@ -81,11 +81,46 @@ stage_blueprint_verify(){    # setup_guide.md III-3 — the offline acceptance d
   bash deploy_scripts/verify_blueprint.sh --blueprint "$bp"
 }
 
+# After a failed L1/L2 gate: put this blueprint's fabric VMs back in shape for the next attempt. recover_substrate.sh
+# (site-scoped) recreates missing bridges and starts every VM that is off; a VM STILL not running after that is
+# deleted with its disk, so the next simulate_dc.sh pass recreates it from the image (deploy_fabric_vms.sh skips the
+# VMs that exist). Server VMs (ubuntu image) belong to the Servers layer and are left alone. Subshell: the plan's
+# `declare -gA` arrays stay out of the stage's environment.
+lp_substrate_repair()(
+  bp="$1"; V="sudo virsh -c qemu:///system"
+  sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh || true
+  plan="$(python3 deploy_scripts/substrate/plan_substrate.py --blueprint "$bp" --emit bash)" || exit 1
+  eval "$plan"
+  for vm in "${VMS[@]}"; do
+    [ "${IMAGES[$vm]:-}" = ubuntu ] && continue
+    st="$($V domstate "$vm" 2>/dev/null)" || continue      # not defined: the next pass creates it
+    [ "$st" = running ] && continue
+    echo "[launchpad] $vm is '$st' and did not start — deleting it so the next pass recreates it" >&2
+    $V destroy "$vm" >/dev/null 2>&1 || true
+    $V undefine "$vm" --remove-all-storage >/dev/null 2>&1 || $V undefine "$vm" --remove-all-storage --nvram >/dev/null 2>&1 \
+      || echo "[launchpad] could not delete $vm — the next pass will gate on it again" >&2
+  done
+)
+
+# The L1 gate checks "every VM running" the moment the last VM is created, and a fresh Cumulus VM can be caught
+# between boots (2026-10-14: leaf04 "not running" at the gate, running seconds later in the diagnostics). So a failed
+# pass is repaired (above), given LP_SUBSTRATE_SETTLE_SECS to boot, and re-run — LP_SUBSTRATE_ATTEMPTS passes in all.
+# Re-running is safe: cabling and VM creation skip what exists, then the gates check again.
 stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice of S4 — always built fresh (clean_lab removed the VMs)
-  local bp; bp="$(lp_blueprint)"
+  local bp n=0 max="${LP_SUBSTRATE_ATTEMPTS:-3}" settle="${LP_SUBSTRATE_SETTLE_SECS:-60}"; bp="$(lp_blueprint)"
   sudo bash deploy_scripts/substrate/vm_image_operations.sh fetch      # S2 — no-op once the images are staged
-  bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
-      --tenants "$TENANTS" --from substrate --to substrate             # builds cabling + VMs, gates L1 + L2
+  while :; do
+    n=$((n+1))
+    bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
+        --tenants "$TENANTS" --from substrate --to substrate && return 0   # builds cabling + VMs, gates L1 + L2
+    if [ "$n" -ge "$max" ]; then
+      echo "[launchpad] substrate: still failing after $n attempt(s) — giving up" >&2
+      return 1
+    fi
+    echo "[launchpad] substrate: attempt $n/$max failed — repairing this blueprint's fabric VMs, retrying in ${settle}s" >&2
+    lp_substrate_repair "$bp"
+    sleep "$settle"
+  done
 }
 
 stage_site_bringup(){        # setup_guide.md Part IV S4 (rest) + S5: underlay → overlay → servers → accept, each behind a hard gate

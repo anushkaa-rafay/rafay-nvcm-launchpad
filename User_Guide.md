@@ -227,7 +227,7 @@ What it does next — four jobs, in order:
 |---|---|---|
 | 1 · Installation | `host-prep` → `platform-nvcm-install` → `platform-rafay-install` → `platform-verify` | dependencies, NVCM + Nautobot, the Rafay layer, then one verdict for the whole platform (re-checked every 3 min for up to 15 min while pods finish starting) |
 | 2 · Blueprint | `blueprint-generate` → `blueprint-verify` | generate from the workbook (or take the existing one), then verify it offline |
-| 3 · Substrate | `substrate` | stage the VM images, then create this blueprint's fabric VMs and cabling (gated at L1 and L2) |
+| 3 · Substrate | `substrate` | stage the VM images, then create this blueprint's fabric VMs and cabling (gated at L1 and L2). If a check fails — say a VM caught mid-boot — it starts or recreates the VMs that aren't running and tries again, up to 3 times |
 | 4 · Site BringUp | `site-bringup` | `recover_substrate.sh` (a no-op right after Substrate), then underlay → overlay → servers → accept, gated at every layer |
 
 See `Dev_Guide.md` if you want the exact command each stage runs.

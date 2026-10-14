@@ -105,7 +105,7 @@ to know which mode is active.
 | platform-verify | platform | `platform/verify_platform_install.sh all`, re-run every 3 min for up to 15 min until it passes (pods still starting) | 20m |
 | blueprint-generate | blueprint | `blueprint/xlsx_to_blueprint.py` (STC workbook → `blr-dc01`); with `blueprint_source=existing` it generates nothing and just confirms `stc/blueprint_stc.yaml` is there | 20m |
 | blueprint-verify | blueprint | `verify_blueprint.sh` on whichever blueprint this run uses (generated or existing) | 10m |
-| substrate | substrate | `vm_image_operations.sh fetch` + `simulate_dc.sh --apply --from substrate --to substrate` (creates the fabric VMs + cabling, gates L1/L2). No recover path: on a full run `clean_lab` has just removed every VM | 120m |
+| substrate | substrate | `vm_image_operations.sh fetch` + `simulate_dc.sh --apply --from substrate --to substrate` (creates the fabric VMs + cabling, gates L1/L2). A failed pass is retried, 3 passes in all, 60 s apart: before each retry `recover_substrate.sh` starts any VM that is off, and a fabric VM still not running is deleted (domain + disk) so the next pass recreates it. Cleanup has just removed every VM, so there is no separate recover path | 120m |
 | site-bringup | bringup | `recover_substrate.sh` (site-scoped, idempotent), then `simulate_dc.sh --apply --auto-approve --tenants … --dc up --from underlay` — `--dc up` must come **before** `--from` (it resets `--from` to `substrate`) | 300m |
 
 ### Brownfield catalogue (`config/stages-brownfield.sh`)
