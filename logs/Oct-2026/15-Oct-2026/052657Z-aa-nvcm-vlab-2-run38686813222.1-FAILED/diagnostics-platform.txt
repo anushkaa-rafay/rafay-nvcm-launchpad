@@ -1,0 +1,81 @@
+===== $ uptime
+ 05:31:41 up 3 min,  1 user,  load average: 1.76, 0.88, 0.36
+===== $ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           4.9G  1.4M  4.9G   1% /run
+efivarfs        256K  7.2K  244K   3% /sys/firmware/efi/efivars
+/dev/sda1       581G   24G  557G   5% /
+tmpfs            25G     0   25G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+tmpfs            25G     0   25G   0% /run/qemu
+/dev/sda16      881M  160M  660M  20% /boot
+/dev/sda15      105M  6.2M   99M   6% /boot/efi
+tmpfs           4.9G   16K  4.9G   1% /run/user/1001
+===== $ free -m
+               total        used        free      shared  buff/cache   available
+Mem:           50173        1786       44195          14        4781       48387
+Swap:              0           0           0
+===== $ docker ps -a
+CONTAINER ID   IMAGE                  COMMAND                  CREATED              STATUS              PORTS                                                                    NAMES
+d070e073fadb   kindest/node:v1.31.0   "/usr/local/bin/entr…"   About a minute ago   Up About a minute   0.0.0.0:34631->6443/tcp, 0.0.0.0:80->30080/tcp, 0.0.0.0:443->30443/tcp   nv-config-manager-control-plane
+===== $ kind get clusters
+nv-config-manager
+===== $ kubectl get pods -A -o wide
+NAMESPACE            NAME                                                      READY   STATUS    RESTARTS   AGE   IP           NODE                              NOMINATED NODE   READINESS GATES
+kube-system          coredns-6f6b679f8f-p69np                                  1/1     Running   0          48s   10.244.0.3   nv-config-manager-control-plane   <none>           <none>
+kube-system          coredns-6f6b679f8f-rd7n5                                  1/1     Running   0          48s   10.244.0.2   nv-config-manager-control-plane   <none>           <none>
+kube-system          etcd-nv-config-manager-control-plane                      1/1     Running   0          54s   172.18.0.2   nv-config-manager-control-plane   <none>           <none>
+kube-system          kindnet-wfr7m                                             1/1     Running   0          48s   172.18.0.2   nv-config-manager-control-plane   <none>           <none>
+kube-system          kube-apiserver-nv-config-manager-control-plane            1/1     Running   0          54s   172.18.0.2   nv-config-manager-control-plane   <none>           <none>
+kube-system          kube-controller-manager-nv-config-manager-control-plane   1/1     Running   0          54s   172.18.0.2   nv-config-manager-control-plane   <none>           <none>
+kube-system          kube-proxy-75p97                                          1/1     Running   0          48s   172.18.0.2   nv-config-manager-control-plane   <none>           <none>
+kube-system          kube-scheduler-nv-config-manager-control-plane            1/1     Running   0          54s   172.18.0.2   nv-config-manager-control-plane   <none>           <none>
+local-path-storage   local-path-provisioner-57c5987fd4-kgtv5                   1/1     Running   0          48s   10.244.0.4   nv-config-manager-control-plane   <none>           <none>
+===== $ kubectl get events -A --sort-by=.lastTimestamp
+NAMESPACE            LAST SEEN   TYPE      REASON                    OBJECT                                         MESSAGE
+default              46s         Normal    Starting                  node/nv-config-manager-control-plane           
+default              54s         Normal    NodeAllocatableEnforced   node/nv-config-manager-control-plane           Updated Node Allocatable limit across pods
+default              54s         Normal    NodeHasSufficientMemory   node/nv-config-manager-control-plane           Node nv-config-manager-control-plane status is now: NodeHasSufficientMemory
+default              54s         Normal    NodeHasNoDiskPressure     node/nv-config-manager-control-plane           Node nv-config-manager-control-plane status is now: NodeHasNoDiskPressure
+default              54s         Normal    NodeHasSufficientPID      node/nv-config-manager-control-plane           Node nv-config-manager-control-plane status is now: NodeHasSufficientPID
+kube-system          54s         Normal    LeaderElection            lease/kube-controller-manager                  nv-config-manager-control-plane_580e3087-6f64-451d-80ef-a9dfc7571a61 became leader
+default              54s         Normal    Starting                  node/nv-config-manager-control-plane           Starting kubelet.
+kube-system          52s         Normal    LeaderElection            lease/kube-scheduler                           nv-config-manager-control-plane_2c552aef-c888-4ada-a4ff-127edddc479b became leader
+default              49s         Normal    RegisteredNode            node/nv-config-manager-control-plane           Node nv-config-manager-control-plane event: Registered Node nv-config-manager-control-plane in Controller
+local-path-storage   48s         Warning   FailedScheduling          pod/local-path-provisioner-57c5987fd4-kgtv5    0/1 nodes are available: 1 node(s) had untolerated taint {node.kubernetes.io/not-ready: }. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+kube-system          48s         Normal    Scheduled                 pod/kube-proxy-75p97                           Successfully assigned kube-system/kube-proxy-75p97 to nv-config-manager-control-plane
+local-path-storage   48s         Normal    SuccessfulCreate          replicaset/local-path-provisioner-57c5987fd4   Created pod: local-path-provisioner-57c5987fd4-kgtv5
+kube-system          48s         Normal    SuccessfulCreate          daemonset/kube-proxy                           Created pod: kube-proxy-75p97
+kube-system          48s         Warning   FailedScheduling          pod/coredns-6f6b679f8f-rd7n5                   0/1 nodes are available: 1 node(s) had untolerated taint {node.kubernetes.io/not-ready: }. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+kube-system          48s         Warning   FailedScheduling          pod/coredns-6f6b679f8f-p69np                   0/1 nodes are available: 1 node(s) had untolerated taint {node.kubernetes.io/not-ready: }. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+kube-system          48s         Warning   FailedMount               pod/kube-proxy-75p97                           MountVolume.SetUp failed for volume "kube-api-access-l7mfl" : configmap "kube-root-ca.crt" not found
+kube-system          48s         Normal    SuccessfulCreate          daemonset/kindnet                              Created pod: kindnet-wfr7m
+local-path-storage   48s         Normal    ScalingReplicaSet         deployment/local-path-provisioner              Scaled up replica set local-path-provisioner-57c5987fd4 to 1
+kube-system          48s         Normal    SuccessfulCreate          replicaset/coredns-6f6b679f8f                  Created pod: coredns-6f6b679f8f-p69np
+kube-system          48s         Normal    SuccessfulCreate          replicaset/coredns-6f6b679f8f                  Created pod: coredns-6f6b679f8f-rd7n5
+kube-system          48s         Normal    ScalingReplicaSet         deployment/coredns                             Scaled up replica set coredns-6f6b679f8f to 2
+kube-system          48s         Normal    Scheduled                 pod/kindnet-wfr7m                              Successfully assigned kube-system/kindnet-wfr7m to nv-config-manager-control-plane
+kube-system          48s         Warning   FailedMount               pod/kindnet-wfr7m                              MountVolume.SetUp failed for volume "kube-api-access-gvss7" : configmap "kube-root-ca.crt" not found
+kube-system          47s         Normal    Pulled                    pod/kube-proxy-75p97                           Container image "registry.k8s.io/kube-proxy:v1.31.0" already present on machine
+kube-system          47s         Normal    Created                   pod/kube-proxy-75p97                           Created container kube-proxy
+kube-system          47s         Normal    Pulled                    pod/kindnet-wfr7m                              Container image "docker.io/kindest/kindnetd:v20240813-c6f155d6" already present on machine
+kube-system          47s         Normal    Created                   pod/kindnet-wfr7m                              Created container kindnet-cni
+kube-system          47s         Normal    Started                   pod/kube-proxy-75p97                           Started container kube-proxy
+kube-system          46s         Normal    Started                   pod/kindnet-wfr7m                              Started container kindnet-cni
+local-path-storage   35s         Normal    Scheduled                 pod/local-path-provisioner-57c5987fd4-kgtv5    Successfully assigned local-path-storage/local-path-provisioner-57c5987fd4-kgtv5 to nv-config-manager-control-plane
+kube-system          35s         Normal    Scheduled                 pod/coredns-6f6b679f8f-rd7n5                   Successfully assigned kube-system/coredns-6f6b679f8f-rd7n5 to nv-config-manager-control-plane
+kube-system          35s         Normal    Pulled                    pod/coredns-6f6b679f8f-rd7n5                   Container image "registry.k8s.io/coredns/coredns:v1.11.1" already present on machine
+kube-system          35s         Normal    Pulled                    pod/coredns-6f6b679f8f-p69np                   Container image "registry.k8s.io/coredns/coredns:v1.11.1" already present on machine
+local-path-storage   35s         Normal    Pulled                    pod/local-path-provisioner-57c5987fd4-kgtv5    Container image "docker.io/kindest/local-path-provisioner:v20240813-c6f155d6" already present on machine
+kube-system          35s         Normal    Scheduled                 pod/coredns-6f6b679f8f-p69np                   Successfully assigned kube-system/coredns-6f6b679f8f-p69np to nv-config-manager-control-plane
+default              35s         Normal    NodeReady                 node/nv-config-manager-control-plane           Node nv-config-manager-control-plane status is now: NodeReady
+kube-system          34s         Normal    Created                   pod/coredns-6f6b679f8f-rd7n5                   Created container coredns
+kube-system          34s         Normal    Started                   pod/coredns-6f6b679f8f-p69np                   Started container coredns
+kube-system          34s         Normal    Created                   pod/coredns-6f6b679f8f-p69np                   Created container coredns
+kube-system          34s         Normal    Started                   pod/coredns-6f6b679f8f-rd7n5                   Started container coredns
+local-path-storage   34s         Normal    Created                   pod/local-path-provisioner-57c5987fd4-kgtv5    Created container local-path-provisioner
+local-path-storage   34s         Normal    Started                   pod/local-path-provisioner-57c5987fd4-kgtv5    Started container local-path-provisioner
+===== $ sudo -n virsh list --all
+ Id   Name   State
+--------------------
+

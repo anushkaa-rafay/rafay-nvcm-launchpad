@@ -1,0 +1,477 @@
+============================================================
+WORKFLOW RUN 38686813222.1 · lab aa-nvcm-vlab-2 · config/stages-greenfield.sh · nvcm-1.3.1-migrate @ 7ff7e8bd19dd
+Started 2026-10-15T05:26:57Z · https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/38686813222
+============================================================
+
+============================================================
+STAGE 01: host-prep (phase: platform)
+============================================================
+
+[2026-10-15 05:30:09 UTC] INFO  Starting stage host-prep (timeout 45m, run key 38686813222-1)
+[agent] started host-prep (pid 6727, timeout 45m)
+[launchpad] stage=host-prep branch=nvcm-1.3.1-migrate sha=7ff7e8bd19dd8f12c55b412ac4924b05f33a9b2d started=2026-10-15T05:30:10Z
+DNS configuration Start (1)...
+[dns] Network interface : ens3
+[dns] MAC address       : 02:00:17:34:e4:e7
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (1) ...
+Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:2 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble InRelease
+Get:3 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Hit:4 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-backports InRelease
+Fetched 126 kB in 1s (123 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.43.0-1ubuntu7.3).
+ca-certificates is already the newest version (20260601~24.04.1).
+jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
+qemu-system-x86 is already the newest version (1:8.2.2+ds-0ubuntu1.18).
+libvirt-daemon-system is already the newest version (10.0.0-2ubuntu8.19).
+libvirt-clients is already the newest version (10.0.0-2ubuntu8.19).
+virtinst is already the newest version (1:4.1.0-3ubuntu0.1).
+bridge-utils is already the newest version (1.7.1-1ubuntu2).
+dnsmasq-base is already the newest version (2.91-0ubuntu0.24.04.2).
+sshpass is already the newest version (1.09-1).
+cloud-image-utils is already the newest version (0.33-1).
+docker.io is already the newest version (29.1.3-0ubuntu3~24.04.2).
+docker-buildx is already the newest version (0.30.1-0ubuntu1~24.04.1).
+The following additional packages will be installed:
+  libcurl3t64-gnutls libcurl4t64
+The following packages will be upgraded:
+  curl libcurl3t64-gnutls libcurl4t64
+3 upgraded, 0 newly installed, 0 to remove and 30 not upgraded.
+Need to get 907 kB of archives.
+After this operation, 3072 B of additional disk space will be used.
+Get:1 http://security.ubuntu.com/ubuntu noble-security/main amd64 curl amd64 8.5.0-2ubuntu10.16 [226 kB]
+Get:2 http://security.ubuntu.com/ubuntu noble-security/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.16 [344 kB]
+Get:3 http://security.ubuntu.com/ubuntu noble-security/main amd64 libcurl3t64-gnutls amd64 8.5.0-2ubuntu10.16 [337 kB]
+debconf: unable to initialize frontend: Dialog
+debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+dpkg-preconfigure: unable to re-open stdin: 
+Fetched 907 kB in 1s (1384 kB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 174352 files and directories currently installed.)
+Preparing to unpack .../curl_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking curl (8.5.0-2ubuntu10.16) over (8.5.0-2ubuntu10.15) ...
+Preparing to unpack .../libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) over (8.5.0-2ubuntu10.15) ...
+Preparing to unpack .../libcurl3t64-gnutls_8.5.0-2ubuntu10.16_amd64.deb ...
+Unpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) over (8.5.0-2ubuntu10.15) ...
+Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+Setting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) ...
+Setting up curl (8.5.0-2ubuntu10.16) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+Running kernel seems to be up-to-date.
+
+Restarting services...
+ systemctl restart packagekit.service
+
+Service restarts being deferred:
+ systemctl restart libvirtd.service
+ systemctl restart virtlockd.service
+ systemctl restart virtlogd.service
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+DNS configuration Start (2)...
+[dns] Network interface : ens3
+[dns] MAC address       : 02:00:17:34:e4:e7
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (2) ...
+github.com/docker/buildx 0.30.1 0.30.1-0ubuntu1~24.04.1
+>>> Host prep done. LOG OUT and BACK IN now (for docker/kvm/libvirt group membership), then continue.
+[2026-10-15 05:30:33 UTC] INFO  Stage host-prep passed (rc=0, 24s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 02: platform-nvcm-install (phase: platform)
+============================================================
+
+[2026-10-15 05:30:33 UTC] INFO  Starting stage platform-nvcm-install (timeout 150m, run key 38686813222-1)
+[agent] started platform-nvcm-install (pid 7809, timeout 150m)
+[launchpad] stage=platform-nvcm-install branch=nvcm-1.3.1-migrate sha=7ff7e8bd19dd8f12c55b412ac4924b05f33a9b2d started=2026-10-15T05:30:33Z
+[install] → platform/nvcm-install.sh --yes
+
+══════════════════════════════════════════════════════════════════════
+  Part I — install NVCM + Nautobot (kind cluster 'nv-config-manager', namespace 'nv-config-manager')
+══════════════════════════════════════════════════════════════════════
+[nvcm] toolchain OK (docker/kind/kubectl/helm/uv).
+[nvcm] cloning the NVIDIA NVCM installer (if absent) into /home/ubuntu/nvidia/nv-config-manager ...
+[nvcm] Entering ..checkout_nvcm_version()
+[nvcm] checking out and pointing to NVCM commit 1.3.1 ...
+[nvcm] Leaving..checkout_nvcm_version()
+[nvcm] creating the kind cluster (if absent) ...
+Creating cluster "nv-config-manager" ...
+ • Ensuring node image (kindest/node:v1.31.0) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.31.0) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Waiting ≤ 5m0s for control-plane = Ready ⏳  ...
+ ✓ Waiting ≤ 5m0s for control-plane = Ready ⏳
+ • Ready after 17s 💚
+Set kubectl context to "kind-nv-config-manager"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-nv-config-manager
+
+Thanks for using kind! 😊
+[nvcm] installing the nvcm-installer CLI (uv) ...
+Downloading cpython-3.15.0-linux-x86_64-gnu (download) (35.9MiB)
+ Downloaded cpython-3.15.0-linux-x86_64-gnu (download)
+Using CPython 3.15.0
+Removed virtual environment at: .venv
+Creating virtual environment at: .venv
+Resolved 42 packages in 11ms
+   Building nv-config-manager-installer @ file:///home/ubuntu/nvidia/nv-config-manager/installer
+   Building pyyaml==6.0.3
+   Building pydantic-core==2.41.5
+      Built nv-config-manager-installer @ file:///home/ubuntu/nvidia/nv-config-manager/installer
+      Built pyyaml==6.0.3
+error: Failed to build `pydantic-core==2.41.5`
+  cause: The build backend returned an error
+  cause: Call to `maturin.build_wheel` failed (exit status: 1)
+
+         [stdout]
+         Rust not found, installing into a temporary directory
+         cargo 1.99.0 (5f94df478 2026-08-27)
+         Running `maturin pep517 build-wheel -i /home/ubuntu/.cache/uv/builds-v0/.tmppocS2P/bin/python --compatibility off`
+
+         [stderr]
+         Python reports SOABI: cpython-315-x86_64-linux-gnu
+         Computed rustc target triple: x86_64-unknown-linux-gnu
+         Installation directory: /home/ubuntu/.cache/puccinialin
+         Downloading rustup-init from https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init
+         Downloading rustup-init:   0%|          | 0.00/21.1M [00:00<?, ?B/s]Downloading rustup-init:  36%|███▌      | 7.54M/21.1M [00:00<00:00, 75.4MB/s]Downloading rustup-init: 100%|██████████| 21.1M/21.1M [00:00<00:00, 126MB/s] 
+         Installing rust to /home/ubuntu/.cache/puccinialin/rustup
+         info: profile set to minimal
+         info: setting default host tuple to x86_64-unknown-linux-gnu
+         info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+         info: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)
+         info: downloading 3 components
+         info: default toolchain set to stable-x86_64-unknown-linux-gnu
+         Checking if cargo is installed
+             Updating crates.io index
+          Downloading crates ...
+           Downloaded ahash v0.8.12
+           Downloaded zerovec-derive v0.10.3
+           Downloaded funty v2.0.0
+           Downloaded write16 v1.0.0
+           Downloaded stable_deref_trait v1.2.0
+           Downloaded percent-encoding v2.3.2
+           Downloaded radium v0.7.0
+           Downloaded autocfg v1.3.0
+           Downloaded base64 v0.22.1
+           Downloaded synstructure v0.13.1
+           Downloaded wyz v0.5.1
+           Downloaded num-integer v0.1.46
+           Downloaded bitflags v2.9.1
+           Downloaded icu_locid_transform v1.5.0
+           Downloaded form_urlencoded v1.2.1
+           Downloaded idna_adapter v1.2.0
+           Downloaded strum v0.27.2
+           Downloaded enum_dispatch v0.3.13
+           Downloaded strum_macros v0.27.2
+           Downloaded tinystr v0.7.6
+           Downloaded unindent v0.2.3
+           Downloaded zerofrom v0.1.4
+           Downloaded heck v0.5.0
+           Downloaded wasm-bindgen v0.2.100
+           Downloaded hex v0.4.3
+           Downloaded utf16_iter v1.0.5
+           Downloaded wasm-bindgen-shared v0.2.100
+           Downloaded indoc v2.0.5
+           Downloaded version_check v0.9.5
+           Downloaded wit-bindgen-rt v0.39.0
+           Downloaded cfg-if v1.0.0
+           Downloaded icu_normalizer_data v1.5.0
+           Downloaded icu_provider v1.5.0
+           Downloaded wasm-bindgen-macro-support v0.2.100
+           Downloaded tap v1.0.1
+           Downloaded wasm-bindgen-macro v0.2.100
+           Downloaded icu_provider_macros v1.5.0
+           Downloaded yoke-derive v0.7.4
+           Downloaded zerofrom-derive v0.1.4
+           Downloaded target-lexicon v0.13.2
+           Downloaded quote v1.0.36
+           Downloaded writeable v0.5.5
+           Downloaded memoffset v0.9.1
+           Downloaded wasm-bindgen-backend v0.2.100
+           Downloaded pyo3-macros v0.26.0
+           Downloaded url v2.5.4
+           Downloaded rustversion v1.0.17
+           Downloaded uuid v1.18.1
+           Downloaded itoa v1.0.11
+           Downloaded once_cell v1.21.3
+           Downloaded pyo3-build-config v0.26.0
+           Downloaded serde_derive v1.0.228
+           Downloaded displaydoc v0.2.5
+           Downloaded smallvec v1.15.1
+           Downloaded static_assertions v1.1.0
+           Downloaded utf8_iter v1.0.4
+           Downloaded cc v1.0.101
+           Downloaded yoke v0.7.4
+           Downloaded speedate v0.17.0
+           Downloaded serde v1.0.228
+           Downloaded log v0.4.27
+           Downloaded memchr v2.7.4
+           Downloaded num-traits v0.2.19
+           Downloaded unicode-ident v1.0.12
+           Downloaded ryu v1.0.18
+           Downloaded icu_locid_transform_data v1.5.0
+           Downloaded lexical-parse-integer v1.0.5
+           Downloaded litemap v0.7.3
+           Downloaded pyo3-ffi v0.26.0
+           Downloaded r-efi v5.2.0
+           Downloaded aho-corasick v1.1.3
+           Downloaded getrandom v0.3.3
+           Downloaded js-sys v0.3.77
+           Downloaded icu_normalizer v1.5.0
+           Downloaded proc-macro2 v1.0.86
+           Downloaded pyo3-macros-backend v0.26.0
+           Downloaded python3-dll-a v0.2.14
+           Downloaded serde_core v1.0.228
+           Downloaded icu_properties v1.5.1
+           Downloaded zerocopy-derive v0.8.25
+           Downloaded bumpalo v3.19.0
+           Downloaded icu_collections v1.5.0
+           Downloaded icu_locid v1.5.0
+           Downloaded lexical-util v1.0.6
+           Downloaded num-bigint v0.4.6
+           Downloaded jiter v0.11.1
+           Downloaded zerovec v0.10.4
+           Downloaded idna v1.1.0
+           Downloaded lexical-parse-float v1.0.5
+           Downloaded portable-atomic v1.6.0
+           Downloaded serde_json v1.0.145
+           Downloaded wasi v0.14.2+wasi-0.2.4
+           Downloaded regex v1.12.2
+           Downloaded bitvec v1.0.1
+           Downloaded icu_properties_data v1.5.0
+           Downloaded syn v2.0.82
+           Downloaded zerocopy v0.8.25
+           Downloaded regex-syntax v0.8.5
+           Downloaded regex-automata v0.4.13
+           Downloaded libc v0.2.155
+           Downloaded pyo3 v0.26.0
+         🍹 Building a mixed python/rust project
+         🐍 Found CPython 3.15 at /home/ubuntu/.cache/uv/builds-v0/.tmppocS2P/bin/python
+         🔗 Found pyo3 bindings
+         📡 Using build options bindings from pyproject.toml
+            Compiling proc-macro2 v1.0.86
+            Compiling unicode-ident v1.0.12
+            Compiling target-lexicon v0.13.2
+            Compiling python3-dll-a v0.2.14
+            Compiling stable_deref_trait v1.2.0
+            Compiling autocfg v1.3.0
+            Compiling writeable v0.5.5
+            Compiling litemap v0.7.3
+            Compiling heck v0.5.0
+            Compiling libc v0.2.155
+            Compiling version_check v0.9.5
+            Compiling icu_locid_transform_data v1.5.0
+            Compiling static_assertions v1.1.0
+            Compiling smallvec v1.15.1
+            Compiling icu_properties_data v1.5.0
+            Compiling write16 v1.0.0
+            Compiling utf8_iter v1.0.4
+            Compiling zerocopy v0.8.25
+            Compiling utf16_iter v1.0.5
+            Compiling getrandom v0.3.3
+            Compiling radium v0.7.0
+            Compiling lexical-util v1.0.6
+            Compiling icu_normalizer_data v1.5.0
+            Compiling memchr v2.7.4
+            Compiling serde_core v1.0.228
+            Compiling once_cell v1.21.3
+            Compiling tap v1.0.1
+            Compiling cfg-if v1.0.0
+            Compiling serde_json v1.0.145
+            Compiling unindent v0.2.3
+            Compiling serde v1.0.228
+            Compiling wyz v0.5.1
+            Compiling indoc v2.0.5
+            Compiling percent-encoding v2.3.2
+            Compiling funty v2.0.0
+            Compiling ahash v0.8.12
+            Compiling regex-syntax v0.8.5
+            Compiling itoa v1.0.11
+            Compiling ryu v1.0.18
+            Compiling num-traits v0.2.19
+            Compiling memoffset v0.9.1
+            Compiling form_urlencoded v1.2.1
+            Compiling uuid v1.18.1
+            Compiling hex v0.4.3
+            Compiling base64 v0.22.1
+            Compiling quote v1.0.36
+            Compiling aho-corasick v1.1.3
+            Compiling pyo3-build-config v0.26.0
+            Compiling syn v2.0.82
+            Compiling bitvec v1.0.1
+            Compiling lexical-parse-integer v1.0.5
+            Compiling lexical-parse-float v1.0.5
+            Compiling num-integer v0.1.46
+            Compiling num-bigint v0.4.6
+            Compiling pyo3-ffi v0.26.0
+            Compiling pyo3-macros-backend v0.26.0
+            Compiling pyo3 v0.26.0
+            Compiling jiter v0.11.1
+            Compiling pydantic-core v2.41.5 (/home/ubuntu/.cache/uv/sdists-v10/pypi/pydantic-core/2.41.5/7gxu2Xmn0Nxbikz_/src)
+         error: failed to run custom build command for `pyo3-ffi v0.26.0`
+
+         Caused by:
+           process didn't exit successfully: `/home/ubuntu/.cache/uv/sdists-v10/pypi/pydantic-core/2.41.5/7gxu2Xmn0Nxbikz_/src/target/release/build/pyo3-ffi-43c324662a00fc71/build-script-build` (exit status: 1)
+           --- stdout
+           cargo:rustc-check-cfg=cfg(Py_LIMITED_API)
+           cargo:rustc-check-cfg=cfg(Py_GIL_DISABLED)
+           cargo:rustc-check-cfg=cfg(PyPy)
+           cargo:rustc-check-cfg=cfg(GraalPy)
+           cargo:rustc-check-cfg=cfg(py_sys_config, values("Py_DEBUG", "Py_REF_DEBUG", "Py_TRACE_REFS", "COUNT_ALLOCS"))
+           cargo:rustc-check-cfg=cfg(pyo3_disable_reference_pool)
+           cargo:rustc-check-cfg=cfg(pyo3_leak_on_drop_without_reference_pool)
+           cargo:rustc-check-cfg=cfg(Py_3_7)
+           cargo:rustc-check-cfg=cfg(Py_3_8)
+           cargo:rustc-check-cfg=cfg(Py_3_9)
+           cargo:rustc-check-cfg=cfg(Py_3_10)
+           cargo:rustc-check-cfg=cfg(Py_3_11)
+           cargo:rustc-check-cfg=cfg(Py_3_12)
+           cargo:rustc-check-cfg=cfg(Py_3_13)
+           cargo:rustc-check-cfg=cfg(Py_3_14)
+           cargo:rustc-check-cfg=cfg(Py_3_15)
+           cargo:rerun-if-env-changed=PYO3_CROSS
+           cargo:rerun-if-env-changed=PYO3_CROSS_LIB_DIR
+           cargo:rerun-if-env-changed=PYO3_CROSS_PYTHON_VERSION
+           cargo:rerun-if-env-changed=PYO3_CROSS_PYTHON_IMPLEMENTATION
+           cargo:rerun-if-env-changed=PYO3_PRINT_CONFIG
+           cargo:rerun-if-env-changed=PYO3_USE_ABI3_FORWARD_COMPATIBILITY
+
+           --- stderr
+           error: the configured Python interpreter version (3.15) is newer than PyO3's maximum supported version (3.14)
+           = help: please check if an updated version of PyO3 is available. Current version: 0.26.0
+           = help: set PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 to suppress this check and build anyway using the stable ABI
+         warning: build failed, waiting for other jobs to finish...
+         💥 maturin failed
+           Caused by: Failed to build a native library through cargo
+           Caused by: Cargo build finished with "exit status: 101": `env -u CARGO PYO3_BUILD_EXTENSION_MODULE="1" PYO3_ENVIRONMENT_SIGNATURE="cpython-3.15-64bit" PYO3_PYTHON="/home/ubuntu/.cache/uv/builds-v0/.tmppocS2P/bin/python" PYTHON_SYS_EXECUTABLE="/home/ubuntu/.cache/uv/builds-v0/.tmppocS2P/bin/python" "cargo" "rustc" "--profile" "release" "--message-format" "json-render-diagnostics" "--manifest-path" "/home/ubuntu/.cache/uv/sdists-v10/pypi/pydantic-core/2.41.5/7gxu2Xmn0Nxbikz_/src/Cargo.toml" "--lib" "--crate-type" "cdylib"`
+         Error: command ['maturin', 'pep517', 'build-wheel', '-i', '/home/ubuntu/.cache/uv/builds-v0/.tmppocS2P/bin/python', '--compatibility', 'off'] returned non-zero exit status 1
+
+hint: `pydantic-core` (v2.41.5) was included because `nv-config-manager-installer` (v1.0.0) depends on `pydantic` (v2.12.5) which depends on `pydantic-core`
+
+hint: Build failures usually indicate a problem with the package or the build environment
+[nvcm] !! FAILED: (cd '/home/ubuntu/nvidia/nv-config-manager/installer' && uv sync && uv tool install --force .)
+[install] !! platform/nvcm-install.sh failed — see its output above.
+[2026-10-15 05:31:40 UTC] ERROR Stage platform-nvcm-install failed (rc=1, 67s)
+
+------------------------------------------------------------
+STAGE STATUS: FAILED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 03: platform-rafay-install (phase: platform)
+============================================================
+
+[2026-10-15 05:31:40 UTC] INFO  Stage platform-rafay-install not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 04: platform-verify (phase: platform)
+============================================================
+
+[2026-10-15 05:31:40 UTC] INFO  Stage platform-verify not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 05: blueprint-generate (phase: blueprint)
+============================================================
+
+[2026-10-15 05:33:42 UTC] INFO  Stage blueprint-generate not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 06: blueprint-verify (phase: blueprint)
+============================================================
+
+[2026-10-15 05:33:42 UTC] INFO  Stage blueprint-verify not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 07: substrate (phase: substrate)
+============================================================
+
+[2026-10-15 05:33:42 UTC] INFO  Stage substrate not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 08: site-bringup (phase: bringup)
+============================================================
+
+[2026-10-15 05:33:42 UTC] INFO  Stage site-bringup not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+WORKFLOW STATUS: FAILED (failed stage: platform-nvcm-install)
+============================================================
