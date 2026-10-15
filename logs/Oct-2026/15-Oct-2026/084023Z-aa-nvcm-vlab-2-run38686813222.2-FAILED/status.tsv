@@ -1,0 +1,8 @@
+1	host-prep	platform	passed	0	2026-10-15T08:41:53Z	2026-10-15T08:42:15Z	22
+2	platform-nvcm-install	platform	passed	0	2026-10-15T08:42:15Z	2026-10-15T08:57:46Z	931
+3	platform-rafay-install	platform	passed	0	2026-10-15T08:57:46Z	2026-10-15T09:02:00Z	254
+4	platform-verify	platform	passed	0	2026-10-15T09:02:00Z	2026-10-15T09:03:04Z	64
+5	blueprint-generate	blueprint	passed	0	2026-10-15T09:04:02Z	2026-10-15T09:04:26Z	24
+6	blueprint-verify	blueprint	passed	0	2026-10-15T09:04:26Z	2026-10-15T09:04:49Z	23
+7	substrate	substrate	failed	1	2026-10-15T09:05:38Z	2026-10-15T09:07:45Z	127
+8	site-bringup	bringup	skipped				
