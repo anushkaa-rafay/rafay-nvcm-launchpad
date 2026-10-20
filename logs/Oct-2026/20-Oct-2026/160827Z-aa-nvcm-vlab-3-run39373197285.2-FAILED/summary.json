@@ -1,0 +1,111 @@
+{
+  "status": "FAILED",
+  "failed_stage": "site-bringup",
+  "poc": {
+    "repo": "ramakrishna-rafay/rafay_nvcm_poc",
+    "branch": "prototype_fixes",
+    "sha": "2c89cbb67b3d17a884d041f17d5c96a0ef540fa7"
+  },
+  "run": {
+    "id": "39373197285",
+    "attempt": "2",
+    "url": "https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/39373197285",
+    "trigger": "schedule",
+    "actor": "anushkaa-rafay",
+    "started": "2026-10-20T16:08:27Z",
+    "finished": "2026-10-20T16:48:29Z"
+  },
+  "oci": {
+    "lab": "aa-nvcm-vlab-3",
+    "instance": "ocid1.instance.oc1.phx.anyhqljtymbj47qcxovrwebktmdb3qaoaakgj4ormzch22mwdsyb2mv75ajq",
+    "host": "129.146.85.6",
+    "was_running_before": "true",
+    "poweroff_job": "success"
+  },
+  "options": {
+    "blueprint_source": "generate",
+    "tenants": "3-11,84-100"
+  },
+  "stages": [
+    {
+      "index": 1,
+      "name": "host-prep",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-20T16:10:21Z",
+      "finished": "2026-10-20T16:11:28Z",
+      "seconds": 67
+    },
+    {
+      "index": 2,
+      "name": "platform-nvcm-install",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-20T16:11:28Z",
+      "finished": "2026-10-20T16:27:04Z",
+      "seconds": 936
+    },
+    {
+      "index": 3,
+      "name": "platform-rafay-install",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-20T16:27:04Z",
+      "finished": "2026-10-20T16:32:08Z",
+      "seconds": 304
+    },
+    {
+      "index": 4,
+      "name": "platform-verify",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-20T16:32:08Z",
+      "finished": "2026-10-20T16:33:15Z",
+      "seconds": 67
+    },
+    {
+      "index": 5,
+      "name": "blueprint-generate",
+      "phase": "blueprint",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-20T16:34:16Z",
+      "finished": "2026-10-20T16:35:01Z",
+      "seconds": 45
+    },
+    {
+      "index": 6,
+      "name": "blueprint-verify",
+      "phase": "blueprint",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-20T16:35:01Z",
+      "finished": "2026-10-20T16:35:25Z",
+      "seconds": 24
+    },
+    {
+      "index": 7,
+      "name": "substrate",
+      "phase": "substrate",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-10-20T16:36:25Z",
+      "finished": "2026-10-20T16:37:50Z",
+      "seconds": 85
+    },
+    {
+      "index": 8,
+      "name": "site-bringup",
+      "phase": "bringup",
+      "result": "failed",
+      "rc": "1",
+      "started": "2026-10-20T16:38:50Z",
+      "finished": "2026-10-20T16:46:23Z",
+      "seconds": 453
+    }
+  ]
+}
