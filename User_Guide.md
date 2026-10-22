@@ -47,6 +47,8 @@ the run at its first job, before anything touches OCI.
 | `POC_DEFAULT_BRANCH` | Repo only | `main` (used if `poc_branch` is left blank) |
 | `SCHEDULE_LAB` | Repo only | the lab the [daily greenfield run](#the-daily-greenfield-run) uses, e.g. `aa-nvcm-vlab-3` (blank → `DEFAULT_LAB`) |
 | `SCHEDULE_POC_BRANCH` | Repo only | the `rafay_nvcm_poc` branch the daily run tests, e.g. `prototype_fixes` (blank → `POC_DEFAULT_BRANCH`, then `main`) |
+| `SCHEDULE_2_LAB` | Repo only | the lab for the [second daily run](#the-daily-greenfield-run) at 06:05 IST, e.g. `aa-nvcm-vlab-2` (blank → no second daily run) |
+| `SCHEDULE_2_POC_BRANCH` | Repo only | the branch the second daily run tests, e.g. `nvcm-1.3.1-migrate` (blank → as `SCHEDULE_POC_BRANCH`) |
 | `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` | Repo (lab may override) | **OCI labs**: API-key auth IDs (see step 3) |
 | `AWS_ACCESS_KEY_ID`, `AWS_REGION` | Repo (lab may override) | **AWS labs**: IAM access key ID (`AKIA…`) and the instance's region (e.g. `ap-south-1`) |
 | `INSTANCE_ID` | Lab Environment | required. An OCI OCID (`ocid1.instance.oc1...`) or an AWS EC2 ID (`i-0abc…`); its shape decides which cloud the lab is driven through |
@@ -235,11 +237,18 @@ See `Dev_Guide.md` if you want the exact command each stage runs.
 
 ### The daily greenfield run
 
-`nvcm-greenfield` also runs **by itself every day at 06:00 IST** (cron `30 0 * * *`, UTC), on top of the
-manual trigger. A scheduled run has no form to fill in, so it takes:
+`nvcm-greenfield` also runs **by itself every day**, on top of the manual trigger — twice, on two labs:
 
-- the lab from `SCHEDULE_LAB` (blank → `DEFAULT_LAB`) and the branch from `SCHEDULE_POC_BRANCH` (blank →
-  `POC_DEFAULT_BRANCH` → `main`);
+| Time (IST) | Cron (UTC) | Lab | Branch |
+|---|---|---|---|
+| 06:00 | `30 0 * * *` | `SCHEDULE_LAB` (blank → `DEFAULT_LAB`) | `SCHEDULE_POC_BRANCH` (blank → `POC_DEFAULT_BRANCH` → `main`) |
+| 06:05 | `35 0 * * *` | `SCHEDULE_2_LAB` (blank → this run is skipped) | `SCHEDULE_2_POC_BRANCH` (blank → as the 06:00 run) |
+
+For example `SCHEDULE_LAB=aa-nvcm-vlab-3` + `prototype_fixes`, and `SCHEDULE_2_LAB=aa-nvcm-vlab-2` +
+`nvcm-1.3.1-migrate`. The two labs run in parallel; give them different labs, or the 06:05 run just queues behind
+the 06:00 one. A scheduled run has no form to fill in, so it takes:
+
+- the lab and branch from the table above;
 - every other input at its default: `stages=all`, `blueprint_source=generate`, `tenants=3-11,84-100`;
 - it always cleans the lab first (`clean_lab`) and always powers the instance off at the end.
 

@@ -309,7 +309,8 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
   (AWS labs), `SSH_USER`, `SSH_HOST`, `SSH_KNOWN_HOSTS`,
   `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`, and for the daily greenfield run `SCHEDULE_LAB`,
   `SCHEDULE_POC_BRANCH` (blank → `DEFAULT_LAB` / `POC_DEFAULT_BRANCH` → `main` — set it to the branch the daily
-  run should test). Email (optional): `MAIL_TO`, `SMTP_USERNAME`, and a login — `SMTP_OAUTH_CLIENT_ID` (+ the two
+  run should test); a second daily run (06:05 IST) on `SCHEDULE_2_LAB` + `SCHEDULE_2_POC_BRANCH`, skipped while
+  `SCHEDULE_2_LAB` is unset. Email (optional): `MAIL_TO`, `SMTP_USERNAME`, and a login — `SMTP_OAUTH_CLIENT_ID` (+ the two
   OAuth secrets above) or the secret `SMTP_PASSWORD` (the account needs 2-Step Verification on); nothing is mailed,
   and nothing fails, until they are set (User_Guide.md, setup step 6).
 - **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`INSTANCE_ID`, SSH host, …)
