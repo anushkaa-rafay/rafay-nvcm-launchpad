@@ -269,7 +269,7 @@ rafay_nvcm_launchpad/
 │   ├── nvcm-greenfield.yml    entry point: greenfield
 │   ├── nvcm-brownfield.yml    entry point: brownfield
 │   ├── _phase.yml             reusable: one phase of stages, shared by both
-│   └── weekly-report.yml      Mondays: the week's runs, summarized and mailed
+│   └── weekly-report.yml      Fridays: the week's runs, summarized and mailed
 ├── .github/actions/lab-access/  OCI CLI config + ssh-agent setup
 ├── config/
 │   ├── common.sh               shared platform stages (both modes)
@@ -475,7 +475,7 @@ infrastructure.
 - The brownfield review gate is enforced by a workflow-input default, not a platform-level lock — nothing
   technically prevents dispatching straight to `stages=all` against a real DC.
 - No automated destructive-reset stage; a deeper environment reset stays a manual `rafay_nvcm_poc` command.
-- Notification is email only — each failed run, plus the Monday weekly report; a shared-drive or Slack notifier would read the same
+- Notification is email only — each failed run, plus the Friday weekly report; a shared-drive or Slack notifier would read the same
   `summary.json`.
 - Concurrency is a soft GitHub Actions queue (one pending run per lab), adequate for the current scale, not
   a distributed lock suitable for much higher concurrency. A run on another lab never waits.

@@ -48,7 +48,7 @@ into `meta.env` for it.
 | `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run; and `schedule`, daily 06:00 IST (lab `SCHEDULE_LAB`, branch `SCHEDULE_POC_BRANCH`) | the real entry point for building a fabric from scratch |
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
 | `_phase.yml` | `workflow_call` **only** — called by the two above, once per phase | one phase (platform/blueprint/substrate/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of once per job |
-| `weekly-report.yml` | `schedule` (Monday 09:00 IST), or a person clicks Run | `scripts/weekly-report.py`: the last 7 days of the two entry points' runs, from the Actions API + each run's committed `summary.json` → its Summary tab and a mail to `MAIL_TO`. Touches no lab |
+| `weekly-report.yml` | `schedule` (Friday 09:00 IST), or a person clicks Run | `scripts/weekly-report.py`: the last 7 days of the two entry points' runs, from the Actions API + each run's committed `summary.json` → its Summary tab and a mail to `MAIL_TO`. Touches no lab |
 
 Only the two entry points and the weekly report belong in the Actions tab. `_phase.yml` runs inside their jobs, never as a run of
 its own, so it appears in the sidebar only if it has runs of its own — typically a "workflow file issue" run
@@ -63,7 +63,7 @@ there are `tests/selftest.sh` — run it before pushing (see "Validating a chang
 .github/workflows/nvcm-greenfield.yml   entry: inputs, boot → phases → poweroff → report (catalogue: stages-greenfield.sh)
 .github/workflows/nvcm-brownfield.yml   entry: inputs, boot → phases → poweroff → report (catalogue: stages-brownfield.sh)
 .github/workflows/_phase.yml            reusable: one phase of stages — shared by both, parameterized by `catalogue`
-.github/workflows/weekly-report.yml     Mondays: last 7 days of runs → Summary tab + mail (scripts/weekly-report.py)
+.github/workflows/weekly-report.yml     Fridays: last 7 days of runs → Summary tab + mail (scripts/weekly-report.py)
 .github/actions/lab-access/             OCI CLI config + ssh-agent (keys never touch the workspace)
 config/common.sh                        the 4 platform stages, shared by both catalogues (SITE/TENANTS defaults too)
 config/stages-greenfield.sh             greenfield-only stages (blueprint-generate/blueprint-verify/substrate/site-bringup) + LAUNCHPAD_STAGES

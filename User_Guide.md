@@ -316,7 +316,7 @@ DC. Use the two-run pattern there.
 
 ## The weekly report
 
-Every **Monday at 09:00 IST** the `weekly-report` workflow summarizes the last 7 days of greenfield and
+Every **Friday at 09:00 IST** the `weekly-report` workflow summarizes the last 7 days of greenfield and
 brownfield runs and mails it to `MAIL_TO` (the same mail setup as failure mails — step 6 of setup). The same
 report is on that run's **Summary** tab, so it's readable even before mail is set up. It shows:
 

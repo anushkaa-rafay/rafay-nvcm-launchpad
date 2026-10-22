@@ -1,12 +1,12 @@
 name: weekly-report
-# Every Monday 09:00 IST: the last 7 days of nvcm-greenfield / nvcm-brownfield runs — pass rate, the daily
+# Every Friday 09:00 IST: the last 7 days of nvcm-greenfield / nvcm-brownfield runs — pass rate, the daily
 # run's week, where runs failed, stage durations, every run with its link — on this run's Summary tab and
 # mailed to MAIL_TO (nothing is mailed while MAIL_TO is unset). Reads the Actions API and the committed logs/;
 # touches no lab, no OCI/AWS, no SSH.
 
 on:
   schedule:
-    - cron: "30 3 * * 1"   # Monday 03:30 UTC = 09:00 IST
+    - cron: "30 3 * * 5"   # Friday 03:30 UTC = 09:00 IST
   workflow_dispatch:
     inputs:
       days:
