@@ -61,6 +61,7 @@ facts = [
     # @ the commit; a run that died before cloning the POC has none, so @ the POC_BRANCH it was asked to run
     ("Branch", "<code>%s</code> @ <code>%s</code>" % (e(poc.get("branch") or "?"),
                                                     e((poc.get("sha") or "")[:12] or poc.get("branch") or "?"))),
+    ("Repo", "<code>%s</code>" % e(poc.get("repo") or "?")),
     ("Lab", "<code>%s</code>" % e(oci.get("lab") or "?")),
     ("Lab Instance ID", "<code>%s</code>" % e(oci.get("instance") or "?")),
     ("Run", '<a href="%s">%s #%s</a> · %s by %s' % (e(run.get("url", "")), e(run.get("id", "")), e(run.get("attempt", "")),
