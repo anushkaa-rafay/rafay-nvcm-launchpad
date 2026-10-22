@@ -307,8 +307,8 @@ DC. Use the two-run pattern there.
     repo (e.g. `logs/Oct-2026/04-Oct-2026/220415Z-run36606934354.1-FAILED/`) — the durable record,
     including the brownfield blueprint you need to review before `bf-adopt`.
 - A **failed** run (either workflow, manual or daily) also sends an **email** to `MAIL_TO` (see step 6 of
-  setup): which stage failed, on which lab and branch, the stage table, the failed stage's last 60 lines, and
-  `workflow.log` plus that phase's `diagnostics-*.txt` attached (`boot.log` if it died before any stage; a
+  setup): which stage failed, on which lab (and its instance ID) and branch, the stage table, the failed
+  stage's last 60 lines, and `workflow.log` plus that phase's `diagnostics-*.txt` attached (`boot.log` if it died before any stage; a
   file over 5 MB is attached gzipped), with links to the run, to its folder under `logs/` and to the
   dashboard. Passed and cancelled runs send nothing.
 - Only one run (of either workflow) is ever active against the lab at a time — a second trigger queues

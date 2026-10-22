@@ -58,8 +58,11 @@ links = [(n, u) for n, u in (("Run logs folder", lplib.logs_url(run_dir) if run_
 td = 'style="padding:2px 10px 2px 0;vertical-align:top"'
 facts = [
     ("Failed at", where),
-    ("Branch", "<code>%s</code> @ <code>%s</code>" % (e(poc.get("branch", "?")), e((poc.get("sha") or "?")[:12]))),
+    # @ the commit; a run that died before cloning the POC has none, so @ the POC_BRANCH it was asked to run
+    ("Branch", "<code>%s</code> @ <code>%s</code>" % (e(poc.get("branch") or "?"),
+                                                    e((poc.get("sha") or "")[:12] or poc.get("branch") or "?"))),
     ("Lab", "<code>%s</code>" % e(oci.get("lab") or "?")),
+    ("Lab Instance ID", "<code>%s</code>" % e(oci.get("instance") or "?")),
     ("Run", '<a href="%s">%s #%s</a> · %s by %s' % (e(run.get("url", "")), e(run.get("id", "")), e(run.get("attempt", "")),
                                                    e(run.get("trigger", "")), e(run.get("actor", "")))),
     ("Started → finished (UTC)", "%s → %s" % (e(run.get("started") or "?"), e(run.get("finished") or "?"))),
