@@ -9,7 +9,7 @@ name: nvcm-greenfield
 # (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
 # one concurrency group PER LAB because, for a given lab, both drive the SAME physical OCI host.
 
-run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || (github.event_name == 'schedule' && vars.SCHEDULE_LAB) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || (github.event_name == 'schedule' && vars.SCHEDULE_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
+run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'SKIPPED: SCHEDULE_1_LAB not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_POC_BRANCH) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
 
 on:
   workflow_dispatch:
@@ -46,16 +46,17 @@ on:
         description: "Power the lab instance off at the end (untick to keep it up for debugging)"
         default: true
         type: boolean
-  # Two daily runs, alongside the manual trigger. A scheduled run has no inputs:
-  #   06:00 IST — lab vars.SCHEDULE_LAB (else DEFAULT_LAB), rafay_nvcm_poc branch vars.SCHEDULE_POC_BRANCH (else
-  #               POC_DEFAULT_BRANCH, else main);
-  #   06:05 IST — lab vars.SCHEDULE_2_LAB, branch vars.SCHEDULE_2_POC_BRANCH (else as above). Skipped entirely
-  #               while SCHEDULE_2_LAB is unset (titled "SKIPPED: SCHEDULE_2_LAB not set"). Told apart by github.event.schedule, so the cron string "35 0 * * *"
-  #               is repeated in the expressions below — change it everywhere at once.
+  # Two daily runs, alongside the manual trigger. A scheduled run has no inputs; each takes its lab and
+  # rafay_nvcm_poc branch from its own pair of repository variables:
+  #   06:00 IST — vars.SCHEDULE_1_LAB, vars.SCHEDULE_1_POC_BRANCH
+  #   06:05 IST — vars.SCHEDULE_2_LAB, vars.SCHEDULE_2_POC_BRANCH
+  # A blank branch → POC_DEFAULT_BRANCH, else main. A blank lab → that run is skipped entirely (titled
+  # "SKIPPED: SCHEDULE_<n>_LAB not set"). The two are told apart by github.event.schedule, so the cron strings are
+  # repeated in the expressions in this file — change them everywhere at once.
   # Every other input at its default (all stages, generate, default tenants); the lab is cleaned first and always
   # powered off. Different labs run in parallel. GitHub starts scheduled runs late under load — often 5-30 minutes.
   schedule:
-    - cron: "30 0 * * *"   # 00:30 UTC = 06:00 IST — SCHEDULE_LAB / SCHEDULE_POC_BRANCH
+    - cron: "30 0 * * *"   # 00:30 UTC = 06:00 IST — SCHEDULE_1_LAB / SCHEDULE_1_POC_BRANCH
     - cron: "35 0 * * *"   # 00:35 UTC = 06:05 IST — SCHEDULE_2_LAB / SCHEDULE_2_POC_BRANCH
 
 # ONE run at a time PER LAB: a new run QUEUES behind the active one on the same lab (never cancels it); runs on
@@ -63,8 +64,8 @@ on:
 # physical host for a given lab, so a brownfield run and a greenfield run on one lab must never overlap either.
 # GitHub keeps at most one pending run per group — a third trigger on the same lab replaces the queued second.
 concurrency:
-  # (an unconfigured second daily run gets a group of its own, so its no-op run never queues on SCHEDULE_LAB's lab)
-  group: nvcm-oci-lab-${{ inputs.lab || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'unset-schedule-2')) || (github.event_name == 'schedule' && vars.SCHEDULE_LAB) || vars.DEFAULT_LAB }}
+  # (an unconfigured daily run gets a group of its own, so its no-op run never queues behind a real one)
+  group: nvcm-oci-lab-${{ inputs.lab || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'unset-schedule-1')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'unset-schedule-2')) || vars.DEFAULT_LAB }}
   cancel-in-progress: false
 
 permissions:
@@ -80,8 +81,8 @@ jobs:
   # the lab (boot, the phases, poweroff) runs in this Environment, so vars.* / secrets.* resolve per lab.
   lab:
     name: Get Lab
-    # the second daily run does nothing until SCHEDULE_2_LAB is set (every later job, report included, skips too)
-    if: ${{ github.event.schedule != '35 0 * * *' || vars.SCHEDULE_2_LAB != '' }}
+    # a daily run does nothing until its SCHEDULE_<n>_LAB is set (every later job, report included, skips too)
+    if: ${{ github.event_name != 'schedule' || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB != '') || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB != '') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -92,10 +93,10 @@ jobs:
       - name: Resolve + check lab
         id: lab
         env:
-          LAB: ${{ inputs.lab || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || (github.event_name == 'schedule' && vars.SCHEDULE_LAB) || vars.DEFAULT_LAB }}
+          LAB: ${{ inputs.lab || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || vars.DEFAULT_LAB }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          [ -n "$LAB" ] || { echo "::error::no lab given — set the 'lab' input (or the DEFAULT_LAB repository variable; SCHEDULE_LAB / SCHEDULE_2_LAB for the daily runs)"; exit 1; }
+          [ -n "$LAB" ] || { echo "::error::no lab given — set the 'lab' input (or the DEFAULT_LAB repository variable; SCHEDULE_1_LAB / SCHEDULE_2_LAB for the daily runs)"; exit 1; }
           [[ "$LAB" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "::error::invalid lab '$LAB' (letters, digits, . _ - only)"; exit 1; }
           gh api "repos/$GITHUB_REPOSITORY/environments/$LAB" --silent 2>/dev/null \
             || { echo "::error::lab '$LAB' is not a GitHub Environment of this repo (Settings → Environments; see README → Setup)"; exit 1; }
@@ -123,7 +124,7 @@ jobs:
       - name: Resolve + validate options
         id: opts
         env:
-          BRANCH:   ${{ inputs.poc_branch || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || (github.event_name == 'schedule' && vars.SCHEDULE_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }}
+          BRANCH:   ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_POC_BRANCH) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }}
           STAGES:   ${{ inputs.stages || 'all' }}
           BP_SRC:   ${{ inputs.blueprint_source || 'generate' }}
           TENANTS:  ${{ inputs.tenants || '3-11,84-100' }}
@@ -312,7 +313,7 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           TRIGGER: ${{ github.event_name }}
           ACTOR: ${{ github.triggering_actor }}
-          LAB: ${{ needs.lab.outputs.name || inputs.lab || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || (github.event_name == 'schedule' && vars.SCHEDULE_LAB) || vars.DEFAULT_LAB }}
+          LAB: ${{ needs.lab.outputs.name || inputs.lab || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || vars.DEFAULT_LAB }}
           RESULT_LAB: ${{ needs.lab.result }}
           RESULT_BOOT: ${{ needs.boot.result }}
           RESULT_PLATFORM: ${{ needs.platform.result }}

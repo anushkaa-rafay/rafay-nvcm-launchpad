@@ -307,10 +307,9 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
 - **Variables**: `INSTANCE_ID` (required; an OCI OCID or an EC2 `i-…` ID, which selects the cloud),
   `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` (OCI labs) or `AWS_ACCESS_KEY_ID`, `AWS_REGION`
   (AWS labs), `SSH_USER`, `SSH_HOST`, `SSH_KNOWN_HOSTS`,
-  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`, and for the daily greenfield run `SCHEDULE_LAB`,
-  `SCHEDULE_POC_BRANCH` (blank → `DEFAULT_LAB` / `POC_DEFAULT_BRANCH` → `main` — set it to the branch the daily
-  run should test); a second daily run (06:05 IST) on `SCHEDULE_2_LAB` + `SCHEDULE_2_POC_BRANCH`, skipped while
-  `SCHEDULE_2_LAB` is unset. Email (optional): `MAIL_TO`, `SMTP_USERNAME`, and a login — `SMTP_OAUTH_CLIENT_ID` (+ the two
+  `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`, and for the two daily greenfield runs
+  `SCHEDULE_1_LAB` + `SCHEDULE_1_POC_BRANCH` (06:00 IST) and `SCHEDULE_2_LAB` + `SCHEDULE_2_POC_BRANCH` (06:05 IST)
+  — a run whose lab variable is unset is skipped; a blank branch → `POC_DEFAULT_BRANCH` → `main`. Email (optional): `MAIL_TO`, `SMTP_USERNAME`, and a login — `SMTP_OAUTH_CLIENT_ID` (+ the two
   OAuth secrets above) or the secret `SMTP_PASSWORD` (the account needs 2-Step Verification on); nothing is mailed,
   and nothing fails, until they are set (User_Guide.md, setup step 6).
 - **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`INSTANCE_ID`, SSH host, …)
