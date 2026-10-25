@@ -1,0 +1,300 @@
+===== $ uptime
+ 20:06:04 up 59 min,  1 user,  load average: 4.62, 3.82, 3.65
+===== $ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           4.9G  3.1M  4.9G   1% /run
+efivarfs        256K  7.2K  244K   3% /sys/firmware/efi/efivars
+/dev/sda1       581G   36G  545G   7% /
+tmpfs            25G     0   25G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+tmpfs            25G     0   25G   0% /run/qemu
+/dev/sda16      881M  158M  662M  20% /boot
+/dev/sda15      105M  6.2M   99M   6% /boot/efi
+tmpfs           4.9G   16K  4.9G   1% /run/user/1001
+===== $ free -m
+               total        used        free      shared  buff/cache   available
+Mem:           50173       31408        2196         199       17361       18765
+Swap:              0           0           0
+===== $ docker ps -a
+CONTAINER ID   IMAGE                  COMMAND                  CREATED          STATUS          PORTS                                                                    NAMES
+0229974b80bc   kindest/node:v1.31.0   "/usr/local/bin/entr…"   57 minutes ago   Up 57 minutes   0.0.0.0:41677->6443/tcp, 0.0.0.0:80->30080/tcp, 0.0.0.0:443->30443/tcp   nv-config-manager-control-plane
+===== $ kind get clusters
+nv-config-manager
+===== $ kubectl get pods -A -o wide
+NAMESPACE              NAME                                                              READY   STATUS      RESTARTS   AGE    IP             NODE                              NOMINATED NODE   READINESS GATES
+cert-manager           cert-manager-96954db67-2g72s                                      1/1     Running     0          55m    10.244.0.9     nv-config-manager-control-plane   <none>           <none>
+cert-manager           cert-manager-cainjector-c56bfd876-4chhc                           1/1     Running     0          55m    10.244.0.7     nv-config-manager-control-plane   <none>           <none>
+cert-manager           cert-manager-webhook-75c55bc7cc-4c6jw                             1/1     Running     0          55m    10.244.0.8     nv-config-manager-control-plane   <none>           <none>
+cnpg-system            cnpg-cloudnative-pg-559d7c5b49-rcxnf                              1/1     Running     0          54m    10.244.0.11    nv-config-manager-control-plane   <none>           <none>
+envoy-gateway-system   envoy-gateway-695d66b6d8-p98jj                                    1/1     Running     0          55m    10.244.0.6     nv-config-manager-control-plane   <none>           <none>
+envoy-gateway-system   envoy-nv-config-manager-nv-config-manager-gateway-cbf599976bfbh   2/2     Running     0          45m    10.244.0.69    nv-config-manager-control-plane   <none>           <none>
+kube-system            coredns-6f6b679f8f-56d9j                                          1/1     Running     0          56m    10.244.0.4     nv-config-manager-control-plane   <none>           <none>
+kube-system            coredns-6f6b679f8f-7b2zh                                          1/1     Running     0          56m    10.244.0.3     nv-config-manager-control-plane   <none>           <none>
+kube-system            etcd-nv-config-manager-control-plane                              1/1     Running     0          56m    172.18.0.2     nv-config-manager-control-plane   <none>           <none>
+kube-system            kindnet-wkwx9                                                     1/1     Running     0          56m    172.18.0.2     nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-apiserver-nv-config-manager-control-plane                    1/1     Running     0          56m    172.18.0.2     nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-controller-manager-nv-config-manager-control-plane           1/1     Running     0          56m    172.18.0.2     nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-proxy-lp2cl                                                  1/1     Running     0          56m    172.18.0.2     nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-scheduler-nv-config-manager-control-plane                    1/1     Running     0          56m    172.18.0.2     nv-config-manager-control-plane   <none>           <none>
+local-path-storage     local-path-provisioner-57c5987fd4-qkq8c                           1/1     Running     0          56m    10.244.0.2     nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      alloy-5n4kd                                                       2/2     Running     0          54m    10.244.0.17    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-config-store-1                                            1/1     Running     0          53m    10.244.0.64    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-dhcp-1                                                    1/1     Running     0          53m    10.244.0.66    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-nautobot-1                                                1/1     Running     0          53m    10.244.0.63    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-temporal-1                                                1/1     Running     0          53m    10.244.0.65    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-temporal-visibility-1                                     1/1     Running     0          53m    10.244.0.62    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      health-check-cf74d47f-2l8hn                                       1/1     Running     0          54m    10.244.0.18    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      loki-0                                                            2/2     Running     0          44m    10.244.0.75    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-config-store-api-7b5dd9764b-xnxdc               1/1     Running     0          54m    10.244.0.43    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-config-store-cache-refresh-5d794bb8c-pxnlk      1/1     Running     0          54m    10.244.0.32    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-dhcp-647bc4b997-d8phv                           4/4     Running     0          54m    10.244.0.48    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                   1/1     Running     0          31m    10.244.0.97    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-mcp-77b9989898-lffsn                            1/1     Running     0          54m    10.244.0.38    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nats-7b87565cb4-69jr7                           1/1     Running     0          54m    10.244.0.19    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nats-box-6db8778966-ljdp2                       1/1     Running     0          54m    10.244.0.23    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nautobot-celery-586dffc746-hst92                1/1     Running     0          31m    10.244.0.95    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nautobot-celery-beat-d64844f68-xtdzb            1/1     Running     0          54m    10.244.0.30    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nautobot-d7594bb4c-dr9qk                        2/2     Running     0          31m    10.244.0.94    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-redis-85fdfc4987-85vjn                          1/1     Running     0          54m    10.244.0.44    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-api-7bff7884c-2zm4n                      1/1     Running     0          31m    10.244.0.93    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-consumer-device-7ddf6b847-4svjr          1/1     Running     0          32m    10.244.0.89    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-consumer-device-7ddf6b847-rvl5k          1/1     Running     0          32m    10.244.0.90    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll       1/1     Running     0          32m    10.244.0.91    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-api-579ccf4645-rl44b                   1/1     Running     0          54m    10.244.0.21    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-frontend-6455b68799-7jd82              1/1     Running     0          54m    10.244.0.41    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-4kllr                1/1     Running     0          54m    10.244.0.47    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-nr9kz                1/1     Running     0          54m    10.244.0.45    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-w6lvs                1/1     Running     0          54m    10.244.0.50    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-zf4vk                1/1     Running     0          54m    10.244.0.46    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-matching-5969b7b4dc-ql4mz              1/1     Running     0          54m    10.244.0.24    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs   1/1     Running     0          31m    10.244.0.96    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-scheduler-544bc9fc76-pph2c             1/1     Running     0          31m    10.244.0.98    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-web-6b9b59695d-fdd6w                   1/1     Running     0          54m    10.244.0.31    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-worker-5dc4db8946-6qmhf                1/1     Running     0          32m    10.244.0.87    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-ui-7c567c5464-kd6nx                             1/1     Running     0          54m    10.244.0.39    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-ztp-6f5c885889-dh7z7                            2/2     Running     0          54m    10.244.0.54    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      prometheus-server-58d88576cc-zm66h                                2/2     Running     0          44m    10.244.0.74    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640-xrq2r           0/1     Completed   0          6m5s   10.244.0.105   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640-gxtxs           0/1     Completed   0          6m5s   10.244.0.106   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645-9sb89           0/1     Completed   0          65s    10.244.0.107   nv-config-manager-control-plane   <none>           <none>
+===== $ kubectl get events -A --sort-by=.lastTimestamp
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Created container wait-for-nats
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Created container wait-for-nats
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-temporal-worker-5dc4db8946-6qmhf                             Started container wait-for-frontend
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-temporal-worker-5dc4db8946-6qmhf                             Created container wait-for-frontend
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-temporal-worker-5dc4db8946-6qmhf                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-temporal-worker-5dc4db8946-6qmhf                             Container image "docker.io/temporalio/server:1.29" already present on machine
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Started container wait-for-nats
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Started container wait-for-nats
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-temporal-worker-5dc4db8946-6qmhf                             Started container temporal-worker
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Started container wait-for-nats
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-temporal-worker-5dc4db8946-6qmhf                             Created container temporal-worker
+nv-config-manager      32m         Normal    Killing                   pod/dc-jobs-writer                                                                 Stopping container w
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Started container install-template-plugins
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Started container install-template-plugins
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Container image "python:3.13-alpine" already present on machine
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Created container install-template-plugins
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Container image "python:3.13-alpine" already present on machine
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Created container install-template-plugins
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Container image "python:3.13-alpine" already present on machine
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Started container install-template-plugins
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Created container install-template-plugins
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Created container consumer
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Started container consumer
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Started container consumer
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Container image "nv-config-manager:sha-8dfd01af654e" already present on machine
+nv-config-manager      32m         Normal    Started                   pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Started container consumer
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Created container consumer
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-7ddf6b847-rvl5k                       Container image "nv-config-manager:sha-8dfd01af654e" already present on machine
+nv-config-manager      32m         Normal    Created                   pod/nv-config-manager-render-consumer-device-7ddf6b847-4svjr                       Created container consumer
+nv-config-manager      32m         Normal    Pulled                    pod/nv-config-manager-render-consumer-nautobot-75b9f9558b-gmzll                    Container image "nv-config-manager:sha-8dfd01af654e" already present on machine
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n                Container image "docker.io/temporalio/admin-tools:1.29" already present on machine
+nv-config-manager      31m         Normal    Scheduled                 pod/nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n                Successfully assigned nv-config-manager/nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-temporal-nv-config-manager-worker                     Scaled up replica set nv-config-manager-temporal-nv-config-manager-worker-fb6945db5 to 1
+nv-config-manager      31m         Normal    SuccessfulCreate          replicaset/nv-config-manager-temporal-nv-config-manager-worker-fb6945db5           Created pod: nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n                Created container temporal-setup
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n                Started container temporal-setup
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-nautobot-celery                                       Scaled down replica set nv-config-manager-nautobot-celery-64bc986868 to 0 from 1
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-temporal-scheduler                                    Scaled down replica set nv-config-manager-temporal-scheduler-74c54d68c5 to 0 from 1
+nv-config-manager      31m         Normal    Killing                   pod/nv-config-manager-nautobot-7fb6cd585-5hq6t                                     Stopping container nautobot
+nv-config-manager      31m         Normal    Killing                   pod/nv-config-manager-nautobot-7fb6cd585-5hq6t                                     Stopping container nginx
+nv-config-manager      31m         Normal    SuccessfulDelete          replicaset/nv-config-manager-nautobot-7fb6cd585                                    Deleted pod: nv-config-manager-nautobot-7fb6cd585-5hq6t
+nv-config-manager      31m         Normal    Killing                   pod/nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n                Stopping container temporal-setup
+nv-config-manager      31m         Normal    SuccessfulDelete          replicaset/nv-config-manager-temporal-nv-config-manager-worker-fb6945db5           Deleted pod: nv-config-manager-temporal-nv-config-manager-worker-fb69458w86n
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-temporal-nv-config-manager-worker                     Scaled down replica set nv-config-manager-temporal-nv-config-manager-worker-fb6945db5 to 0 from 1
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-nautobot                                              Scaled down replica set nv-config-manager-nautobot-7fb6cd585 to 0 from 1
+nv-config-manager      31m         Normal    SuccessfulDelete          replicaset/nv-config-manager-dhcp-refresh-6c4b44fd7c                               Deleted pod: nv-config-manager-dhcp-refresh-6c4b44fd7c-m46qz
+nv-config-manager      31m         Normal    Killing                   pod/nv-config-manager-dhcp-refresh-6c4b44fd7c-m46qz                                Stopping container config-refresh-v4
+nv-config-manager      31m         Normal    SuccessfulDelete          replicaset/nv-config-manager-render-api-56dc4f95d9                                 Deleted pod: nv-config-manager-render-api-56dc4f95d9-8jrfq
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-dhcp-refresh                                          Scaled down replica set nv-config-manager-dhcp-refresh-6c4b44fd7c to 0 from 1
+nv-config-manager      31m         Normal    Killing                   pod/nv-config-manager-temporal-scheduler-74c54d68c5-qdngb                          Stopping container scheduler
+nv-config-manager      31m         Normal    Killing                   pod/nv-config-manager-render-api-56dc4f95d9-8jrfq                                  Stopping container api
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-render-api                                            Scaled down replica set nv-config-manager-render-api-56dc4f95d9 to 0 from 1
+nv-config-manager      31m         Normal    Killing                   pod/nv-config-manager-nautobot-celery-64bc986868-mht5b                             Stopping container celery
+nv-config-manager      31m         Normal    SuccessfulDelete          replicaset/nv-config-manager-nautobot-celery-64bc986868                            Deleted pod: nv-config-manager-nautobot-celery-64bc986868-mht5b
+nv-config-manager      31m         Normal    SuccessfulDelete          replicaset/nv-config-manager-temporal-scheduler-74c54d68c5                         Deleted pod: nv-config-manager-temporal-scheduler-74c54d68c5-qdngb
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Container image "python:3.13-alpine" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Created container install-template-plugins
+nv-config-manager      31m         Normal    SuccessfulCreate          replicaset/nv-config-manager-render-api-7bff7884c                                  Created pod: nv-config-manager-render-api-7bff7884c-2zm4n
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-render-api                                            Scaled up replica set nv-config-manager-render-api-7bff7884c to 1
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Started container install-template-plugins
+nv-config-manager      31m         Normal    Scheduled                 pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Successfully assigned nv-config-manager/nv-config-manager-render-api-7bff7884c-2zm4n to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    SuccessfulCreate          replicaset/nv-config-manager-nautobot-d7594bb4c                                    Created pod: nv-config-manager-nautobot-d7594bb4c-dr9qk
+nv-config-manager      31m         Normal    Scheduled                 pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Successfully assigned nv-config-manager/nv-config-manager-nautobot-d7594bb4c-dr9qk to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-nautobot                                              Scaled up replica set nv-config-manager-nautobot-d7594bb4c to 1
+nv-config-manager      31m         Normal    SuccessfulCreate          replicaset/nv-config-manager-nautobot-celery-586dffc746                            Created pod: nv-config-manager-nautobot-celery-586dffc746-hst92
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Created container wait-redis
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Started container wait-redis
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-nautobot-celery                                       Scaled up replica set nv-config-manager-nautobot-celery-586dffc746 to 1
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      31m         Normal    Scheduled                 pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Successfully assigned nv-config-manager/nv-config-manager-nautobot-celery-586dffc746-hst92 to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Created container wait-postgres
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Started container wait-postgres
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Started container wait-redis
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Created container wait-redis
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Created container run-migrations
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Container image "nv-config-manager-nautobot:sha-84906826c7a2" already present on machine
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Started container run-migrations
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Created container wait-for-nautobot
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Started container wait-for-nautobot
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Container image "nv-config-manager:sha-8dfd01af654e" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Created container api
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Started container api
+nv-config-manager      31m         Warning   Unhealthy                 pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Liveness probe failed: Get "http://10.244.0.93:9000/healthcheck": dial tcp 10.244.0.93:9000: connect: connection refused
+nv-config-manager      31m         Warning   Unhealthy                 pod/nv-config-manager-render-api-7bff7884c-2zm4n                                   Readiness probe failed: Get "http://10.244.0.93:9000/healthcheck": dial tcp 10.244.0.93:9000: connect: connection refused
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-temporal-nv-config-manager-worker                     Scaled up replica set nv-config-manager-temporal-nv-config-manager-worker-5df8fb757 to 1
+nv-config-manager      31m         Normal    SuccessfulCreate          replicaset/nv-config-manager-temporal-nv-config-manager-worker-5df8fb757           Created pod: nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs
+nv-config-manager      31m         Normal    Scheduled                 pod/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs                Successfully assigned nv-config-manager/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs                Container image "docker.io/temporalio/admin-tools:1.29" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs                Created container temporal-setup
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs                Started container temporal-setup
+nv-config-manager      31m         Normal    SuccessfulCreate          replicaset/nv-config-manager-dhcp-refresh-6ddfb8b8cb                               Created pod: nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-dhcp-refresh                                          Scaled up replica set nv-config-manager-dhcp-refresh-6ddfb8b8cb to 1
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                                Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                                Created container wait-for-nautobot
+nv-config-manager      31m         Normal    Scheduled                 pod/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                                Successfully assigned nv-config-manager/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                                Started container wait-for-nautobot
+nv-config-manager      31m         Normal    SuccessfulCreate          replicaset/nv-config-manager-temporal-scheduler-544bc9fc76                         Created pod: nv-config-manager-temporal-scheduler-544bc9fc76-pph2c
+nv-config-manager      31m         Normal    Scheduled                 pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Successfully assigned nv-config-manager/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    ScalingReplicaSet         deployment/nv-config-manager-temporal-scheduler                                    Scaled up replica set nv-config-manager-temporal-scheduler-544bc9fc76 to 1
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Created container wait-for-nautobot
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Started container wait-for-nautobot
+nv-config-manager      31m         Normal    Pulled                    pod/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs                Container image "nv-config-manager:sha-8dfd01af654e" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs                Created container worker
+nv-config-manager      31m         Normal    Started                   pod/nv-config-manager-temporal-nv-config-manager-worker-5df8fbd5gfs                Started container worker
+nv-config-manager      31m         Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615                              Created pod: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615-9hxcg
+nv-config-manager      31m         Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615-9hxcg                        Started container web-watchdog
+nv-config-manager      31m         Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615
+nv-config-manager      31m         Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615-9hxcg                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615-9hxcg to nv-config-manager-control-plane
+nv-config-manager      31m         Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615-9hxcg                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      31m         Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615-9hxcg                        Created container web-watchdog
+nv-config-manager      31m         Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615, condition: Complete
+nv-config-manager      31m         Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882615                              Job completed
+nv-config-manager      30m         Normal    Created                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Created container nautobot
+nv-config-manager      30m         Normal    Started                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Started container nginx
+nv-config-manager      30m         Normal    Started                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Started container nautobot
+nv-config-manager      30m         Normal    Pulled                    pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Container image "nv-config-manager-nautobot:sha-84906826c7a2" already present on machine
+nv-config-manager      30m         Normal    Pulled                    pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Container image "docker.io/nginxinc/nginx-unprivileged:1.27" already present on machine
+nv-config-manager      30m         Normal    Created                   pod/nv-config-manager-nautobot-d7594bb4c-dr9qk                                     Created container nginx
+nv-config-manager      29m         Normal    Created                   pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Created container celery
+nv-config-manager      29m         Normal    Started                   pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Started container celery
+nv-config-manager      29m         Normal    Pulled                    pod/nv-config-manager-nautobot-celery-586dffc746-hst92                             Container image "nv-config-manager-nautobot:sha-84906826c7a2" already present on machine
+nv-config-manager      29m         Normal    Pulled                    pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Container image "docker.io/temporalio/admin-tools:1.29" already present on machine
+nv-config-manager      29m         Normal    Created                   pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Created container wait-for-temporal-namespace
+nv-config-manager      29m         Normal    Started                   pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Started container wait-for-temporal-namespace
+nv-config-manager      29m         Normal    Pulled                    pod/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                                Container image "nv-config-manager:sha-8dfd01af654e" already present on machine
+nv-config-manager      29m         Normal    Started                   pod/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                                Started container config-refresh-v4
+nv-config-manager      29m         Normal    Created                   pod/nv-config-manager-dhcp-refresh-6ddfb8b8cb-kjtdv                                Created container config-refresh-v4
+nv-config-manager      29m         Normal    Pulled                    pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Container image "nv-config-manager:sha-8dfd01af654e" already present on machine
+nv-config-manager      29m         Normal    Created                   pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Created container scheduler
+nv-config-manager      29m         Normal    Started                   pod/nv-config-manager-temporal-scheduler-544bc9fc76-pph2c                          Started container scheduler
+nv-config-manager      26m         Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620                              Created pod: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620-52xw8
+nv-config-manager      26m         Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620-52xw8                        Started container web-watchdog
+nv-config-manager      26m         Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620-52xw8                        Created container web-watchdog
+nv-config-manager      26m         Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620-52xw8                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      26m         Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620
+nv-config-manager      26m         Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620-52xw8                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620-52xw8 to nv-config-manager-control-plane
+nv-config-manager      26m         Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620                              Job completed
+nv-config-manager      26m         Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882620, condition: Complete
+nv-config-manager      21m         Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625-58td9                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625-58td9 to nv-config-manager-control-plane
+nv-config-manager      21m         Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625-l9xjr                        Started container job-watchdog
+nv-config-manager      21m         Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625-58td9                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      21m         Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625-58td9                        Created container web-watchdog
+nv-config-manager      21m         Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625                              Created pod: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625-58td9
+nv-config-manager      21m         Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-job-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625
+nv-config-manager      21m         Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625-l9xjr                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625-l9xjr to nv-config-manager-control-plane
+nv-config-manager      21m         Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625-l9xjr                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      21m         Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625-58td9                        Started container web-watchdog
+nv-config-manager      21m         Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625-l9xjr                        Created container job-watchdog
+nv-config-manager      21m         Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625
+nv-config-manager      21m         Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625                              Created pod: rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625-l9xjr
+nv-config-manager      21m         Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625, condition: Complete
+nv-config-manager      21m         Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882625                              Job completed
+nv-config-manager      20m         Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625                              Job completed
+nv-config-manager      20m         Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-job-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882625, condition: Complete
+nv-config-manager      16m         Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630-hwnn2                        Started container web-watchdog
+nv-config-manager      16m         Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630
+nv-config-manager      16m         Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630-hwnn2                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630-hwnn2 to nv-config-manager-control-plane
+nv-config-manager      16m         Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630-hwnn2                        Created container web-watchdog
+nv-config-manager      16m         Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630-hwnn2                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      16m         Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630                              Created pod: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630-hwnn2
+nv-config-manager      16m         Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630                              Job completed
+nv-config-manager      16m         Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882630, condition: Complete
+nv-config-manager      11m         Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635-bf6jr                        Started container web-watchdog
+nv-config-manager      11m         Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635
+nv-config-manager      11m         Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635                              Created pod: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635-bf6jr
+nv-config-manager      11m         Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635-bf6jr                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635-bf6jr to nv-config-manager-control-plane
+nv-config-manager      11m         Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635-bf6jr                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      11m         Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635-bf6jr                        Created container web-watchdog
+nv-config-manager      11m         Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635                              Job completed
+nv-config-manager      11m         Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882635, condition: Complete
+nv-config-manager      6m5s        Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-job-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640
+nv-config-manager      6m5s        Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640-xrq2r                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      6m5s        Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640-gxtxs                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640-gxtxs to nv-config-manager-control-plane
+nv-config-manager      6m5s        Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640-gxtxs                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      6m5s        Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640                              Created pod: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640-gxtxs
+nv-config-manager      6m5s        Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640
+nv-config-manager      6m5s        Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640-gxtxs                        Created container web-watchdog
+nv-config-manager      6m5s        Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640                              Created pod: rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640-xrq2r
+nv-config-manager      6m5s        Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640-xrq2r                        Started container job-watchdog
+nv-config-manager      6m5s        Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640-xrq2r                        Created container job-watchdog
+nv-config-manager      6m5s        Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640-gxtxs                        Started container web-watchdog
+nv-config-manager      6m5s        Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640-xrq2r                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640-xrq2r to nv-config-manager-control-plane
+nv-config-manager      6m1s        Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640                              Job completed
+nv-config-manager      6m1s        Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882640, condition: Complete
+nv-config-manager      5m52s       Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640                              Job completed
+nv-config-manager      5m52s       Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-job-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-job-watchdog-29882640, condition: Complete
+nv-config-manager      65s         Normal    Created                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645-9sb89                        Created container web-watchdog
+nv-config-manager      65s         Normal    Pulled                    pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645-9sb89                        Container image "alpine/k8s:1.30.7" already present on machine
+nv-config-manager      65s         Normal    Scheduled                 pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645-9sb89                        Successfully assigned nv-config-manager/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645-9sb89 to nv-config-manager-control-plane
+nv-config-manager      65s         Normal    Started                   pod/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645-9sb89                        Started container web-watchdog
+nv-config-manager      65s         Normal    SuccessfulCreate          job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645                              Created pod: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645-9sb89
+nv-config-manager      65s         Normal    SuccessfulCreate          cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Created job rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645
+nv-config-manager      61s         Normal    Completed                 job/rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645                              Job completed
+nv-config-manager      61s         Normal    SawCompletedJob           cronjob/rafay-nvcm-rafay-nvcm-stack-web-watchdog                                   Saw completed job: rafay-nvcm-rafay-nvcm-stack-web-watchdog-29882645, condition: Complete
+===== $ sudo -n virsh list --all
+ Id   Name               State
+----------------------------------
+ 1    blr-dc01-spine01   running
+ 2    blr-dc01-spine02   running
+ 3    blr-dc01-leaf01    running
+ 4    blr-dc01-leaf02    running
+ 5    blr-dc01-leaf03    running
+ 6    blr-dc01-leaf04    running
+ 7    blr-dc01-leaf05    running
+ 8    blr-dc01-leaf06    running
+ 9    oob01              running
+ 10   oob02              running
+ 11   oob03              running
+ 12   dcgw01             running
+ 13   dcgw02             running
+ 14   vfw01              running
+ 15   gpu-01             running
+ 16   gpu-02             running
+
