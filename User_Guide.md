@@ -242,7 +242,7 @@ See `Dev_Guide.md` if you want the exact command each stage runs.
 | Time (IST) | Cron (UTC) | Lab | Branch |
 |---|---|---|---|
 | 06:00 | `30 0 * * *` | `SCHEDULE_LAB` (blank → `DEFAULT_LAB`) | `SCHEDULE_POC_BRANCH` (blank → `POC_DEFAULT_BRANCH` → `main`) |
-| 06:05 | `35 0 * * *` | `SCHEDULE_2_LAB` (blank → this run is skipped) | `SCHEDULE_2_POC_BRANCH` (blank → as the 06:00 run) |
+| 06:05 | `35 0 * * *` | `SCHEDULE_2_LAB` (blank → this run is skipped, titled `SKIPPED: SCHEDULE_2_LAB not set`) | `SCHEDULE_2_POC_BRANCH` (blank → as the 06:00 run) |
 
 For example `SCHEDULE_LAB=aa-nvcm-vlab-3` + `prototype_fixes`, and `SCHEDULE_2_LAB=aa-nvcm-vlab-2` +
 `nvcm-1.3.1-migrate`. The two labs run in parallel; give them different labs, or the 06:05 run just queues behind

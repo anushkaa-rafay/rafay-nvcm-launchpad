@@ -9,7 +9,7 @@ name: nvcm-greenfield
 # (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
 # one concurrency group PER LAB because, for a given lab, both drive the SAME physical OCI host.
 
-run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || (github.event_name == 'schedule' && vars.SCHEDULE_LAB) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || (github.event_name == 'schedule' && vars.SCHEDULE_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
+run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || (github.event_name == 'schedule' && vars.SCHEDULE_LAB) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || (github.event_name == 'schedule' && vars.SCHEDULE_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
 
 on:
   workflow_dispatch:
@@ -50,7 +50,7 @@ on:
   #   06:00 IST — lab vars.SCHEDULE_LAB (else DEFAULT_LAB), rafay_nvcm_poc branch vars.SCHEDULE_POC_BRANCH (else
   #               POC_DEFAULT_BRANCH, else main);
   #   06:05 IST — lab vars.SCHEDULE_2_LAB, branch vars.SCHEDULE_2_POC_BRANCH (else as above). Skipped entirely
-  #               while SCHEDULE_2_LAB is unset. Told apart by github.event.schedule, so the cron string "35 0 * * *"
+  #               while SCHEDULE_2_LAB is unset (titled "SKIPPED: SCHEDULE_2_LAB not set"). Told apart by github.event.schedule, so the cron string "35 0 * * *"
   #               is repeated in the expressions below — change it everywhere at once.
   # Every other input at its default (all stages, generate, default tenants); the lab is cleaned first and always
   # powered off. Different labs run in parallel. GitHub starts scheduled runs late under load — often 5-30 minutes.
