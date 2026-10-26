@@ -265,8 +265,7 @@ rafay_nvcm_launchpad/
 │   ├── nvcm-greenfield.yml    entry point: greenfield
 │   ├── nvcm-brownfield.yml    entry point: brownfield
 │   ├── _phase.yml             reusable: one phase of stages, shared by both
-│   ├── unit-<phase>.yml       unit tests: one workflow per phase (common/platform/blueprint/substrate/bringup)
-│   ├── _unit.yml              reusable: one phase of the POC's offline gates — no lab
+│   ├── unit-tests.yml         unit tests: the POC's offline gates, one phase or all — no lab
 │   └── weekly-report.yml      Mondays: the week's runs, summarized and mailed
 ├── .github/actions/lab-access/  OCI CLI config + ssh-agent setup
 ├── config/
@@ -464,8 +463,8 @@ There is no OCI-dependent CI yet — everything below runs with no lab access an
   `sshd` in a container, a fake failing `oci` binary, the exact two-line step under both candidate shell
   invocations — then confirming the fix resolves that exact reproduction, not just by inspection.
 
-- **The POC's own unit tests**: `unit-<phase>.yml` run rafay_nvcm_poc's offline gates (`test/run-tests.sh`,
-  199 gates) on GitHub-hosted runners, one workflow per phase, no lab needed — see
+- **The POC's own unit tests**: `unit-tests.yml` runs rafay_nvcm_poc's offline gates (`test/run-tests.sh`,
+  199 gates) on GitHub-hosted runners — one phase or all of them, one job per phase · group, no lab needed — see
   [`Unit_Tests_Plan.md`](Unit_Tests_Plan.md) and the User Guide's "Running unit tests".
 
 **Not yet done**: an end-to-end run of either workflow against the real OCI lab host. Everything above

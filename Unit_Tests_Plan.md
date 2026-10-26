@@ -30,28 +30,28 @@ Run the offline unit tests ("gates") from `rafay_nvcm_poc/test/` as GitHub Actio
 
 ## 3. Design
 
-### 3.1 Workflow = phase; job = group inside the phase
+### 3.1 One workflow; input = phase (or all); job = phase · group
 
 ```
-unit-common.yml     ─┐
-unit-platform.yml   ─┤  each one is a thin caller (inputs + triggers) of ──►  _unit.yml (reusable)
-unit-blueprint.yml  ─┤                                                         plan  → coverage check, group matrix
-unit-substrate.yml  ─┤                                                         test  → matrix: one job per GROUP
-unit-bringup.yml    ─┘                                                         summary → one table for the phase
+unit-tests.yml   inputs: phase = all | common | platform | blueprint | substrate | bringup
+                         groups = all | a comma list of that phase's groups
+   plan    → coverage check, phase · group matrix (run-unit-tests.sh matrix)
+   test    → matrix: one job per PHASE · GROUP
+   summary → one table per phase, a total, failed gates' log tails
 ```
 
-- **5 workflows.** One for each of the 4 launchpad phases, plus `common` for repo-wide hygiene gates
-  that belong to no single phase (see the [open questions](#9-open-questions)).
-- **Groups are matrix jobs inside the one workflow.** A large phase (bringup has 101 gates) is split into
+- **5 phases, one workflow.** The 4 launchpad phases, plus `common` for repo-wide hygiene gates
+  that belong to no single phase (see the [open questions](#9-open-questions)). The `phase` input picks one,
+  or `all`. (The first cut had one workflow per phase — `unit-<phase>.yml` calling a reusable `_unit.yml`;
+  they were merged so there is one place to run any subset from.)
+- **Groups are matrix jobs.** A large phase (bringup has 101 gates) is split into
   groups such as `fabric`, `tenants` and `servers`. The groups run in parallel with `fail-fast: false`, and
-  each one shows up as its own row in the run graph. A red `tenants` row doesn't hide whether `servers`
-  passed. It is still one workflow and one run.
-- **One reusable workflow `_unit.yml`.** It follows the `_phase.yml` pattern: the mechanics are written
-  once, and only the `phase` input changes.
+  each one shows up as its own `phase · group` row in the run graph. A red `bringup · tenants` row doesn't
+  hide whether `bringup · servers` passed. It is still one workflow and one run.
 
 ### 3.2 The manifest: `config/unit-tests.sh`
 
-This is a bash array in the same idiom as `LAUNCHPAD_STAGES`, so the runner script and `_unit.yml`'s manifest
+This is a bash array in the same idiom as `LAUNCHPAD_STAGES`, so the runner script and `unit-tests.yml`'s manifest
 self-test can read it the same way:
 
 ```bash
@@ -87,78 +87,55 @@ a lab host:
 because `run-tests.sh` can only run everything. If the POC later adds a filter (for example
 `run-tests.sh --only <files>`), `run` should switch to it so the rules have one source.
 
-### 3.4 `_unit.yml` (reusable)
+### 3.4 `unit-tests.yml`
 
 ```yaml
 on:
-  workflow_call:
+  workflow_dispatch:      # phase is a choice input; groups and poc_branch are strings
+  workflow_call:          # lets nvcm-greenfield/brownfield run it as a pre-flight gate later (§8)
     inputs:
-      phase:      { type: string, required: true }    # common | platform | blueprint | substrate | bringup
+      phase:      { type: string, default: all }      # all | common | platform | blueprint | substrate | bringup
+      groups:     { type: string, default: all }      # 'all' or a comma list (one phase only), validated against the manifest
       poc_branch: { type: string, default: "" }       # blank → vars.POC_DEFAULT_BRANCH → main
-      groups:     { type: string, default: all }      # 'all' or a comma list, validated against the manifest
+concurrency: unit-tests-<phase>-<branch>, cancel-in-progress  # no shared host, so a newer run replaces an older one
 jobs:
   plan:     # checkout this repo + POC (actions/checkout, repository: vars.POC_REPO, ssh-key: secrets.POC_DEPLOY_KEY)
-            # → validate inputs → `coverage` (fails the run on drift) → outputs: matrix of groups, poc_sha
-  test:     # needs: plan · strategy.matrix.group from plan · fail-fast: false · timeout-minutes: 30
-            # checkout both repos at plan's poc_sha (every group tests the SAME commit)
+            # → validate inputs → `coverage` (fails the run on drift) → outputs: matrix [{phase,group}], poc_sha
+  test:     # needs: plan · strategy.matrix.include from plan · fail-fast: false · timeout-minutes: 30
+            # checkout both repos at plan's poc_sha (every job tests the SAME commit)
             # → setup-python 3.12 + pip cache keyed on test/render/requirements.txt → pip install
             # → run-unit-tests.sh run → upload-artifact unit-<phase>-<group> (logs + results.tsv)
-  summary:  # needs: test · if: !cancelled() · download every results.tsv → one phase table in the step summary
+  summary:  # needs: test · if: !cancelled() · download every unit-* artifact
+            # → run-unit-tests.sh summarize <phase|all>: a table per phase, a total, failed gates' log tails
 ```
 
 - `permissions: contents: read` only. Nothing is committed (see the [open questions](#9-open-questions)).
 - No `environment:`. The deploy key is read from repo-level secrets. If it is only stored on a lab
   Environment today, add a repo-level copy. It stays read-only.
 
-### 3.5 The caller workflows (`unit-<phase>.yml`)
-
-Each one is about 25 lines:
-
-```yaml
-name: unit-bringup
-run-name: "unit-bringup · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.groups || 'all' }}"
-on:
-  workflow_dispatch:
-    inputs:
-      poc_branch: { description: "rafay_nvcm_poc branch (blank = POC_DEFAULT_BRANCH)", default: "", type: string }
-      groups:     { description: "'all' or a comma list — fabric,tenants,servers,day2", default: all, type: string }
-  workflow_call:          # lets nvcm-greenfield/brownfield run it as a pre-flight gate later (§8)
-    inputs: { poc_branch: { type: string, default: "" }, groups: { type: string, default: all } }
-  # schedule:             # nightly — uncomment to enable (same convention as nvcm-greenfield.yml)
-  #   - cron: "0 20 * * *"
-concurrency:
-  group: unit-bringup-${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
-  cancel-in-progress: true     # no shared host here, so a newer run can safely replace an older one
-jobs:
-  unit:
-    uses: ./.github/workflows/_unit.yml
-    with: { phase: bringup, poc_branch: "${{ inputs.poc_branch }}", groups: "${{ inputs.groups || 'all' }}" }
-    secrets: inherit
-```
-
-### 3.6 Changes to existing files
+### 3.5 Changes to existing files
 
 | File | Change |
 |---|---|
-| `_unit.yml` (plan job) | A manifest self-test, before the POC checkout (there is no push/PR workflow to host it): every entry is `phase:group:path`, phases are in the known set, there are no duplicate paths, and `groups`/`list` work for each phase. `bash -n` and shellcheck already pick up `scripts/` and `config/` |
-| `README.md` / `Dev_Guide.md` | Add the 5 workflows and `_unit.yml` to the workflows table and the layout tree. Add "ADDING A GATE" to the catalogue section |
-| `User_Guide.md` | Add a short "Running unit tests" section: which workflow to pick and what the inputs mean |
+| `unit-tests.yml` (plan job) | A manifest self-test, before the POC checkout (there is no push/PR workflow to host it): every entry is `phase:group:path`, phases are in the known set and in the `phase` input's options, there are no duplicate paths, and `groups`/`list`/`matrix` work for each phase. `bash -n` and shellcheck already pick up `scripts/` and `config/` |
+| `README.md` / `Dev_Guide.md` | Add `unit-tests.yml` to the workflows table and the layout tree. Add "ADDING A GATE" to the catalogue section |
+| `User_Guide.md` | Add a short "Running unit tests" section: which phase to pick and what the inputs mean |
 
 ## 4. Phase → group → gate mapping (199 gates + preflight)
 
 The mapping is by **primary input** (the `test/README.md` gate table): the gate goes to the phase whose
 stage runs the code it tests.
 
-| Workflow | Group | Gates | What the group covers |
+| Phase | Group | Gates | What the group covers |
 |---|---|---:|---|
-| `unit-common` | `hygiene` | 9 | Repo-wide invariants: gate index, suite completeness, sources parse, doc links, no hard-coded credentials or customer data, undefined names in jobs, script-path refs |
-| `unit-platform` | `install` | 11 | `deploy_scripts/platform`, `charts/rafay-nvcm-stack`, catalog bootstrap, job delivery paths, observability, release verify (stages `nvcm-install`, `rafay-install`, `platform-verify`) |
+| `common` | `hygiene` | 9 | Repo-wide invariants: gate index, suite completeness, sources parse, doc links, no hard-coded credentials or customer data, undefined names in jobs, script-path refs |
+| `platform` | `install` | 11 | `deploy_scripts/platform`, `charts/rafay-nvcm-stack`, catalog bootstrap, job delivery paths, observability, release verify (stages `nvcm-install`, `rafay-install`, `platform-verify`) |
 | | `api` | 16 | `deploy_scripts/api` (the REST door shipped with the Rafay layer), OpenAPI/Postman and the route contract, the mock Nautobot |
-| `unit-blueprint` | `intake` | 14 | `deploy_scripts/intake/*`, `configuration_to_blueprint` (the workbook/diagram → blueprint front end) |
+| `blueprint` | `intake` | 14 | `deploy_scripts/intake/*`, `configuration_to_blueprint` (the workbook/diagram → blueprint front end) |
 | | `generate-verify` | 31 + preflight | `blueprint.py`, `site_designs.py`, `xlsx_to_blueprint`, schema/closure/round-trip, topology families, gitops layout, customer repo, and the `verify_blueprint.sh` preflight (stages `blueprint-generate`, `blueprint-verify`) |
 | | `brownfield` | 3 | `bf_core.py` discovery and raw round-trip (stages `bf-discover`, `bf-blueprint-generate`) |
-| `unit-substrate` | `substrate` | 14 | `plan_substrate.py`, `deploy_fabric_vms.sh` / `deploy_server_vms.sh`, `recover_substrate.sh`, VM identity, mgmt addressing, substrate backup/restore |
-| `unit-bringup` | `fabric` | 27 | `provision_site.sh`, `configure_devices.sh`, `seed_site_jobs.sh`, deploy/lock, NVUE render goldens, `verify_layers`, drift (underlay → overlay, `bf-adopt`) |
+| `substrate` | `substrate` | 14 | `plan_substrate.py`, `deploy_fabric_vms.sh` / `deploy_server_vms.sh`, `recover_substrate.sh`, VM identity, mgmt addressing, substrate backup/restore |
+| `bringup` | `fabric` | 27 | `provision_site.sh`, `configure_devices.sh`, `seed_site_jobs.sh`, deploy/lock, NVUE render goldens, `verify_layers`, drift (underlay → overlay, `bf-adopt`) |
 | | `tenants` | 45 | `allocations.py`, the tenant lifecycle Jobs + `tenant_operations.sh` CLI, InfiniBand render/provision, storage plane |
 | | `servers` | 23 | Server Jobs + `server_operations.sh` CLI, netplan, GPU allocation |
 | | `day2` | 6 | `backup_dc` / `restore_dc` / `replicate_dc`, switch-config restore, `undeploy_site.sh` |
@@ -220,22 +197,19 @@ The `blueprint` / `generate-verify` group also runs `@preflight` (`verify_bluepr
   that skips fails the group: a green group must have actually run every check.
 - **One run = one POC commit.** The `plan` job resolves the branch to a SHA, and every group checks out that
   SHA, so groups can't test different commits if the branch moves during the run.
-- **Results:** the run graph has one row per group, and the step summary has a gate × status × seconds table
-  per group plus a phase total. Each group uploads its logs and `results.tsv` as an artifact (30-day
-  retention, like `_phase.yml`).
+- **Results:** the run graph has one `phase · group` row per job, and each job's log has one collapsible
+  `[phase/group n/N] gate` section per gate. The step summary has a group × gate × status × seconds table per
+  phase with that phase's count, a run total, and — for every gate that failed or skipped — its last 100 log
+  lines in a collapsible block. Each group uploads its logs and `results.tsv` as an artifact
+  `unit-<phase>-<group>` (30-day retention, like `_phase.yml`).
 - **Timeouts:** 30 min per group as a first estimate. Step 1 of the rollout measures real timings and adjusts it.
 
-## 6. Files to add
+## 6. Files
 
 ```
-.github/workflows/_unit.yml              reusable: plan (coverage + matrix) → test (per group) → summary
-.github/workflows/unit-common.yml        caller, phase=common
-.github/workflows/unit-platform.yml      caller, phase=platform
-.github/workflows/unit-blueprint.yml     caller, phase=blueprint
-.github/workflows/unit-substrate.yml     caller, phase=substrate
-.github/workflows/unit-bringup.yml       caller, phase=bringup
+.github/workflows/unit-tests.yml         plan (coverage + matrix) → test (per phase · group) → summary
 config/unit-tests.sh                     the manifest (§4.1)
-scripts/run-unit-tests.sh                groups | list | coverage | run
+scripts/run-unit-tests.sh                groups | matrix | list | coverage | run | summarize
 ```
 
 ## 7. Rollout
@@ -245,20 +219,19 @@ scripts/run-unit-tests.sh                groups | list | coverage | run
    Then run each group alone through `run-unit-tests.sh run` and confirm that each group gives the same
    result in isolation as in the full suite (this checks for order dependencies).
 2. **Manifest and runner.** Add `config/unit-tests.sh` and `scripts/run-unit-tests.sh`, plus the manifest
-   self-test (in `_unit.yml`'s plan job).
-3. **One workflow end to end.** Add `_unit.yml` and `unit-substrate.yml` (the smallest phase, 14 gates) and
-   run them manually.
-4. **The rest.** Add the other 4 callers and run each one manually against the same POC SHA. The union of
-   their results must equal step 1's full-suite result.
+   self-test (in `unit-tests.yml`'s plan job).
+3. **One phase end to end.** Run `unit-tests` with `phase: substrate` (the smallest phase, 14 gates).
+4. **The rest.** Run it with `phase: all` against the same POC SHA. Its result must equal step 1's
+   full-suite result.
 5. **Docs.** Update the README, Dev_Guide and User_Guide tables.
 6. **Optional, later (§8).** Nightly schedule, a pre-flight gate in front of lab runs, and dashboard integration.
 
 ## 8. Later options (not in the first cut)
 
-- **Pre-flight before a lab run:** `nvcm-greenfield.yml` could call `unit-blueprint` (plus the others)
-  before `boot`, so a red unit suite stops the run before it costs lab time. The `workflow_call` trigger in
-  §3.5 already allows this.
-- **Nightly:** uncomment `schedule:` in each caller.
+- **Pre-flight before a lab run:** `nvcm-greenfield.yml` could call `unit-tests.yml` (`phase: all`, or just
+  `blueprint`) before `boot`, so a red unit suite stops the run before it costs lab time. The `workflow_call`
+  trigger in §3.4 already allows this.
+- **Nightly:** add a `schedule:` to `unit-tests.yml` (it defaults to `phase: all`).
 - **Logs under `logs/`:** reuse `build-report.sh` / `commit-logs.sh` so unit runs appear on the dashboard.
 - **A per-topology view:** a matrix over the families in `test/run-topology-tests.sh`, if per-family
   verdicts turn out to be useful.
@@ -267,9 +240,9 @@ scripts/run-unit-tests.sh                groups | list | coverage | run
 
 | # | Question | Decision |
 |---|---|---|
-| 1 | Granularity | **Per phase.** 5 workflows: `unit-common`, `unit-platform`, `unit-blueprint`, `unit-substrate`, `unit-bringup` |
-| 2 | Hygiene gates | **Their own `unit-common` workflow**, so they run once |
-| 3 | `day2` gates | They stay as a group under `unit-bringup` |
+| 1 | Granularity | **One workflow, `unit-tests`, with a `phase` input**: `all`, `common`, `platform`, `blueprint`, `substrate`, `bringup` (first cut was 5 per-phase workflows; merged) |
+| 2 | Hygiene gates | **Their own `common` phase**, so they run once |
+| 3 | `day2` gates | They stay as a group under `bringup` |
 | 4 | Triggers | **`workflow_dispatch` + `workflow_call` only.** No schedule, and nothing is wired in front of the lab runs yet |
 | 5 | New POC gates | **Strict.** `coverage` fails the run until the gate is placed in `config/unit-tests.sh` |
 | — | Logs under `logs/` | Not committed. Results go to artifacts and the step summary only |

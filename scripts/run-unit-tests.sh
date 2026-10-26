@@ -3,17 +3,20 @@
 # run-unit-tests.sh — run rafay_nvcm_poc's OFFLINE gates (test/run-tests.sh) one phase/group at a time, on the
 # GitHub runner. No lab, no SSH, no cloud: these gates need only python + the POC checkout.
 #
-#   run-unit-tests.sh groups    <phase> [selection]          # JSON array of the phase's groups (matrix input)
+#   run-unit-tests.sh groups    <phase> [selection]          # JSON array of the phase's groups
+#   run-unit-tests.sh matrix    <phase|all> [selection]      # JSON [{phase,group}] — unit-tests.yml's matrix input
 #   run-unit-tests.sh list      <phase> [group]              # the gate paths, in run order
 #   run-unit-tests.sh coverage  <poc_dir>                    # manifest == the POC's run-tests.sh, or fail
 #   run-unit-tests.sh run       <phase> <group> <poc_dir> <out_dir>
-#   run-unit-tests.sh summarize <phase> <dir>                # merge every results.tsv under <dir> → summary.md
+#   run-unit-tests.sh summarize <phase|all> <dir>            # merge every results.tsv under <dir> → summary.md
 #
-# The manifest is config/unit-tests.sh (phase:group:path). <selection> is "all" or a comma list of groups.
+# The manifest is config/unit-tests.sh (phase:group:path). <selection> is "all" or a comma list of groups; with
+# phase "all" it must be "all" (a group selection only makes sense inside one phase).
 # `run` mirrors run-tests.sh's verdicts exactly — exit 0 passed, exit 77 SKIPPED, anything else failed — and its
 # suite env (DC_NO_PUBLISH=1, DC_BLUEPRINT=stc/blueprint_stc.yaml). DC_REQUIRE_ALL_GATES defaults to 1 here, as
 # in CI: a skipped gate proved nothing, so it fails the group. Every gate runs even after a failure; one row per
-# gate goes to <out_dir>/results.tsv, its output to <out_dir>/logs/. Exit non-zero iff a gate failed.
+# gate goes to <out_dir>/results.tsv (phase, group, gate, status, rc, secs, log), its output to <out_dir>/logs/.
+# Exit non-zero iff a gate failed.
 #
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -53,6 +56,22 @@ cmd_groups(){
   fi
   for g in $known; do selected "$sel" "$g" && out+="\"$g\","; done
   [ -n "$out" ] || die "selection '$sel' picks no group of phase '$phase'"
+  echo "[${out%,}]"
+}
+
+cmd_matrix(){
+  local sel="${2:-all}" ph g gs out=""
+  local phases=("$1")
+  if [ "$1" = all ]; then
+    [ "$sel" = all ] || die "groups '$sel' needs one phase — with phase 'all' every group runs"
+    phases=("${LAUNCHPAD_UNIT_PHASES[@]}")
+  fi
+  for ph in "${phases[@]}"; do
+    gs="$(cmd_groups "$ph" "$sel")"                 # its own line, so an unknown group fails the command
+    for g in $(echo "$gs" | tr -d '[]"' | tr , ' '); do
+      out+="{\"phase\":\"$ph\",\"group\":\"$g\"},"
+    done
+  done
   echo "[${out%,}]"
 }
 
@@ -130,7 +149,7 @@ cmd_run(){
     n=$((n+1))
     name="$(basename "$g" .py)"; [ "$g" = @preflight ] && name=preflight
     lf="$out/logs/$(printf '%03d' "$n")-$name.log"
-    echo "::group::[$n/${#gates[@]}] $g"
+    echo "::group::[$phase/$group $n/${#gates[@]}] $g"
     t0=$SECONDS; rc=0
     if [ "$g" = @preflight ]; then run_preflight > "$lf" 2>&1 || rc=$?
     else "$PY" "$g" > "$lf" 2>&1 || rc=$?; fi
@@ -147,45 +166,82 @@ cmd_run(){
       status=failed; failed=$((failed+1))
       echo "::error title=Gate failed: $name::$g rc=$rc — last lines:%0A$(tail -n 15 "$lf" | sed 's/%/%25/g' | awk '{printf "%s%%0A",$0}')"
     fi
-    printf '%s\t%s\t%s\t%s\t%s\n' "$group" "$g" "$status" "$rc" "$secs" >> "$out/results.tsv"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$phase" "$group" "$g" "$status" "$rc" "$secs" "$(basename "$lf")" >> "$out/results.tsv"
   done
 
   log "phase $phase / group $group: $passed passed, $failed failed, $skipped skipped (of $n)"
   [ "$failed" -eq 0 ] && { [ "$skipped" -eq 0 ] || [ "$require_all" != 1 ]; }
 }
 
+# Summary tab: one table per phase (group · gate · result · time), a total, then a collapsible log tail for every
+# gate that didn't pass. Log lines are capped (TAIL_LINES × MAX_LINE) so the step summary stays under GitHub's 1 MiB.
+TAIL_LINES=100; MAX_LINE=400
 cmd_summarize(){
-  local phase="$1" dir="$2" f grp gate status rc secs icon
-  local tot=0 p=0 fl=0 sk=0 files=()
+  local want="$1" dir="$2" f ph grp gate status rc secs lf icon
+  local phases=("$1") files=() bad=() tot=0 p=0 fl=0 sk=0
+  [ "$want" = all ] && phases=("${LAUNCHPAD_UNIT_PHASES[@]}") || known_phase "$want"
   while IFS= read -r f; do files+=("$f"); done < <(find "$dir" -name results.tsv | sort)
   {
-    echo "## Unit tests · $phase"
+    echo "## Unit tests · $want"
     echo
     if [ "${#files[@]}" -eq 0 ]; then echo "_No results — every group failed before running a gate._"; exit 0; fi
-    echo "| Group | Gate | Result | Seconds |"
-    echo "|---|---|---|---:|"
-    for f in "${files[@]}"; do
-      while IFS=$'\t' read -r grp gate status rc secs; do
-        tot=$((tot+1))
-        case "$status" in
-          passed)  icon="✅ passed"; p=$((p+1)) ;;
-          skipped) icon="⊘ skipped"; sk=$((sk+1)) ;;
-          *)       icon="❌ failed (rc=$rc)"; fl=$((fl+1)) ;;
-        esac
-        echo "| $grp | \`$gate\` | $icon | $secs |"
-      done < "$f"
+    for ph in "${phases[@]}"; do
+      local rows="" pt=0 pp=0 pf=0 ps=0
+      for f in "${files[@]}"; do
+        while IFS=$'\t' read -r _ph grp gate status rc secs lf; do
+          [ "$_ph" = "$ph" ] || continue
+          pt=$((pt+1))
+          case "$status" in
+            passed)  icon="✅ passed"; pp=$((pp+1)) ;;
+            skipped) icon="⊘ skipped"; ps=$((ps+1)); bad+=("$f"$'\t'"$ph"$'\t'"$grp"$'\t'"$gate"$'\t'"$status"$'\t'"$rc"$'\t'"$lf") ;;
+            *)       icon="❌ failed (rc=$rc)"; pf=$((pf+1)); bad+=("$f"$'\t'"$ph"$'\t'"$grp"$'\t'"$gate"$'\t'"$status"$'\t'"$rc"$'\t'"$lf") ;;
+          esac
+          rows+="| $grp | \`$gate\` | $icon | $secs |"$'\n'
+        done < "$f"
+      done
+      [ "$pt" -gt 0 ] || continue          # phase not selected / every group of it died before its upload
+      [ "$pf" -eq 0 ] && [ "$ps" -eq 0 ] && icon="✅" || icon="❌"
+      echo "### $icon $ph — $pt gates: $pp passed, $pf failed, $ps skipped"
+      echo
+      echo "| Group | Gate | Result | Seconds |"
+      echo "|---|---|---|---:|"
+      printf '%s' "$rows"
+      echo
+      tot=$((tot+pt)); p=$((p+pp)); fl=$((fl+pf)); sk=$((sk+ps))
     done
-    echo
     echo "**$tot gates: $p passed, $fl failed, $sk skipped.**"
+    echo
+    if [ "${#bad[@]}" -gt 0 ]; then
+      echo "### Logs"
+      echo
+      local b n shown
+      for b in "${bad[@]}"; do
+        IFS=$'\t' read -r f ph grp gate status rc lf <<< "$b"
+        lf="$(dirname "$f")/logs/$lf"
+        n=0; [ -f "$lf" ] && n="$(wc -l < "$lf" | tr -d ' ')"
+        [ "$n" -gt "$TAIL_LINES" ] && shown="last $TAIL_LINES of $n lines" || shown="$n lines"
+        echo "<details><summary>$([ "$status" = skipped ] && echo ⊘ || echo ❌) <b>$ph / $grp</b> · <code>$gate</code> ($status, rc $rc) — $shown</summary>"
+        echo
+        echo "~~~~~~text"
+        if [ "$n" -gt 0 ]; then tail -n "$TAIL_LINES" "$lf" | awk -v m="$MAX_LINE" '{ print (length($0) > m ? substr($0, 1, m) " …" : $0) }'
+        else echo "(no output captured)"; fi
+        echo "~~~~~~"
+        echo
+        echo "</details>"
+        echo
+      done
+      echo "Full logs: one artifact per group below (\`unit-<phase>-<group>\`), a file per gate under \`logs/\`."
+    fi
   } | tee "$dir/summary.md"
 }
 
 sub="${1:-}"; shift || true
 case "$sub" in
   groups)    [ $# -ge 1 ] || die "usage: groups <phase> [selection]";            cmd_groups "$@" ;;
+  matrix)    [ $# -ge 1 ] || die "usage: matrix <phase|all> [selection]";        cmd_matrix "$@" ;;
   list)      [ $# -ge 1 ] || die "usage: list <phase> [group]";                  cmd_list "$@" ;;
   coverage)  [ $# -eq 1 ] || die "usage: coverage <poc_dir>";                    cmd_coverage "$@" ;;
   run)       [ $# -eq 4 ] || die "usage: run <phase> <group> <poc_dir> <out_dir>"; cmd_run "$@" ;;
-  summarize) [ $# -eq 2 ] || die "usage: summarize <phase> <dir>";               cmd_summarize "$@" ;;
+  summarize) [ $# -eq 2 ] || die "usage: summarize <phase|all> <dir>";           cmd_summarize "$@" ;;
   *) awk 'NR>2{ if(/^#/){sub(/^# ?/,"");print} else exit }' "$0"; exit 2 ;;
 esac

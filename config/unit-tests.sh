@@ -9,9 +9,9 @@
 # Entry format  "phase:group:path"  — path relative to the rafay_nvcm_poc checkout. Order = run order inside
 # the group (kept in run-tests.sh's relative order). `@preflight` is the verify_blueprint.sh block run-tests.sh
 # runs inline (it isn't a python file).
-#   phase  = the unit workflow: common | platform | blueprint | substrate | bringup  (unit-<phase>.yml)
+#   phase  = unit-tests.yml's `phase` input: common | platform | blueprint | substrate | bringup  (or all of them)
 #            — the launchpad phases of config/stages-*.sh, plus `common` for repo-wide hygiene gates
-#   group  = one parallel matrix job inside that workflow
+#   group  = one parallel matrix job of a unit-tests.yml run (a `phase · group` row in its run graph)
 #
 # ADDING A GATE: one line below, under the phase whose stage runs the code it tests (test/README.md's
 # "Primary inputs" column). Forget it and every unit run fails `run-unit-tests.sh coverage` — on purpose:

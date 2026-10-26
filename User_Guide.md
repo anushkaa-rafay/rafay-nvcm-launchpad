@@ -294,19 +294,26 @@ every stage is in it, in order, each ending in a `STAGE STATUS:` line (search fo
 These run rafay_nvcm_poc's offline unit tests (`test/run-tests.sh`) on GitHub's own runners. They need **no
 lab**: no instance is started, nothing is SSHed into, and they can run at the same time as any lab run.
 
-Actions → pick one → **Run workflow**:
+Actions → **unit-tests** → **Run workflow**, and pick a `phase`:
 
-| Workflow | Tests for | Groups |
+| `phase` | Tests for | Groups |
 |---|---|---|
-| `unit-common` | repo-wide hygiene (doc links, no credentials, suite completeness, …) | `hygiene` |
-| `unit-platform` | 1 · Installation — platform scripts, Helm chart, catalog, REST API | `install`, `api` |
-| `unit-blueprint` | 2 · Blueprint — intake, blueprint generate/verify, brownfield discovery | `intake`, `generate-verify`, `brownfield` |
-| `unit-substrate` | 3 · Substrate — substrate planning, VM builders, recovery | `substrate` |
-| `unit-bringup` | 4 · Site bring-up — fabric deploy, tenants, servers, day-2 recovery | `fabric`, `tenants`, `servers`, `day2` |
+| `all` (default) | every phase below | all of them |
+| `common` | repo-wide hygiene (doc links, no credentials, suite completeness, …) | `hygiene` |
+| `platform` | 1 · Installation — platform scripts, Helm chart, catalog, REST API | `install`, `api` |
+| `blueprint` | 2 · Blueprint — intake, blueprint generate/verify, brownfield discovery | `intake`, `generate-verify`, `brownfield` |
+| `substrate` | 3 · Substrate — substrate planning, VM builders, recovery | `substrate` |
+| `bringup` | 4 · Site bring-up — fabric deploy, tenants, servers, day-2 recovery | `fabric`, `tenants`, `servers`, `day2` |
 
-Inputs: `poc_branch` (blank = `POC_DEFAULT_BRANCH`) and `groups` (`all`, or e.g. `tenants,servers` to re-run
-just those). Each group is its own job in the run graph, so one red group doesn't hide the rest. The run's
-**Summary** tab lists every test with its result and time; each group's logs are an artifact (`unit-<phase>-<group>`).
+Other inputs: `groups` (`all`, or — with one phase picked — e.g. `tenants,servers` to re-run just those; with
+`all` it must stay `all`) and `poc_branch` (blank = `POC_DEFAULT_BRANCH`). The run's title says what was
+picked (`unit-tests · bringup · main · tenants,servers`).
+
+Each phase · group is its own job in the run graph (`bringup · tenants`, …), so one red group doesn't hide
+the rest, and its log has one collapsible section per test. The run's **Summary** tab has a table per phase
+— every test with its result and time, and the phase's pass/fail count — then a run total, then a **Logs**
+section with the last 100 lines of every test that failed or skipped. Each group's full logs are an artifact
+(`unit-<phase>-<group>`, one file per test).
 
 If the run fails at **Plan · coverage** with "Unmapped POC gate", a new test was added to rafay_nvcm_poc that
 isn't assigned to a phase yet — add one line for it in `config/unit-tests.sh` (see `Dev_Guide.md` → Unit tests).

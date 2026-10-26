@@ -1,18 +1,43 @@
-name: _unit
-# One PHASE of rafay_nvcm_poc's OFFLINE gates (test/run-tests.sh), as placed by config/unit-tests.sh. Called by
-# unit-<phase>.yml — one caller per phase, so every gate of a phase lives in ONE workflow; its groups run as
-# parallel matrix jobs inside it. Runs entirely on GitHub-hosted runners: no lab, no OCI/AWS, no SSH, no
-# Environment — so it never contends with a lab run. See Unit_Tests_Plan.md.
-#   plan    → check out the POC branch, pin its SHA, coverage check (manifest == run-tests.sh), group matrix
-#   test    → one job per group, all on the SAME POC SHA: install the suite's deps, run-unit-tests.sh run
-#   summary → one gate-by-gate table for the whole phase in the run summary
+name: unit-tests
+# rafay_nvcm_poc's OFFLINE gates (test/run-tests.sh), as placed by config/unit-tests.sh — ONE workflow for every
+# phase: pick a phase (common | platform | blueprint | substrate | bringup) or `all`, and optionally some of that
+# phase's groups. Every selected phase/group runs as its own parallel matrix job. Runs entirely on GitHub-hosted
+# runners: no lab, no OCI/AWS, no SSH, no Environment — so it never contends with a lab run. See Unit_Tests_Plan.md.
+#   plan    → check out the POC branch, pin its SHA, coverage check (manifest == run-tests.sh), phase/group matrix
+#   test    → one job per phase · group, all on the SAME POC SHA: install the suite's deps, run-unit-tests.sh run
+#   summary → one gate-by-gate table per phase, a total, and the log tail of every gate that didn't pass
+
+run-name: "unit-tests · ${{ inputs.phase || 'all' }} · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.groups || 'all' }}"
 
 on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Phase to test — all, or one of them"
+        required: true
+        default: all
+        type: choice
+        options: [all, common, platform, blueprint, substrate, bringup]
+      groups:
+        description: "Groups (one phase only): 'all' or a comma list — common: hygiene · platform: install,api · blueprint: intake,generate-verify,brownfield · substrate: substrate · bringup: fabric,tenants,servers,day2"
+        required: true
+        default: all
+        type: string
+      poc_branch:
+        description: "rafay_nvcm_poc branch to test — blank uses the POC_DEFAULT_BRANCH repository variable (falls back to main)"
+        required: false
+        default: ""
+        type: string
   workflow_call:
     inputs:
-      phase:      { type: string, required: true }     # common | platform | blueprint | substrate | bringup
-      poc_branch: { type: string, default: "" }        # blank → vars.POC_DEFAULT_BRANCH → main
-      groups:     { type: string, default: all }       # 'all' or a comma list of the phase's groups
+      phase:      { type: string, default: all }    # all | common | platform | blueprint | substrate | bringup
+      groups:     { type: string, default: all }    # 'all' or a comma list of the phase's groups
+      poc_branch: { type: string, default: "" }     # blank → vars.POC_DEFAULT_BRANCH → main
+
+# No shared host here, so a newer run of the same phase + branch simply replaces an older one.
+concurrency:
+  group: unit-tests-${{ inputs.phase || 'all' }}-${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -23,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
-      groups:  ${{ steps.plan.outputs.groups }}
+      matrix:  ${{ steps.plan.outputs.matrix }}
       poc_sha: ${{ steps.poc.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -32,10 +57,12 @@ jobs:
         env:
           BRANCH:   ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }}
           POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
+          PHASE:    ${{ inputs.phase || 'all' }}
           SEL:      ${{ inputs.groups || 'all' }}
         run: |
           [[ "$BRANCH"   =~ ^[A-Za-z0-9._/-]+$ && "$BRANCH" != -* ]] || { echo "::error::invalid branch '$BRANCH'"; exit 1; }
           [[ "$POC_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]     || { echo "::error::invalid POC_REPO '$POC_REPO'"; exit 1; }
+          [[ "$PHASE" =~ ^[a-z]+$ ]]                                  || { echo "::error::invalid phase '$PHASE'"; exit 1; }
           [[ "${SEL// /}" =~ ^[A-Za-z0-9,_-]+$ ]]                 || { echo "::error::invalid groups '$SEL'"; exit 1; }
 
       # The manifest's own shape (pure logic, no POC needed) — checked first, so a malformed manifest fails fast.
@@ -48,7 +75,7 @@ jobs:
           dup="$(printf '%s\n' "${LAUNCHPAD_UNIT_TESTS[@]}" | cut -d: -f3 | sort | uniq -d)"
           [ -z "$dup" ] || { echo "::error::gate(s) placed twice:"; echo "$dup"; exit 1; }
           for ph in "${LAUNCHPAD_UNIT_PHASES[@]}"; do
-            [ -f ".github/workflows/unit-$ph.yml" ] || { echo "::error::phase '$ph' has no .github/workflows/unit-$ph.yml"; exit 1; }
+            grep -qE "options: \[.*\b$ph\b" .github/workflows/unit-tests.yml || { echo "::error::phase '$ph' is not an option of unit-tests.yml's phase input"; exit 1; }
             scripts/run-unit-tests.sh groups "$ph" >/dev/null
             [ -n "$(scripts/run-unit-tests.sh list "$ph")" ]
           done
@@ -58,7 +85,9 @@ jobs:
           # an unknown group / phase must be rejected — check explicitly, `!` would skip -e on a regression
           scripts/run-unit-tests.sh groups bringup not-a-group 2>/dev/null && { echo "::error::groups accepted an unknown group"; exit 1; }
           scripts/run-unit-tests.sh groups not-a-phase 2>/dev/null && { echo "::error::groups accepted an unknown phase"; exit 1; }
+          scripts/run-unit-tests.sh matrix all tenants 2>/dev/null && { echo "::error::matrix accepted a group selection with phase all"; exit 1; }
           [ "$(scripts/run-unit-tests.sh groups bringup tenants,servers)" = '["tenants","servers"]' ]
+          [ "$(scripts/run-unit-tests.sh matrix bringup day2)" = '[{"phase":"bringup","group":"day2"}]' ]
 
       - name: Check out rafay_nvcm_poc
         uses: actions/checkout@v4
@@ -77,29 +106,31 @@ jobs:
           echo "rafay_nvcm_poc @ $sha"
 
       # Every gate run-tests.sh runs must be placed in exactly one phase — fails on an unmapped or stale gate,
-      # so a gate added in the POC can never go quietly unrun here (config/unit-tests.sh's header).
+      # so a gate added in the POC can never go quietly unrun here (config/unit-tests.sh's header). Checked on
+      # every run, whichever phase was picked.
       - name: Coverage — manifest matches test/run-tests.sh
         run: scripts/run-unit-tests.sh coverage poc
 
-      - name: Plan groups
+      - name: Plan phase · group matrix
         id: plan
-        env: { PHASE: "${{ inputs.phase }}", SEL: "${{ inputs.groups || 'all' }}" }
+        env: { PHASE: "${{ inputs.phase || 'all' }}", SEL: "${{ inputs.groups || 'all' }}" }
         run: |
-          g="$(scripts/run-unit-tests.sh groups "$PHASE" "${SEL// /}")"
-          echo "groups=$g" >> "$GITHUB_OUTPUT"
-          echo "phase $PHASE runs groups: $g"
+          m="$(scripts/run-unit-tests.sh matrix "$PHASE" "${SEL// /}")"
+          echo "matrix=$m" >> "$GITHUB_OUTPUT"
+          echo "phase $PHASE, groups ${SEL// /} → jobs:"
+          echo "$m" | python3 -c 'import json,sys; [print("  %s · %s" % (j["phase"], j["group"])) for j in json.load(sys.stdin)]'
 
   test:
-    name: ${{ matrix.group }}
+    name: ${{ matrix.phase }} · ${{ matrix.group }}
     needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false              # a red group must not hide whether the others passed
       matrix:
-        group: ${{ fromJSON(needs.plan.outputs.groups) }}
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     env:
-      OUT: out/${{ matrix.group }}
+      OUT: out/${{ matrix.phase }}-${{ matrix.group }}
     steps:
       - uses: actions/checkout@v4
 
@@ -107,7 +138,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
-          ref: ${{ needs.plan.outputs.poc_sha }}     # the SHA plan pinned — every group tests the same commit
+          ref: ${{ needs.plan.outputs.poc_sha }}     # the SHA plan pinned — every job tests the same commit
           ssh-key: ${{ secrets.POC_DEPLOY_KEY }}
           persist-credentials: false
           path: poc
@@ -121,15 +152,15 @@ jobs:
       - name: Install the suite's dependencies (test/render/requirements.txt)
         run: python3 -m pip install -q -r poc/test/render/requirements.txt
 
-      - name: Run gates
-        env: { PHASE: "${{ inputs.phase }}", GROUP: "${{ matrix.group }}", DC_REQUIRE_ALL_GATES: "1" }
+      - name: Run gates — ${{ matrix.phase }} / ${{ matrix.group }}
+        env: { PHASE: "${{ matrix.phase }}", GROUP: "${{ matrix.group }}", DC_REQUIRE_ALL_GATES: "1" }
         run: scripts/run-unit-tests.sh run "$PHASE" "$GROUP" poc "$OUT"
 
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-${{ inputs.phase }}-${{ matrix.group }}
+          name: unit-${{ matrix.phase }}-${{ matrix.group }}
           path: ${{ env.OUT }}
           if-no-files-found: ignore
           retention-days: 30
@@ -144,14 +175,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
-        continue-on-error: true      # nothing to download if every group died before its upload; the summary says so
+        continue-on-error: true      # nothing to download if every job died before its upload; the summary says so
         with:
-          pattern: unit-${{ inputs.phase }}-*
+          pattern: unit-*
           path: collected
 
-      - name: Phase summary
+      - name: Summary — per phase, with failed gates' logs
         env:
-          PHASE:   ${{ inputs.phase }}
+          PHASE:   ${{ inputs.phase || 'all' }}
           POC_SHA: ${{ needs.plan.outputs.poc_sha }}
         run: |
           mkdir -p collected
