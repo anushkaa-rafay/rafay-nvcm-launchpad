@@ -8,10 +8,13 @@
 #   run-unit-tests.sh list      <phase> [group]              # the gate paths, in run order
 #   run-unit-tests.sh coverage  <poc_dir>                    # manifest == the POC's run-tests.sh, or fail
 #   run-unit-tests.sh run       <phase> <group> <poc_dir> <out_dir>
-#   run-unit-tests.sh summarize <phase|all> <dir>            # merge every results.tsv under <dir> → summary.md
+#   run-unit-tests.sh summarize <phase|all> <dir> [selection] # every <dir>/unit-<phase>-<group>/ → summary.md
+#   run-unit-tests.sh combine   <phase|all> <dir> [selection] # the same → ONE log, phase/group/gate headers
 #
 # The manifest is config/unit-tests.sh (phase:group:path). <selection> is "all" or a comma list of groups; with
-# phase "all" it must be "all" (a group selection only makes sense inside one phase).
+# phase "all" it must be "all" (a group selection only makes sense inside one phase). summarize/combine read the
+# run's artifacts as downloaded — <dir>/unit-<phase>-<group>/{results.tsv,logs/} — and flag every planned group
+# (phase + selection) that has none: its job died before its first gate, and it must not vanish from the report.
 # `run` mirrors run-tests.sh's verdicts exactly — exit 0 passed, exit 77 SKIPPED, anything else failed — and its
 # suite env (DC_NO_PUBLISH=1, DC_BLUEPRINT=stc/blueprint_stc.yaml). DC_REQUIRE_ALL_GATES defaults to 1 here, as
 # in CI: a skipped gate proved nothing, so it fails the group. Every gate runs even after a failure; one row per
@@ -59,19 +62,24 @@ cmd_groups(){
   echo "[${out%,}]"
 }
 
-cmd_matrix(){
-  local sel="${2:-all}" ph g gs out=""
+# the planned "phase group" pairs, one per line in manifest order — the matrix, and what summarize/combine expect
+planned(){
+  local sel="${2:-all}" ph g gs
   local phases=("$1")
   if [ "$1" = all ]; then
     [ "$sel" = all ] || die "groups '$sel' needs one phase — with phase 'all' every group runs"
     phases=("${LAUNCHPAD_UNIT_PHASES[@]}")
   fi
   for ph in "${phases[@]}"; do
-    gs="$(cmd_groups "$ph" "$sel")"                 # its own line, so an unknown group fails the command
-    for g in $(echo "$gs" | tr -d '[]"' | tr , ' '); do
-      out+="{\"phase\":\"$ph\",\"group\":\"$g\"},"
-    done
+    gs="$(cmd_groups "$ph" "$sel")" || exit         # set -e doesn't reach into $(…): an unknown group must fail
+    for g in $(echo "$gs" | tr -d '[]"' | tr , ' '); do echo "$ph $g"; done
   done
+}
+
+cmd_matrix(){
+  local pl ph g out=""
+  pl="$(planned "$@")" || exit
+  while read -r ph g; do out+="{\"phase\":\"$ph\",\"group\":\"$g\"},"; done <<< "$pl"
   echo "[${out%,}]"
 }
 
@@ -177,19 +185,23 @@ cmd_run(){
 # gate that didn't pass. Log lines are capped (TAIL_LINES × MAX_LINE) so the step summary stays under GitHub's 1 MiB.
 TAIL_LINES=100; MAX_LINE=400
 cmd_summarize(){
-  local want="$1" dir="$2" f ph grp gate status rc secs lf icon
-  local phases=("$1") files=() bad=() tot=0 p=0 fl=0 sk=0
+  local want="$1" dir="$2" sel="${3:-all}" f ph grp gate status rc secs lf icon
+  local phases=("$1") bad=() plan tot=0 p=0 fl=0 sk=0 nr=0
   [ "$want" = all ] && phases=("${LAUNCHPAD_UNIT_PHASES[@]}") || known_phase "$want"
-  while IFS= read -r f; do files+=("$f"); done < <(find "$dir" -name results.tsv | sort)
+  plan="$(planned "$want" "$sel")" || exit
   {
     echo "## Unit tests · $want"
     echo
-    if [ "${#files[@]}" -eq 0 ]; then echo "_No results — every group failed before running a gate._"; exit 0; fi
     for ph in "${phases[@]}"; do
-      local rows="" pt=0 pp=0 pf=0 ps=0
-      for f in "${files[@]}"; do
-        while IFS=$'\t' read -r _ph grp gate status rc secs lf; do
-          [ "$_ph" = "$ph" ] || continue
+      local rows="" pt=0 pp=0 pf=0 ps=0 pn=0
+      while read -r _ph grp; do
+        [ "$_ph" = "$ph" ] || continue
+        f="$dir/unit-$ph-$grp/results.tsv"
+        if [ ! -s "$f" ]; then
+          pn=$((pn+1)); rows+="| $grp | — | ❌ no results — the job died before its first gate (see its job log) | |"$'\n'
+          continue
+        fi
+        while IFS=$'\t' read -r _ grp gate status rc secs lf; do
           pt=$((pt+1))
           case "$status" in
             passed)  icon="✅ passed"; pp=$((pp+1)) ;;
@@ -198,18 +210,18 @@ cmd_summarize(){
           esac
           rows+="| $grp | \`$gate\` | $icon | $secs |"$'\n'
         done < "$f"
-      done
-      [ "$pt" -gt 0 ] || continue          # phase not selected / every group of it died before its upload
-      [ "$pf" -eq 0 ] && [ "$ps" -eq 0 ] && icon="✅" || icon="❌"
-      echo "### $icon $ph — $pt gates: $pp passed, $pf failed, $ps skipped"
+      done <<< "$plan"
+      [ -n "$rows" ] || continue           # phase not selected
+      [ "$pf" -eq 0 ] && [ "$ps" -eq 0 ] && [ "$pn" -eq 0 ] && icon="✅" || icon="❌"
+      echo "### $icon $ph — $pt gates: $pp passed, $pf failed, $ps skipped$([ "$pn" -eq 0 ] || echo ", $pn group(s) with no results")"
       echo
       echo "| Group | Gate | Result | Seconds |"
       echo "|---|---|---|---:|"
       printf '%s' "$rows"
       echo
-      tot=$((tot+pt)); p=$((p+pp)); fl=$((fl+pf)); sk=$((sk+ps))
+      tot=$((tot+pt)); p=$((p+pp)); fl=$((fl+pf)); sk=$((sk+ps)); nr=$((nr+pn))
     done
-    echo "**$tot gates: $p passed, $fl failed, $sk skipped.**"
+    echo "**$tot gates: $p passed, $fl failed, $sk skipped$([ "$nr" -eq 0 ] || echo "; $nr group(s) with no results").**"
     echo
     if [ "${#bad[@]}" -gt 0 ]; then
       echo "### Logs"
@@ -230,9 +242,53 @@ cmd_summarize(){
         echo "</details>"
         echo
       done
-      echo "Full logs: one artifact per group below (\`unit-<phase>-<group>\`), a file per gate under \`logs/\`."
     fi
+    echo "Full logs: **unit-tests.log** in the \`log-unit-tests\` artifact below — every gate's whole output, under"
+    echo "phase / group headers; and one artifact per group (\`unit-<phase>-<group>\`), a file per gate under \`logs/\`."
   } | tee "$dir/summary.md"
+}
+
+# ONE log for the whole run: every planned phase › group › gate in manifest order, each gate's whole output under
+# its own header, a status line per group and phase, the totals last. Written to <dir>/unit-tests.log.
+cmd_combine(){
+  local want="$1" dir="$2" sel="${3:-all}" ph grp gate status rc secs lf f line
+  local phases=("$1") plan tot=0 p=0 fl=0 sk=0 nr=0
+  [ "$want" = all ] && phases=("${LAUNCHPAD_UNIT_PHASES[@]}") || known_phase "$want"
+  plan="$(planned "$want" "$sel")" || exit
+  line="$(printf '%.0s=' {1..100})"
+  {
+    echo "unit-tests · phase $want · groups $sel${POC_SHA:+ · rafay_nvcm_poc @ $POC_SHA}"
+    for ph in "${phases[@]}"; do
+      grep -q "^$ph " <<< "$plan" || continue
+      local pt=0 pp=0 pf=0 ps=0 pn=0
+      printf '\n%s\n#### PHASE %s\n%s\n' "$line" "$ph" "$line"
+      while read -r _ph grp; do
+        [ "$_ph" = "$ph" ] || continue
+        f="$dir/unit-$ph-$grp/results.tsv"
+        printf '\n======== %s / %s ========\n' "$ph" "$grp"
+        if [ ! -s "$f" ]; then
+          pn=$((pn+1)); echo "NO RESULTS — the job died before its first gate (see the '$ph · $grp' job log)"
+          continue
+        fi
+        local n=0 m gp=0 gf=0 gs=0
+        m="$(wc -l < "$f" | tr -d ' ')"
+        while IFS=$'\t' read -r _ _ gate status rc secs lf; do
+          n=$((n+1))
+          case "$status" in passed) gp=$((gp+1)) ;; skipped) gs=$((gs+1)) ;; *) gf=$((gf+1)) ;; esac
+          printf '\n-------- [%s/%s %d/%d] %s — %s (rc %s, %ss) --------\n' "$ph" "$grp" "$n" "$m" "$gate" "$status" "$rc" "$secs"
+          if [ -f "$dir/unit-$ph-$grp/logs/$lf" ]; then cat "$dir/unit-$ph-$grp/logs/$lf"; else echo "(no output captured)"; fi
+        done < "$f"
+        printf '\n======== %s / %s: %d gates — %d passed, %d failed, %d skipped ========\n' "$ph" "$grp" "$m" "$gp" "$gf" "$gs"
+        pt=$((pt+m)); pp=$((pp+gp)); pf=$((pf+gf)); ps=$((ps+gs))
+      done <<< "$plan"
+      printf '\n#### PHASE %s: %d gates — %d passed, %d failed, %d skipped%s\n' "$ph" "$pt" "$pp" "$pf" "$ps" \
+        "$([ "$pn" -eq 0 ] || echo ", $pn group(s) with no results")"
+      tot=$((tot+pt)); p=$((p+pp)); fl=$((fl+pf)); sk=$((sk+ps)); nr=$((nr+pn))
+    done
+    printf '\n%s\nTOTAL: %d gates — %d passed, %d failed, %d skipped%s\n' "$line" "$tot" "$p" "$fl" "$sk" \
+      "$([ "$nr" -eq 0 ] || echo ", $nr group(s) with no results")"
+  } > "$dir/unit-tests.log"
+  log "combine: $dir/unit-tests.log — $tot gates: $p passed, $fl failed, $sk skipped, $nr group(s) with no results"
 }
 
 sub="${1:-}"; shift || true
@@ -242,6 +298,7 @@ case "$sub" in
   list)      [ $# -ge 1 ] || die "usage: list <phase> [group]";                  cmd_list "$@" ;;
   coverage)  [ $# -eq 1 ] || die "usage: coverage <poc_dir>";                    cmd_coverage "$@" ;;
   run)       [ $# -eq 4 ] || die "usage: run <phase> <group> <poc_dir> <out_dir>"; cmd_run "$@" ;;
-  summarize) [ $# -eq 2 ] || die "usage: summarize <phase|all> <dir>";           cmd_summarize "$@" ;;
+  summarize) [ $# -ge 2 ] || die "usage: summarize <phase|all> <dir> [selection]"; cmd_summarize "$@" ;;
+  combine)   [ $# -ge 2 ] || die "usage: combine <phase|all> <dir> [selection]";   cmd_combine "$@" ;;
   *) awk 'NR>2{ if(/^#/){sub(/^# ?/,"");print} else exit }' "$0"; exit 2 ;;
 esac

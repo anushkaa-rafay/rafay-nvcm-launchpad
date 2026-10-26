@@ -5,7 +5,10 @@ name: unit-tests
 # runners: no lab, no OCI/AWS, no SSH, no Environment — so it never contends with a lab run. See Unit_Tests_Plan.md.
 #   plan    → check out the POC branch, pin its SHA, coverage check (manifest == run-tests.sh), phase/group matrix
 #   test    → one job per phase · group, all on the SAME POC SHA: install the suite's deps, run-unit-tests.sh run
-#   summary → one gate-by-gate table per phase, a total, and the log tail of every gate that didn't pass
+#   summary → one gate-by-gate table per phase, a total, and the log tail of every gate that didn't pass; and
+#             unit-tests.log — every gate's whole output in ONE file, under phase / group headers
+# A red gate or group never stops the rest: every gate of a group runs, every group is its own job with
+# fail-fast off, and summary runs whatever they did — a group whose job died early is reported, not dropped.
 
 run-name: "unit-tests · ${{ inputs.phase || 'all' }} · ${{ inputs.poc_branch || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.groups || 'all' }}"
 
@@ -183,8 +186,29 @@ jobs:
       - name: Summary — per phase, with failed gates' logs
         env:
           PHASE:   ${{ inputs.phase || 'all' }}
+          SEL:     ${{ inputs.groups || 'all' }}
           POC_SHA: ${{ needs.plan.outputs.poc_sha }}
         run: |
           mkdir -p collected
-          scripts/run-unit-tests.sh summarize "$PHASE" collected > /dev/null
+          scripts/run-unit-tests.sh summarize "$PHASE" collected "${SEL// /}" > /dev/null
           { cat collected/summary.md; echo; echo "rafay_nvcm_poc @ \`$POC_SHA\`"; } >> "$GITHUB_STEP_SUMMARY"
+
+      # one file, every phase › group › gate in manifest order, each gate's whole output under its own header
+      - name: Combined log — unit-tests.log
+        if: always()
+        env:
+          PHASE:   ${{ inputs.phase || 'all' }}
+          SEL:     ${{ inputs.groups || 'all' }}
+          POC_SHA: ${{ needs.plan.outputs.poc_sha }}
+        run: |
+          mkdir -p collected
+          scripts/run-unit-tests.sh combine "$PHASE" collected "${SEL// /}"
+
+      - name: Upload combined log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-unit-tests        # not unit-*: the download above must only pick up the groups' artifacts
+          path: collected/unit-tests.log
+          if-no-files-found: ignore
+          retention-days: 30

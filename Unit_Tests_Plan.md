@@ -201,7 +201,11 @@ The `blueprint` / `generate-verify` group also runs `@preflight` (`verify_bluepr
   `[phase/group n/N] gate` section per gate. The step summary has a group × gate × status × seconds table per
   phase with that phase's count, a run total, and — for every gate that failed or skipped — its last 100 log
   lines in a collapsible block. Each group uploads its logs and `results.tsv` as an artifact
-  `unit-<phase>-<group>` (30-day retention, like `_phase.yml`).
+  `unit-<phase>-<group>` (30-day retention, like `_phase.yml`), and summary merges them all into one
+  `unit-tests.log` (artifact `log-unit-tests`) with phase / group / gate headers. A planned group with no
+  results (its job died early) is reported as such in both, never dropped.
+- **Nothing stops early:** every gate of a group runs after a failure, groups are separate jobs with
+  `fail-fast: false`, and summary runs unless the run was cancelled.
 - **Timeouts:** 30 min per group as a first estimate. Step 1 of the rollout measures real timings and adjusts it.
 
 ## 6. Files

@@ -167,7 +167,11 @@ them — without copying any test code. Design and rationale: [`Unit_Tests_Plan.
 - **Logging**: `run` prints each gate as a `::group::[<phase>/<group> n/N] <gate>` section and writes
   `results.tsv` rows `phase group gate status rc secs log`; `summarize <phase|all>` turns every `results.tsv`
   it finds into one table per phase, a total, and a collapsible last-100-lines block per failed/skipped gate
-  (lines capped at 400 chars — the step summary's 1 MiB limit). `matrix <phase|all> [groups]` is the job list.
+  (lines capped at 400 chars — the step summary's 1 MiB limit). `combine <phase|all> <dir> [groups]` writes the
+  same into one `unit-tests.log` (artifact `log-unit-tests`) — every gate's whole output under `#### PHASE` /
+  `======== phase / group` / `-------- [phase/group n/N] gate` headers. Both walk the *planned* groups, so one
+  whose job died before uploading shows as "no results" instead of vanishing. `matrix <phase|all> [groups]` is
+  the job list; a failing group never cancels the others (`fail-fast: false`, summary runs on `!cancelled()`).
 - **Locally** (needs bash ≥ 4 for the two substrate behaviour gates — macOS's bash 3.2 makes them skip):
   ```bash
   scripts/run-unit-tests.sh coverage ../rafay_nvcm_poc

@@ -312,8 +312,13 @@ picked (`unit-tests · bringup · main · tenants,servers`).
 Each phase · group is its own job in the run graph (`bringup · tenants`, …), so one red group doesn't hide
 the rest, and its log has one collapsible section per test. The run's **Summary** tab has a table per phase
 — every test with its result and time, and the phase's pass/fail count — then a run total, then a **Logs**
-section with the last 100 lines of every test that failed or skipped. Each group's full logs are an artifact
-(`unit-<phase>-<group>`, one file per test).
+section with the last 100 lines of every test that failed or skipped.
+
+A failure never stops the rest: with `phase: all`, every group of every phase still runs and is reported.
+The whole run's output is also in **one file**, `unit-tests.log` (artifact `log-unit-tests`): phase → group →
+test headers in run order, each test's full output, a pass/fail line per group and phase, and the total at
+the end. A group whose job died before running anything shows there (and on the Summary tab) as **no
+results**. Each group's logs are also their own artifact (`unit-<phase>-<group>`, one file per test).
 
 If the run fails at **Plan · coverage** with "Unmapped POC gate", a new test was added to rafay_nvcm_poc that
 isn't assigned to a phase yet — add one line for it in `config/unit-tests.sh` (see `Dev_Guide.md` → Unit tests).
