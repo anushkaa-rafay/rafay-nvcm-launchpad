@@ -1,0 +1,258 @@
+============================================================
+WORKFLOW RUN 40501117747.1 · lab aa-nvcm-vlab-2 · config/stages-greenfield.sh · nvcm-1.3.1-migrate @ b88a2bb38c49
+Started 2026-10-27T12:06:12Z · https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/40501117747
+============================================================
+
+============================================================
+STAGE 01: host-prep (phase: platform)
+============================================================
+
+[2026-10-27 12:08:16 UTC] INFO  Starting stage host-prep (timeout 45m, run key 40501117747-1)
+[agent] started host-prep (pid 44435, timeout 45m)
+[launchpad] stage=host-prep branch=nvcm-1.3.1-migrate sha=b88a2bb38c498f09c7b04fb7d39094c72408e3bc started=2026-10-27T12:08:17Z
+DNS configuration Start (1)...
+[dns] Network interface : ens3
+[dns] MAC address       : 02:00:17:34:e4:e7
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (1) ...
+Hit:1 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:4 http://phx-ad-3.clouds.archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.43.0-1ubuntu7.4).
+curl is already the newest version (8.5.0-2ubuntu10.16).
+ca-certificates is already the newest version (20260816ubuntu0.24.04.1).
+jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
+qemu-system-x86 is already the newest version (1:8.2.2+ds-0ubuntu1.18).
+libvirt-daemon-system is already the newest version (10.0.0-2ubuntu8.19).
+libvirt-clients is already the newest version (10.0.0-2ubuntu8.19).
+virtinst is already the newest version (1:4.1.0-3ubuntu0.1).
+bridge-utils is already the newest version (1.7.1-1ubuntu2).
+dnsmasq-base is already the newest version (2.91-0ubuntu0.24.04.2).
+sshpass is already the newest version (1.09-1).
+cloud-image-utils is already the newest version (0.33-1).
+docker.io is already the newest version (29.1.3-0ubuntu3~24.04.2).
+docker-buildx is already the newest version (0.30.1-0ubuntu1~24.04.1).
+0 upgraded, 0 newly installed, 0 to remove and 19 not upgraded.
+DNS configuration Start (2)...
+[dns] Network interface : ens3
+[dns] MAC address       : 02:00:17:34:e4:e7
+[dns] Configuring public DNS...
+[dns] Validating Netplan configuration...
+[dns] Applying network configuration...
+[dns] Verifying DNS...
+[dns] DNS not ready yet, retrying (1/10)...
+[dns] DNS resolution working.
+[dns] Public DNS configuration completed successfully.
+DNS configuration End (2) ...
+github.com/docker/buildx 0.30.1 0.30.1-0ubuntu1~24.04.1
+>>> Host prep done. LOG OUT and BACK IN now (for docker/kvm/libvirt group membership), then continue.
+[2026-10-27 12:08:38 UTC] INFO  Stage host-prep passed (rc=0, 22s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 02: platform-nvcm-install (phase: platform)
+============================================================
+
+[2026-10-27 12:08:38 UTC] INFO  Starting stage platform-nvcm-install (timeout 150m, run key 40501117747-1)
+[agent] started platform-nvcm-install (pid 45865, timeout 150m)
+[launchpad] stage=platform-nvcm-install branch=nvcm-1.3.1-migrate sha=b88a2bb38c498f09c7b04fb7d39094c72408e3bc started=2026-10-27T12:08:39Z
+[install] → platform/nvcm-install.sh --yes
+
+══════════════════════════════════════════════════════════════════════
+  Part I — install NVCM + Nautobot (kind cluster 'nv-config-manager', namespace 'nv-config-manager')
+══════════════════════════════════════════════════════════════════════
+[nvcm] toolchain OK (docker/kind/kubectl/helm/uv).
+[nvcm] NVCM release 'nv-config-manager' already installed at commit 1.3.1 — version unchanged, skipping the re-deploy (idempotent).
+[nvcm]    (to re-apply the config anyway, run 'nvcm-installer deploy /home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/nvcm-install-config.yaml …' by hand — see setup_guide.md §8).
+[nvcm] Entering ..checkout_nvcm_version()
+[nvcm] checking out and pointing to NVCM commit 1.3.1 ...
+[nvcm] Leaving..checkout_nvcm_version()
+
+══════════════════════════════════════════════════════════════════════
+  Observability extras — Loki + Alloy log pipeline + durable Prometheus (helm upgrade, --reuse-values)
+══════════════════════════════════════════════════════════════════════
+[nvcm] [INFO] Observability package already installed at version 1.3.0; skipping install.
+
+══════════════════════════════════════════════════════════════════════
+  Part I — verify NVCM + Nautobot readiness
+══════════════════════════════════════════════════════════════════════
+  Part I — NVCM + Nautobot readiness (namespace nv-config-manager):
+   [PASS] all pods Running/Completed
+   [PASS] render-api available (replicas=1)
+   [PASS] Nautobot web available (replicas=1)
+   [WARN] ingress gateway not PROGRAMMED — normal on kind (no external LB); does not block Day-0 operation.
+          If the UIs are unreachable, use kubectl port-forward or check the gateway (setup_guide.md §14).
+   [PASS] PVC nautobot-custom-jobs present
+   [PASS] PVC render-service-template-plugins present
+   [PASS] render-api mounts render-service-template-plugins
+   [PASS] admin token secret present
+[nvcm] PART I COMPLETE — NVCM + Nautobot installed and verified. Next: rafay-custom-helm.sh install
+[install] PART I done (scope: nvcm). Add the Rafay layer with:  platform/platform_install.sh rafay --platform-only
+[2026-10-27 12:09:01 UTC] INFO  Stage platform-nvcm-install passed (rc=0, 23s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 03: platform-rafay-install (phase: platform)
+============================================================
+
+[2026-10-27 12:09:01 UTC] INFO  Starting stage platform-rafay-install (timeout 60m, run key 40501117747-1)
+[agent] started platform-rafay-install (pid 46754, timeout 60m)
+[launchpad] stage=platform-rafay-install branch=nvcm-1.3.1-migrate sha=b88a2bb38c498f09c7b04fb7d39094c72408e3bc started=2026-10-27T12:09:02Z
+[install] → platform/rafay-custom-helm.sh install --yes --platform-only
+
+══════════════════════════════════════════════════════════════════════
+  Part II — install the Rafay customization layer
+══════════════════════════════════════════════════════════════════════
+[rafay] toolchain OK (docker/kind/kubectl/helm).
+[rafay] platform preflight OK — both content PVCs present, render-api mounts the templates PVC.
+[rafay] release 'rafay-nvcm' already installed at chart version 0.2.5 and healthy — version unchanged, skipping the build + helm upgrade (idempotent).
+[rafay]    (to reconcile anyway regardless of version, run: /home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/rafay-custom-helm.sh upgrade)
+
+══════════════════════════════════════════════════════════════════════
+  Verify — post-install acceptance check (read-only)
+══════════════════════════════════════════════════════════════════════
+== Part 1 install verification — ns=nv-config-manager release=rafay-nvcm ==
+1) Helm release deployed?
+   [PASS] helm release 'rafay-nvcm' STATUS=deployed
+2) Target PVCs present?
+   [PASS] PVC 'nautobot-custom-jobs' present
+   [PASS] PVC 'render-service-template-plugins' present
+3) render-api wired for template plugins?
+   [PASS] render-api mounts 'render-service-template-plugins'
+   [PASS] render-api has the install-template-plugins init container
+4-6) Nautobot jobs / suppress / GitOps (read-only ORM)...
+   [PASS] 25 numbered runbook job(s) registered + enabled
+          - 0.1 · Load foundation catalog (generic)
+          - 1a · Validate blueprint
+          - 2.0 · Foundation (locations/roles/device-types from blueprint)
+          - 2.1 · Devices (switches + edge)
+          - 2.2 · Cables
+          - 2.3 · Devices + Cables
+          - 3.1 · Tenant — Create / Delete (gated)
+          - 3.2 · Tenant — Onboard (overlay engine)
+          - 3.3 · Tenant — Offboard (overlay engine)
+          - 3.4 · Tenant — Drift Check (desired vs intent)
+          - 3.5 · Tenant — Reap Abandoned Workflows
+          - 3.6 · Tenant — List
+          - 3.7 · Tenant — Get
+          - 4.1 · Register (add to free pool)
+          - 4.1a · Set availability
+          - 4.1b · Unregister (retire)
+          - 4.2 · Attach to tenant
+          - 4.3 · Move to another tenant
+          - 4.4 · Detach from tenant
+          - 4.5 · Assign GPU to tenant
+          - 4.6 · Release GPU to free pool
+          - 4.7 · Server — Drift Check (desired vs intent)
+          - 5.1 · PKey + SR-IOV rails (config-ready)
+          - 6.1 · Deploy Whole DC (render + push all)
+          - 7.1 · Drift — Detect (running vs intent)
+   [PASS] package blueprint_validate: 1 job(s) registered
+   [PASS] package site_provision: 4 job(s) registered
+   [PASS] package tenant: 2 job(s) registered
+   [PASS] package lifecycle: 6 job(s) registered
+   [PASS] package server: 9 job(s) registered
+   [PASS] package ib: 1 job(s) registered
+   [PASS] package provision: 1 job(s) registered
+   [PASS] package drift: 1 job(s) registered
+   [FAIL] NVIDIA loader is still enabled (1) — it likely registered AFTER the install hook's own
+          suppress step ran (a one-time race on a fresh/slow pod). Fixed 2026-09-24 with a
+          poll-and-retry in the hook itself, so a NEW install won't hit this. On a cluster
+          already showing this, one command fixes it (re-fires the now-fixed hook):
+            bash deploy_scripts/platform/platform_install.sh rafay --update --yes
+   [PASS] GitRepository 'rafay_nvcm_catalog' registered (2b31ca4c-6228-4e54-805c-324645da6b4c)
+   [PASS] 1 git-synced job(s) enabled
+   [PASS] cluster history: clean (no 'STC ' names, no '… (2)' collisions)
+7) render-api healthy?
+   [PASS] render-api availableReplicas=1
+8) tenant-number reservation pool database provisioned?
+   [PASS] Database 'rafay-nvcm-rafay-nvcm-stack-tenant-reservations' (pg database 'tenant_reservations') applied=true
+
+==============  INSTALL INCOMPLETE — 1 check(s) FAILED, 19 passed  ==============
+[rafay] installed version matches (0.2.5), but the acceptance check failed above — see Appendix A of setup_guide.md.
+[rafay]    re-run '/home/ubuntu/rafay_nvcm_poc/deploy_scripts/platform/rafay-custom-helm.sh upgrade' to reconcile the release.
+[install] !! platform/rafay-custom-helm.sh failed — see its output above.
+[2026-10-27 12:09:24 UTC] ERROR Stage platform-rafay-install failed (rc=1, 23s)
+
+------------------------------------------------------------
+STAGE STATUS: FAILED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 04: platform-verify (phase: platform)
+============================================================
+
+[2026-10-27 12:09:24 UTC] INFO  Stage platform-verify not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 05: blueprint-generate (phase: blueprint)
+============================================================
+
+[2026-10-27 12:09:36 UTC] INFO  Stage blueprint-generate not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 06: blueprint-verify (phase: blueprint)
+============================================================
+
+[2026-10-27 12:09:36 UTC] INFO  Stage blueprint-verify not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 07: substrate (phase: substrate)
+============================================================
+
+[2026-10-27 12:09:36 UTC] INFO  Stage substrate not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 08: site-bringup (phase: bringup)
+============================================================
+
+[2026-10-27 12:09:36 UTC] INFO  Stage site-bringup not run — an earlier stage or phase did not pass
+
+------------------------------------------------------------
+STAGE STATUS: SKIPPED
+------------------------------------------------------------
+
+
+============================================================
+WORKFLOW STATUS: FAILED (failed stage: platform-rafay-install)
+============================================================
