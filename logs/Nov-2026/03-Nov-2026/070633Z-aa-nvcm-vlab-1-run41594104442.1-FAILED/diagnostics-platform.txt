@@ -1,0 +1,281 @@
+===== $ uptime
+ 07:32:57 up 25 min,  1 user,  load average: 1.72, 1.27, 1.12
+===== $ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           4.0G  1.4M  4.0G   1% /run
+efivarfs        256K   15K  237K   6% /sys/firmware/efi/efivars
+/dev/sda1       581G   24G  557G   5% /
+tmpfs            20G     0   20G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+tmpfs            20G     0   20G   0% /run/qemu
+/dev/sda16      881M   85M  734M  11% /boot
+/dev/sda15      105M  6.2M   99M   6% /boot/efi
+tmpfs           4.0G   16K  4.0G   1% /run/user/1001
+===== $ free -m
+               total        used        free      shared  buff/cache   available
+Mem:           40093        6686       21162         171       12934       33407
+Swap:              0           0           0
+===== $ docker ps -a
+CONTAINER ID   IMAGE                  COMMAND                  CREATED          STATUS          PORTS                                                                    NAMES
+34d8874a97fd   kindest/node:v1.31.0   "/usr/local/bin/entr…"   23 minutes ago   Up 23 minutes   0.0.0.0:35071->6443/tcp, 0.0.0.0:80->30080/tcp, 0.0.0.0:443->30443/tcp   nv-config-manager-control-plane
+===== $ kind get clusters
+nv-config-manager
+===== $ kubectl get pods -A -o wide
+NAMESPACE              NAME                                                              READY   STATUS     RESTARTS        AGE   IP            NODE                              NOMINATED NODE   READINESS GATES
+cert-manager           cert-manager-96954db67-7cn4l                                      1/1     Running    0               21m   10.244.0.9    nv-config-manager-control-plane   <none>           <none>
+cert-manager           cert-manager-cainjector-c56bfd876-bjlf6                           1/1     Running    0               21m   10.244.0.8    nv-config-manager-control-plane   <none>           <none>
+cert-manager           cert-manager-webhook-75c55bc7cc-dpkw7                             1/1     Running    0               21m   10.244.0.7    nv-config-manager-control-plane   <none>           <none>
+cnpg-system            cnpg-cloudnative-pg-559d7c5b49-jmxz4                              1/1     Running    0               21m   10.244.0.11   nv-config-manager-control-plane   <none>           <none>
+envoy-gateway-system   envoy-gateway-695d66b6d8-2vqlj                                    1/1     Running    0               21m   10.244.0.6    nv-config-manager-control-plane   <none>           <none>
+envoy-gateway-system   envoy-nv-config-manager-nv-config-manager-gateway-cbf59997fjd45   2/2     Running    0               20m   10.244.0.51   nv-config-manager-control-plane   <none>           <none>
+kube-system            coredns-6f6b679f8f-4vnwl                                          1/1     Running    0               22m   10.244.0.2    nv-config-manager-control-plane   <none>           <none>
+kube-system            coredns-6f6b679f8f-mstjk                                          1/1     Running    0               22m   10.244.0.3    nv-config-manager-control-plane   <none>           <none>
+kube-system            etcd-nv-config-manager-control-plane                              1/1     Running    0               23m   172.18.0.2    nv-config-manager-control-plane   <none>           <none>
+kube-system            kindnet-lxj5n                                                     1/1     Running    0               22m   172.18.0.2    nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-apiserver-nv-config-manager-control-plane                    1/1     Running    0               23m   172.18.0.2    nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-controller-manager-nv-config-manager-control-plane           1/1     Running    0               23m   172.18.0.2    nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-proxy-lh2kl                                                  1/1     Running    0               22m   172.18.0.2    nv-config-manager-control-plane   <none>           <none>
+kube-system            kube-scheduler-nv-config-manager-control-plane                    1/1     Running    0               23m   172.18.0.2    nv-config-manager-control-plane   <none>           <none>
+local-path-storage     local-path-provisioner-57c5987fd4-bs9xx                           1/1     Running    0               22m   10.244.0.4    nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      alloy-nfbpf                                                       2/2     Running    0               20m   10.244.0.17   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-config-store-1                                            1/1     Running    0               19m   10.244.0.64   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-dhcp-1                                                    1/1     Running    0               19m   10.244.0.66   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-nautobot-1                                                1/1     Running    0               19m   10.244.0.63   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-temporal-1                                                1/1     Running    0               19m   10.244.0.65   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      cluster-temporal-visibility-1                                     1/1     Running    0               19m   10.244.0.62   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      health-check-cf74d47f-4zt99                                       1/1     Running    0               20m   10.244.0.33   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-config-store-api-7d9c5cf884-l4pst               1/1     Running    0               20m   10.244.0.28   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-config-store-cache-refresh-68655c9b8f-6kvx4     1/1     Running    0               20m   10.244.0.23   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-dhcp-859645b858-bm468                           4/4     Running    0               20m   10.244.0.48   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-dhcp-refresh-755c69959f-zmmpl                   1/1     Running    6 (2m58s ago)   20m   10.244.0.25   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-mcp-57dc4657fb-5s2ng                            1/1     Running    0               20m   10.244.0.19   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nats-7b87565cb4-8ln5d                           1/1     Running    0               20m   10.244.0.27   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nats-box-6db8778966-ql7xd                       1/1     Running    0               20m   10.244.0.42   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nautobot-5cd47bbbdb-z7m7n                       2/2     Running    0               20m   10.244.0.60   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nautobot-celery-76756fc678-cfxdh                1/1     Running    0               20m   10.244.0.38   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-nautobot-celery-beat-565f487ffc-46rq6           1/1     Running    0               20m   10.244.0.35   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-redis-85fdfc4987-b4rxg                          1/1     Running    0               20m   10.244.0.52   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-api-77d6b78b88-rlsrn                     1/1     Running    0               20m   10.244.0.40   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-consumer-device-6564c8f67d-qtdgm         1/1     Running    0               20m   10.244.0.37   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-consumer-device-6564c8f67d-r5hh5         1/1     Running    0               20m   10.244.0.39   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-consumer-nautobot-765ffcd479-ntw7x       1/1     Running    0               20m   10.244.0.46   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-render-template-updater-d7ppr                   0/1     Init:0/3   0               11m   10.244.0.67   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-api-59f7b6858c-pls4n                   1/1     Running    0               20m   10.244.0.20   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-frontend-6455b68799-kjn24              1/1     Running    0               20m   10.244.0.43   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-4fm6b                1/1     Running    0               20m   10.244.0.45   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-782mt                1/1     Running    0               20m   10.244.0.41   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-gd2l2                1/1     Running    0               20m   10.244.0.44   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-history-977f7c6bf-nrhq7                1/1     Running    0               20m   10.244.0.47   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-matching-5969b7b4dc-6gtjm              1/1     Running    0               20m   10.244.0.34   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-nv-config-manager-worker-774f6brxsbb   1/1     Running    0               20m   10.244.0.32   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-scheduler-bc4858df-kzqcm               1/1     Running    6 (2m55s ago)   20m   10.244.0.18   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-web-6b9b59695d-ct75c                   1/1     Running    0               20m   10.244.0.36   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-temporal-worker-748b967c86-fblrc                1/1     Running    0               20m   10.244.0.24   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-ui-5c57444496-8tq2j                             1/1     Running    0               20m   10.244.0.31   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      nv-config-manager-ztp-67f78d78bf-9klks                            2/2     Running    0               20m   10.244.0.49   nv-config-manager-control-plane   <none>           <none>
+nv-config-manager      prometheus-server-9d87cdfcf-29xk6                                 2/2     Running    0               20m   10.244.0.21   nv-config-manager-control-plane   <none>           <none>
+===== $ kubectl get events -A --sort-by=.lastTimestamp
+nv-config-manager      20m         Normal    Pulled                    pod/alloy-nfbpf                                                                    Successfully pulled image "quay.io/prometheus-operator/prometheus-config-reloader:v0.90.1" in 264ms (17.681s including waiting). Image size: 14230502 bytes.
+nv-config-manager      20m         Normal    Created                   pod/alloy-nfbpf                                                                    Created container config-reloader
+nv-config-manager      20m         Normal    Started                   pod/alloy-nfbpf                                                                    Started container config-reloader
+envoy-gateway-system   20m         Normal    Created                   pod/envoy-nv-config-manager-nv-config-manager-gateway-cbf59997fjd45                Created container envoy
+nv-config-manager      20m         Normal    Pulled                    pod/nv-config-manager-nats-box-6db8778966-ql7xd                                    Container image "docker.io/natsio/nats-box:0.14.3" already present on machine
+envoy-gateway-system   20m         Normal    Pulled                    pod/envoy-nv-config-manager-nv-config-manager-gateway-cbf59997fjd45                Successfully pulled image "docker.io/envoyproxy/envoy:distroless-v1.36.5" in 1.931s (19.311s including waiting). Image size: 36211417 bytes.
+nv-config-manager      20m         Normal    Created                   pod/nv-config-manager-nats-box-6db8778966-ql7xd                                    Created container nv-config-manager-nats-box
+envoy-gateway-system   20m         Normal    Started                   pod/envoy-nv-config-manager-nv-config-manager-gateway-cbf59997fjd45                Started container envoy
+envoy-gateway-system   20m         Normal    Started                   pod/envoy-nv-config-manager-nv-config-manager-gateway-cbf59997fjd45                Started container shutdown-manager
+envoy-gateway-system   20m         Normal    Pulled                    pod/envoy-nv-config-manager-nv-config-manager-gateway-cbf59997fjd45                Container image "docker.io/envoyproxy/gateway:v1.6.5" already present on machine
+envoy-gateway-system   20m         Normal    Created                   pod/envoy-nv-config-manager-nv-config-manager-gateway-cbf59997fjd45                Created container shutdown-manager
+nv-config-manager      20m         Normal    Started                   pod/nv-config-manager-nats-box-6db8778966-ql7xd                                    Started container nv-config-manager-nats-box
+nv-config-manager      20m         Normal    Created                   pod/nv-config-manager-render-api-77d6b78b88-rlsrn                                  Created container api
+nv-config-manager      20m         Normal    Pulled                    pod/nv-config-manager-render-api-77d6b78b88-rlsrn                                  Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      20m         Normal    Pulled                    pod/prometheus-server-9d87cdfcf-29xk6                                              Successfully pulled image "quay.io/prometheus/prometheus:v3.11.3" in 2.716s (20.62s including waiting). Image size: 152919010 bytes.
+nv-config-manager      20m         Normal    Created                   pod/prometheus-server-9d87cdfcf-29xk6                                              Created container prometheus-server
+nv-config-manager      20m         Normal    Started                   pod/prometheus-server-9d87cdfcf-29xk6                                              Started container prometheus-server
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-render-api-77d6b78b88-rlsrn                                  Started container api
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-redis-85fdfc4987-b4rxg                                       Successfully pulled image "docker.io/library/redis:7-alpine" in 1.8s (21.883s including waiting). Image size: 16261881 bytes.
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-redis-85fdfc4987-b4rxg                                       Created container nv-config-manager-redis
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-redis-85fdfc4987-b4rxg                                       Started container nv-config-manager-redis
+nv-config-manager      19m         Warning   Unhealthy                 pod/nv-config-manager-render-api-77d6b78b88-rlsrn                                  Liveness probe failed: Get "http://10.244.0.40:9000/healthcheck": dial tcp 10.244.0.40:9000: connect: connection refused
+nv-config-manager      19m         Warning   Unhealthy                 pod/nv-config-manager-render-api-77d6b78b88-rlsrn                                  Readiness probe failed: Get "http://10.244.0.40:9000/healthcheck": dial tcp 10.244.0.40:9000: connect: connection refused
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-dhcp-1-initdb-k2zw2                                                    Successfully pulled image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" in 575ms (28.812s including waiting). Image size: 276754086 bytes.
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-temporal-visibility-1-initdb-4qc2b                                     Successfully pulled image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" in 8.724s (28.237s including waiting). Image size: 276754086 bytes.
+nv-config-manager      19m         Normal    Created                   pod/cluster-dhcp-1-initdb-k2zw2                                                    Created container initdb
+nv-config-manager      19m         Normal    Started                   pod/cluster-temporal-visibility-1-initdb-4qc2b                                     Started container initdb
+nv-config-manager      19m         Normal    Created                   pod/cluster-temporal-visibility-1-initdb-4qc2b                                     Created container initdb
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-temporal-1-initdb-rmd95                                                Successfully pulled image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" in 436ms (25.73s including waiting). Image size: 276754086 bytes.
+nv-config-manager      19m         Normal    Started                   pod/cluster-dhcp-1-initdb-k2zw2                                                    Started container initdb
+nv-config-manager      19m         Normal    Started                   pod/cluster-config-store-1-initdb-m6cgw                                            Started container initdb
+nv-config-manager      19m         Normal    Created                   pod/cluster-config-store-1-initdb-m6cgw                                            Created container initdb
+nv-config-manager      19m         Normal    Started                   pod/cluster-temporal-1-initdb-rmd95                                                Started container initdb
+nv-config-manager      19m         Normal    Created                   pod/cluster-temporal-1-initdb-rmd95                                                Created container initdb
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-config-store-1-initdb-m6cgw                                            Successfully pulled image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" in 503ms (25.294s including waiting). Image size: 276754086 bytes.
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-render-consumer-device-6564c8f67d-qtdgm                      Created container install-template-plugins
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-6564c8f67d-qtdgm                      Successfully pulled image "python:3.13-alpine" in 440ms (22.61s including waiting). Image size: 16952277 bytes.
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-config-store-api-7d9c5cf884-l4pst                            Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-render-consumer-device-6564c8f67d-qtdgm                      Started container install-template-plugins
+nv-config-manager      19m         Normal    Started                   pod/cluster-nautobot-1-initdb-dwndw                                                Started container initdb
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-nautobot-1-initdb-dwndw                                                Successfully pulled image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" in 463ms (24.181s including waiting). Image size: 276754086 bytes.
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-nautobot-celery-76756fc678-cfxdh                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-6564c8f67d-r5hh5                      Successfully pulled image "python:3.13-alpine" in 457ms (23.066s including waiting). Image size: 16952277 bytes.
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-render-consumer-device-6564c8f67d-r5hh5                      Created container install-template-plugins
+nv-config-manager      19m         Normal    Created                   pod/cluster-nautobot-1-initdb-dwndw                                                Created container initdb
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Started container wait-postgres
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-nautobot-celery-76756fc678-cfxdh                             Created container wait-for-nautobot
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-render-consumer-device-6564c8f67d-r5hh5                      Started container install-template-plugins
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Created container wait-postgres
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-config-store-api-7d9c5cf884-l4pst                            Created container api
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-render-consumer-nautobot-765ffcd479-ntw7x                    Successfully pulled image "python:3.13-alpine" in 455ms (22.516s including waiting). Image size: 16952277 bytes.
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-config-store-api-7d9c5cf884-l4pst                            Started container api
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-render-consumer-nautobot-765ffcd479-ntw7x                    Created container install-template-plugins
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-render-consumer-nautobot-765ffcd479-ntw7x                    Started container install-template-plugins
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-nautobot-celery-76756fc678-cfxdh                             Started container wait-for-nautobot
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-temporal-visibility-1                                                  Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.29.0" already present on machine
+nv-config-manager      19m         Normal    Completed                 job/cluster-temporal-visibility-1-initdb                                           Job completed
+nv-config-manager      19m         Normal    Created                   pod/cluster-temporal-visibility-1                                                  Created container bootstrap-controller
+nv-config-manager      19m         Normal    Scheduled                 pod/cluster-temporal-visibility-1                                                  Successfully assigned nv-config-manager/cluster-temporal-visibility-1 to nv-config-manager-control-plane
+nv-config-manager      19m         Normal    Started                   pod/cluster-temporal-visibility-1                                                  Started container bootstrap-controller
+nv-config-manager      19m         Normal    Scheduled                 pod/cluster-dhcp-1                                                                 Successfully assigned nv-config-manager/cluster-dhcp-1 to nv-config-manager-control-plane
+nv-config-manager      19m         Normal    Started                   pod/cluster-temporal-1                                                             Started container bootstrap-controller
+nv-config-manager      19m         Normal    Created                   pod/cluster-temporal-visibility-1                                                  Created container postgres
+nv-config-manager      19m         Normal    Created                   pod/cluster-temporal-1                                                             Created container bootstrap-controller
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-dhcp-1                                                                 Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.29.0" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-nautobot-1                                                             Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.29.0" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/cluster-nautobot-1                                                             Created container bootstrap-controller
+nv-config-manager      19m         Normal    Scheduled                 pod/cluster-nautobot-1                                                             Successfully assigned nv-config-manager/cluster-nautobot-1 to nv-config-manager-control-plane
+nv-config-manager      19m         Normal    Completed                 job/cluster-nautobot-1-initdb                                                      Job completed
+nv-config-manager      19m         Normal    Started                   pod/cluster-nautobot-1                                                             Started container bootstrap-controller
+nv-config-manager      19m         Normal    Completed                 job/cluster-config-store-1-initdb                                                  Job completed
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-temporal-visibility-1                                                  Container image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/cluster-config-store-1                                                         Started container bootstrap-controller
+nv-config-manager      19m         Normal    Created                   pod/cluster-config-store-1                                                         Created container bootstrap-controller
+nv-config-manager      19m         Normal    Scheduled                 pod/cluster-config-store-1                                                         Successfully assigned nv-config-manager/cluster-config-store-1 to nv-config-manager-control-plane
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-config-store-1                                                         Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.29.0" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/cluster-temporal-visibility-1                                                  Started container postgres
+nv-config-manager      19m         Normal    Completed                 job/cluster-dhcp-1-initdb                                                          Job completed
+nv-config-manager      19m         Normal    Started                   pod/cluster-dhcp-1                                                                 Started container bootstrap-controller
+nv-config-manager      19m         Normal    Created                   pod/cluster-dhcp-1                                                                 Created container bootstrap-controller
+nv-config-manager      19m         Normal    Completed                 job/cluster-temporal-1-initdb                                                      Job completed
+nv-config-manager      19m         Normal    Scheduled                 pod/cluster-temporal-1                                                             Successfully assigned nv-config-manager/cluster-temporal-1 to nv-config-manager-control-plane
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-temporal-1                                                             Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.29.0" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/cluster-config-store-1                                                         Created container postgres
+nv-config-manager      19m         Normal    Started                   pod/cluster-nautobot-1                                                             Started container postgres
+nv-config-manager      19m         Normal    Started                   pod/cluster-config-store-1                                                         Started container postgres
+nv-config-manager      19m         Normal    Started                   pod/cluster-temporal-1                                                             Started container postgres
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-dhcp-1                                                                 Container image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/cluster-dhcp-1                                                                 Created container postgres
+nv-config-manager      19m         Normal    Started                   pod/cluster-dhcp-1                                                                 Started container postgres
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-config-store-1                                                         Container image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-temporal-1                                                             Container image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/cluster-temporal-1                                                             Created container postgres
+nv-config-manager      19m         Normal    Created                   pod/cluster-nautobot-1                                                             Created container postgres
+nv-config-manager      19m         Normal    Pulled                    pod/cluster-nautobot-1                                                             Container image "ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-render-consumer-device-6564c8f67d-qtdgm                      Started container consumer
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-render-consumer-device-6564c8f67d-r5hh5                      Started container consumer
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-render-consumer-device-6564c8f67d-r5hh5                      Created container consumer
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-6564c8f67d-r5hh5                      Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-render-consumer-device-6564c8f67d-qtdgm                      Created container consumer
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-render-consumer-device-6564c8f67d-qtdgm                      Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-render-consumer-nautobot-765ffcd479-ntw7x                    Started container consumer
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-render-consumer-nautobot-765ffcd479-ntw7x                    Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-render-consumer-nautobot-765ffcd479-ntw7x                    Created container consumer
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-gd2l2                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-782mt                             Started container wait-for-frontend
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-frontend-6455b68799-kjn24                           Container image "docker.io/temporalio/admin-tools:1.29" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-frontend-6455b68799-kjn24                           Created container schema-setup
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-frontend-6455b68799-kjn24                           Started container schema-setup
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-worker-748b967c86-fblrc                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-worker-748b967c86-fblrc                             Created container wait-for-frontend
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-worker-748b967c86-fblrc                             Started container wait-for-frontend
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-4fm6b                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-4fm6b                             Created container wait-for-frontend
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-gd2l2                             Started container wait-for-frontend
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-gd2l2                             Created container wait-for-frontend
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-4fm6b                             Started container wait-for-frontend
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-782mt                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-782mt                             Created container wait-for-frontend
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Started container run-migrations
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-matching-5969b7b4dc-6gtjm                           Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-nrhq7                             Created container wait-for-frontend
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-nrhq7                             Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Container image "nv-config-manager-nautobot:sha-8ac9888c1d4d" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Created container run-migrations
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-nrhq7                             Started container wait-for-frontend
+nv-config-manager      19m         Normal    Pulling                   pod/nv-config-manager-temporal-frontend-6455b68799-kjn24                           Pulling image "docker.io/temporalio/server:1.29"
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-matching-5969b7b4dc-6gtjm                           Created container wait-for-frontend
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-matching-5969b7b4dc-6gtjm                           Started container wait-for-frontend
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Created container api
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Created container config-sync-v4
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Started container kea
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-dhcp-859645b858-bm468                                        Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Started container healthcheck
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Created container kea
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-dhcp-859645b858-bm468                                        Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-dhcp-859645b858-bm468                                        Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-dhcp-859645b858-bm468                                        Container image "nv-config-manager-kea:sha-6d3a50d08440" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Started container api
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Created container healthcheck
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-frontend-6455b68799-kjn24                           Successfully pulled image "docker.io/temporalio/server:1.29" in 4.863s (4.863s including waiting). Image size: 252246215 bytes.
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-frontend-6455b68799-kjn24                           Created container temporal-frontend
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-dhcp-859645b858-bm468                                        Started container config-sync-v4
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-frontend-6455b68799-kjn24                           Started container temporal-frontend
+nv-config-manager      19m         Warning   Unhealthy                 pod/nv-config-manager-dhcp-859645b858-bm468                                        Readiness probe failed: Get "http://10.244.0.48:9000/healthcheck": dial tcp 10.244.0.48:9000: connect: connection refused
+nv-config-manager      19m         Warning   Unhealthy                 pod/nv-config-manager-dhcp-859645b858-bm468                                        Readiness probe failed: Get "http://10.244.0.48:9090/healthcheck": dial tcp 10.244.0.48:9090: connect: connection refused
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-worker-748b967c86-fblrc                             Created container temporal-worker
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-worker-748b967c86-fblrc                             Started container temporal-worker
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-nrhq7                             Container image "docker.io/temporalio/server:1.29" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-nrhq7                             Created container temporal-history
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-nrhq7                             Started container temporal-history
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-matching-5969b7b4dc-6gtjm                           Container image "docker.io/temporalio/server:1.29" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-matching-5969b7b4dc-6gtjm                           Created container temporal-matching
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-worker-748b967c86-fblrc                             Container image "docker.io/temporalio/server:1.29" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-matching-5969b7b4dc-6gtjm                           Started container temporal-matching
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-782mt                             Container image "docker.io/temporalio/server:1.29" already present on machine
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-4fm6b                             Container image "docker.io/temporalio/server:1.29" already present on machine
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-gd2l2                             Created container temporal-history
+nv-config-manager      19m         Normal    Pulled                    pod/nv-config-manager-temporal-history-977f7c6bf-gd2l2                             Container image "docker.io/temporalio/server:1.29" already present on machine
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-782mt                             Started container temporal-history
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-782mt                             Created container temporal-history
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-4fm6b                             Started container temporal-history
+nv-config-manager      19m         Normal    Started                   pod/nv-config-manager-temporal-history-977f7c6bf-gd2l2                             Started container temporal-history
+nv-config-manager      19m         Normal    Created                   pod/nv-config-manager-temporal-history-977f7c6bf-4fm6b                             Created container temporal-history
+nv-config-manager      18m         Normal    Created                   pod/nv-config-manager-temporal-nv-config-manager-worker-774f6brxsbb                Created container worker
+nv-config-manager      18m         Normal    Pulled                    pod/nv-config-manager-temporal-nv-config-manager-worker-774f6brxsbb                Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      18m         Normal    Started                   pod/nv-config-manager-temporal-nv-config-manager-worker-774f6brxsbb                Started container worker
+nv-config-manager      13m         Normal    Pulled                    pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Container image "nv-config-manager-nautobot:sha-8ac9888c1d4d" already present on machine
+nv-config-manager      13m         Normal    Created                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Created container nautobot
+nv-config-manager      13m         Normal    Started                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Started container nautobot
+nv-config-manager      13m         Normal    Pulling                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Pulling image "docker.io/nginxinc/nginx-unprivileged:1.27"
+nv-config-manager      13m         Normal    Pulled                    pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Successfully pulled image "docker.io/nginxinc/nginx-unprivileged:1.27" in 2.937s (2.937s including waiting). Image size: 72403517 bytes.
+nv-config-manager      13m         Normal    Created                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Created container nginx
+nv-config-manager      13m         Normal    Started                   pod/nv-config-manager-nautobot-5cd47bbbdb-z7m7n                                    Started container nginx
+nv-config-manager      13m         Normal    Created                   pod/nv-config-manager-temporal-scheduler-bc4858df-kzqcm                            Created container wait-for-temporal-namespace
+nv-config-manager      13m         Normal    Pulled                    pod/nv-config-manager-nautobot-celery-beat-565f487ffc-46rq6                        Container image "nv-config-manager-nautobot:sha-8ac9888c1d4d" already present on machine
+nv-config-manager      13m         Normal    Created                   pod/nv-config-manager-nautobot-celery-beat-565f487ffc-46rq6                        Created container celery-beat
+nv-config-manager      13m         Normal    Pulled                    pod/nv-config-manager-temporal-scheduler-bc4858df-kzqcm                            Container image "docker.io/temporalio/admin-tools:1.29" already present on machine
+nv-config-manager      13m         Normal    Pulled                    pod/nv-config-manager-config-store-cache-refresh-68655c9b8f-6kvx4                  Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      13m         Normal    Created                   pod/nv-config-manager-config-store-cache-refresh-68655c9b8f-6kvx4                  Created container cache-refresh
+nv-config-manager      13m         Normal    Started                   pod/nv-config-manager-config-store-cache-refresh-68655c9b8f-6kvx4                  Started container cache-refresh
+nv-config-manager      13m         Normal    Started                   pod/nv-config-manager-nautobot-celery-beat-565f487ffc-46rq6                        Started container celery-beat
+nv-config-manager      13m         Normal    Started                   pod/nv-config-manager-temporal-scheduler-bc4858df-kzqcm                            Started container wait-for-temporal-namespace
+nv-config-manager      13m         Normal    Pulled                    pod/nv-config-manager-nautobot-celery-76756fc678-cfxdh                             Container image "nv-config-manager-nautobot:sha-8ac9888c1d4d" already present on machine
+nv-config-manager      13m         Normal    Started                   pod/nv-config-manager-nautobot-celery-76756fc678-cfxdh                             Started container celery
+nv-config-manager      13m         Normal    Created                   pod/nv-config-manager-nautobot-celery-76756fc678-cfxdh                             Created container celery
+nv-config-manager      11m         Normal    Scheduled                 pod/nv-config-manager-render-template-updater-d7ppr                                Successfully assigned nv-config-manager/nv-config-manager-render-template-updater-d7ppr to nv-config-manager-control-plane
+nv-config-manager      11m         Normal    SuccessfulCreate          job/nv-config-manager-render-template-updater                                      Created pod: nv-config-manager-render-template-updater-d7ppr
+nv-config-manager      11m         Normal    Pulled                    pod/nv-config-manager-render-template-updater-d7ppr                                Container image "docker.io/library/busybox:1.36" already present on machine
+nv-config-manager      11m         Normal    Created                   pod/nv-config-manager-render-template-updater-d7ppr                                Created container wait-for-nautobot
+nv-config-manager      11m         Normal    Started                   pod/nv-config-manager-render-template-updater-d7ppr                                Started container wait-for-nautobot
+nv-config-manager      6m43s       Normal    Created                   pod/nv-config-manager-temporal-scheduler-bc4858df-kzqcm                            Created container scheduler
+nv-config-manager      6m43s       Normal    Started                   pod/nv-config-manager-temporal-scheduler-bc4858df-kzqcm                            Started container scheduler
+nv-config-manager      6m43s       Normal    Pulled                    pod/nv-config-manager-temporal-scheduler-bc4858df-kzqcm                            Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      6m42s       Normal    Started                   pod/nv-config-manager-dhcp-refresh-755c69959f-zmmpl                                Started container config-refresh-v4
+nv-config-manager      6m42s       Normal    Created                   pod/nv-config-manager-dhcp-refresh-755c69959f-zmmpl                                Created container config-refresh-v4
+nv-config-manager      6m42s       Normal    Pulled                    pod/nv-config-manager-dhcp-refresh-755c69959f-zmmpl                                Container image "nv-config-manager:sha-92822d2e8e5f" already present on machine
+nv-config-manager      25s         Warning   BackOff                   pod/nv-config-manager-temporal-scheduler-bc4858df-kzqcm                            Back-off restarting failed container scheduler in pod nv-config-manager-temporal-scheduler-bc4858df-kzqcm_nv-config-manager(775e8c37-4179-4e67-a6c2-acdf531f4eb9)
+nv-config-manager      23s         Warning   BackOff                   pod/nv-config-manager-dhcp-refresh-755c69959f-zmmpl                                Back-off restarting failed container config-refresh-v4 in pod nv-config-manager-dhcp-refresh-755c69959f-zmmpl_nv-config-manager(c24ab655-cfdb-4fda-9b77-caf2b7494966)
+===== $ sudo -n virsh list --all
+ Id   Name   State
+--------------------
+
