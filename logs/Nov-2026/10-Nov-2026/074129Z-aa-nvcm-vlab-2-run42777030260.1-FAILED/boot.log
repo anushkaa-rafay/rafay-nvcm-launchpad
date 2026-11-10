@@ -1,0 +1,15 @@
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+ServiceError:
+{
+    "client_version": "Oracle-PythonSDK/2.190.0, Oracle-PythonCLI/3.96.0",
+    "code": "NotAuthorizedOrNotFound",
+    "logging_tips": "Please run the OCI CLI command using --debug flag to find more debug information.",
+    "message": "Authorization failed or requested resource not found.",
+    "opc-request-id": "71422732EA8C48759C61504B35C56B0F/25D0621BE8B9DF0BCDCAF26A504858BC/1D5549F2B5AE562D6AC82068F55C7CD9",
+    "operation_name": "get_instance",
+    "request_endpoint": "GET https://iaas.us-phoenix-1.oraclecloud.com/20160918/instances/ocid1.instance.oc1.phx.anyhqljtymbj47qcuux4h4bwkbnaic6hjpl4gbtw2puhra3pm4rxb7iec3ya",
+    "status": 404,
+    "target_service": "compute",
+    "timestamp": "2026-11-10T07:42:05.505897+00:00",
+    "troubleshooting_tips": "See [https://docs.oracle.com/iaas/Content/API/References/apierrors.htm] for more information about resolving this error. If you are unable to resolve this issue, run this CLI command with --debug option and contact Oracle support and provide them the full error message."
+}
