@@ -342,6 +342,7 @@ jobs:
         if: ${{ !cancelled() && steps.report.outputs.status == 'FAILED' }}
         continue-on-error: true
         env:
+          MAILS_ENABLED: ${{ vars.MAILS_ENABLED }}   # mails go out only when this is "true"
           MAIL_TO:       ${{ vars.MAIL_TO }}
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}   # optional; default https://<owner>.github.io/<repo>/
           SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}

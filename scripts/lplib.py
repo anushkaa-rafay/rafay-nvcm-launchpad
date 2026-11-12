@@ -61,6 +61,9 @@ def tail(path, n):
 
 def mail_configured():
     """True if send_mail would send; otherwise says why in the workflow log (a notice, never a failure)."""
+    if os.environ.get("MAILS_ENABLED", "").strip().lower() != "true":
+        print("::notice::no mail sent — mails are off (set the MAILS_ENABLED repository variable to true to send them)")
+        return False
     if not os.environ.get("MAIL_TO", "").strip():
         print("::notice::no mail sent — the MAIL_TO repository variable is not set")
         return False

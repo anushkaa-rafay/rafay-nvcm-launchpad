@@ -138,11 +138,12 @@ host's disk.
 **6. Email (optional)**
 
 Runs mail their result through a Gmail account (Python's own SMTP client, from the runner — no third-party
-action ever sees the credentials). Until `MAIL_TO` is set nothing is sent and nothing fails; the run just notes
-"no mail sent". All of these are repository-level — the report job doesn't run in a lab's Environment.
+action ever sees the credentials). Mails go out only while `MAILS_ENABLED` is `true`; until it is (and `MAIL_TO` is
+set) nothing is sent and nothing fails — the run just notes "no mail sent". All of these are repository-level — the report job doesn't run in a lab's Environment.
 
 | Name | Kind | Value |
 |---|---|---|
+| `MAILS_ENABLED` | variable | the on/off switch: `true` sends mails; unset or anything else sends none |
 | `MAIL_TO` | variable | comma-separated recipients, e.g. `a@rafay.co,b@rafay.co` |
 | `SMTP_USERNAME` | variable | the Gmail address that sends — also the mail's From. Example: `nvcm-launchpad-alerts@gmail.com` (or a Google Workspace address such as `nvcm-alerts@rafay.co`) |
 | `SMTP_SERVER`, `SMTP_PORT` | variable | optional — default `smtp.gmail.com` and `465` (TLS); `587` uses STARTTLS |

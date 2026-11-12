@@ -1,7 +1,7 @@
 name: weekly-report
 # Every Friday 09:00 IST: the last 7 days of nvcm-greenfield / nvcm-brownfield runs — pass rate, the daily
 # run's week, where runs failed, stage durations, every run with its link — on this run's Summary tab and
-# mailed to MAIL_TO (nothing is mailed while MAIL_TO is unset). Reads the Actions API and the committed logs/;
+# mailed to MAIL_TO (nothing is mailed unless MAILS_ENABLED is true and MAIL_TO is set). Reads the Actions API and the committed logs/;
 # touches no lab, no OCI/AWS, no SSH.
 
 on:
@@ -30,6 +30,7 @@ jobs:
         env:
           DAYS: ${{ inputs.days || '7' }}
           GITHUB_TOKEN: ${{ github.token }}
+          MAILS_ENABLED: ${{ vars.MAILS_ENABLED }}   # mails go out only when this is "true"
           MAIL_TO:       ${{ vars.MAIL_TO }}
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}   # optional; default https://<owner>.github.io/<repo>/
           SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}

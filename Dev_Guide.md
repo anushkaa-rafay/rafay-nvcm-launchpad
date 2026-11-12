@@ -193,7 +193,7 @@ never cleans — it adopts the fabric that is running.
   last step, on `status == FAILED`, runs `scripts/failure-mail.py report`, which reads only that file plus the
   report's logs; any further notifier (shared drive, Slack) belongs beside it, reading the same file — never
   the workflow's own state. Mail goes through `scripts/lplib.py` (stdlib `smtplib`, config from `MAIL_TO` /
-  `SMTP_*`, a notice and no send when `MAIL_TO` is unset; it logs in with OAuth2 `XOAUTH2` — a refresh token
+  `SMTP_*`, a notice and no send unless `MAILS_ENABLED` is `true` and `MAIL_TO` is set; it logs in with OAuth2 `XOAUTH2` — a refresh token
   traded for an access token per send — when `SMTP_OAUTH_REFRESH_TOKEN` is set, else with `SMTP_PASSWORD`). Both mails link the dashboard
   (`DASHBOARD_URL`, else the repo's GitHub Pages URL) and `logs/`; the failure mail links the run's own folder,
   named by the same `lp_run_dir` that `commit-logs.sh` uses, so the two can't drift. The step is `continue-on-error`, so a mail
