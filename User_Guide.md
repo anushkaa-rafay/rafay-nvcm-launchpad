@@ -235,8 +235,9 @@ below → Run**.
 | **Lab** (`lab`) | `default` | the lab to run on, OCI or AWS — a dropdown of the GitHub Environments set up as in [One-time setup](#one-time-setup). `default` uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
 | **rafay_nvcm_poc Branch** (`poc_branch`) | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
 | **Stages** (`stages`) | `all` | `all`; `phase: <phase>` runs one phase (`platform`, `blueprint`, `substrate`, `bringup`); `from <stage>` runs that stage and every one after it — e.g. `from blueprint-generate` (with **Clean the Lab** unticked) reruns only the DC part on an installed platform |
-| **Blueprint · Generate** (`generate`) | ☐ | ticked: this run's `blueprint-generate` stage builds the blueprint from the datacenter folder's `.xlsx` workbook, its `sheet_profiles/*.yaml` and its `site_facts/*.yaml` (the site is named after the facts file). Unticked: the folder's committed `blueprint_*.yaml` is used. Either way `blueprint-verify` checks it before anything is built |
-| **Blueprint · Datacenter** (`datacenter`) | `stc` | a folder of `rafay_nvcm_poc/datacenters/examples/` (`stc`, `nava`, `slab`, `tm`, `xyz`). The folder must hold exactly **one** of the files the Generate setting needs, or the run fails at **Boot Lab**, naming what it found — see the table below |
+| **Blueprint · Generate** (`generate`) | ☐ | which of the next two dropdowns this run uses. Ticked: **Generate Blueprint for**. Unticked: **Existing Blueprint from**. The other one is ignored. Either way `blueprint-verify` checks the blueprint before anything is built |
+| **Generate Blueprint for** (`generate_for`) | `datacenters/examples/stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx` | a workbook in `rafay_nvcm_poc`. This run's `blueprint-generate` stage builds the blueprint from it, together with the `sheet_profiles/*.yaml` and `site_facts/*.yaml` in the same folder (exactly one of each). The site is named after the folder's committed blueprint (stc → `blr-dc01`, nava → `nava-dc01`), else after the facts file |
+| **Existing Blueprint from** (`existing_from`) | `datacenters/examples/stc/blueprint_stc.yaml` | a committed blueprint yaml in `rafay_nvcm_poc`, used as it is |
 | **Day0 Tenants** (`tenants`) | `3-11,84-100` | passed to `simulate_dc.sh --tenants`. Works with any blueprint, but the default is STC's range — change it for another datacenter, or leave it **blank** to use the blueprint's own full tenant range |
 | **Clean the Lab during boot** (`clean_lab`) | ✔ | deletes the kind cluster (`nv-config-manager`) and **all** libvirt VMs with their storage before the run, so it installs and builds from scratch. Untick when running only later stages (e.g. `from substrate`) against an already-installed lab |
 | **Power Off the Lab** (`shutdown`) | ✔ | untick to keep the instance up for debugging |
@@ -244,17 +245,22 @@ below → Run**.
 GitHub shows each input's one-line description as its label in the Run form, with no room for help text —
 this table is the full explanation.
 
-Which datacenters work with which setting (`rafay_nvcm_poc` `nvcm_1.3.1_migrate_test`, 2026-11-12):
+What each choice does (`rafay_nvcm_poc` `nvcm_1.3.1_migrate_test`, 2026-11-12). A choice that can't work fails at
+**Boot Lab**, saying why, before the platform install:
 
-| Datacenter | Generate ticked | Generate unticked |
-|---|---|---|
-| `stc` | ✔ site `blr-dc01` | ✔ `blueprint_stc.yaml` |
-| `nava` | ✘ two workbooks | ✔ `blueprint_nava-dc01.yaml` |
-| `tm` | ✘ two workbooks, no sheet profile | ✔ `blueprint_tm.yaml` |
-| `slab` | ✘ no workbook | ✘ five `blueprint_*.yaml` |
-| `xyz` | ✘ no workbook | ✘ two `blueprint_*.yaml` |
+| Generate Blueprint for | |
+|---|---|
+| `stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx` | ✔ site `blr-dc01` — the one exercised daily |
+| `nava/collapsed-core-mlag_requirements_v1.0.xlsx`, `nava/nava_v2.xlsx` | passes the boot check (site `nava-dc01`); whether the generator accepts the workbook with nava's one sheet profile is only known when it runs |
+| `tm/intake_tm_config.xlsx`, `tm/tm.xlsx` | ✘ `tm` has no `sheet_profiles/` |
 
-A new folder in `datacenters/examples/` needs adding to the `datacenter` dropdown's `options:` to be selectable.
+| Existing Blueprint from | |
+|---|---|
+| `stc/blueprint_stc.yaml`, `nava/blueprint_nava-dc01.yaml`, `tm/blueprint_tm.yaml`, `xyz/blueprint_xyz.yaml`, `xyz/blueprint_xyz-dc01_adopted.yaml` | ✔ pass the boot check |
+| the five `slab/blueprint_*.yaml` | ✘ `topology: spectrumx` — greenfield builds its fabric with `simulate_dc.sh` (twin_clos); `rafay_nvcm_poc` brings Spectrum-X up with `deploy_scripts/dc.sh` + FabricTwin instead (Ramakrishna's slab lab uses `slab/blueprint_blr.yaml` that way) |
+
+A new workbook or blueprint in `datacenters/examples/` needs adding to the `generate_for` / `existing_from` `options:` in
+`.github/workflows/nvcm-greenfield.yml` to be selectable.
 
 Before the stages, **Boot Lab** powers the instance on and runs **Cleanup**:
 
@@ -273,7 +279,7 @@ What it does next — four jobs, in order:
 | Job | Stages | |
 |---|---|---|
 | 1 · Installation | `host-prep` → `platform-nvcm-install` → `platform-rafay-install` → `platform-verify` | dependencies, NVCM + Nautobot, the Rafay layer, then one verdict for the whole platform (re-checked every 3 min for up to 15 min while pods finish starting) |
-| 2 · Blueprint | `blueprint-generate` → `blueprint-verify` | generate from the datacenter's workbook (or take its committed blueprint), then verify it offline |
+| 2 · Blueprint | `blueprint-generate` → `blueprint-verify` | generate from the chosen workbook (or take the chosen committed blueprint), then verify it offline |
 | 3 · Substrate | `substrate` | stage the VM images, then create this blueprint's fabric VMs and cabling (gated at L1 and L2). If a check fails — say a VM caught mid-boot — it starts or recreates the VMs that aren't running and tries again, up to 3 times |
 | 4 · Site BringUp | `site-bringup` | `recover_substrate.sh` (a no-op right after Substrate), then underlay → overlay → servers → accept, gated at every layer |
 
@@ -310,7 +316,7 @@ For example `SCHEDULE_1_LAB=aa-nvcm-vlab-3` + `SCHEDULE_1_POC_BRANCH=prototype_f
 the 06:00 one. A scheduled run has no form to fill in, so it takes:
 
 - the lab and branch from the table above;
-- `stages=all`, datacenter `stc` **generated** from its workbook (unlike the form, where Generate is off by
+- `stages=all`, the `stc` workbook **generated** into a blueprint (unlike the form, where Generate is off by
   default — so the daily run keeps testing the generator), `tenants=3-11,84-100`;
 - it always cleans the lab first (`clean_lab`) and always powers the instance off at the end.
 

@@ -35,59 +35,70 @@ LAUNCHPAD_STAGES=(
   site-bringup:bringup:300         # 4 Site bring-up — underlay → overlay → servers → accept, gated per layer      S4–S5
 )
 
-# ── greenfield-only: the datacenter folder the blueprint comes from ─────────────────────────────────────────
+# ── greenfield-only: the file the blueprint comes from ────────────────────────────────────────────────────────
 # rafay_nvcm_poc layout (prototype_demo_v1 and later): blueprint tools under blueprint/, the example sites under
 # datacenters/examples/<datacenter>/, the virtual-fabric substrate tools under targets/virtual/fabric_maintenance/twin_clos/.
-: "${DATACENTER:=stc}"                 # a folder of datacenters/examples/ (the workflow's `datacenter` dropdown)
-: "${BLUEPRINT_SOURCE:=generate}"      # generate = built from the folder's workbook by this run's blueprint-generate stage
-                                       # existing = the folder's committed blueprint_*.yaml
-DC_DIR="datacenters/examples/$DATACENTER"
+# The workflow passes ONE file, chosen from its two dropdowns:
+#   generate → BP_XLSX       "Generate Blueprint for" — a workbook; this run's blueprint-generate stage builds from it
+#   existing → BP_COMMITTED  "Existing Blueprint from" — a committed blueprint yaml, used as it is
+: "${BLUEPRINT_SOURCE:=generate}"
+: "${BP_XLSX:=datacenters/examples/stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx}"
+: "${BP_COMMITTED:=datacenters/examples/stc/blueprint_stc.yaml}"
 BP_GENERATE=blueprint/greenfield/xlsx_to_blueprint.py
 BP_VERIFY=blueprint/validate/verify_blueprint.sh
 SUBSTRATE_DIR=targets/virtual/fabric_maintenance/twin_clos
 
-# lp_one <what> <candidate...>: print the ONE candidate that exists, else explain on stderr and fail. The folders
-# are not uniform (slab has five blueprints, nava two workbooks, tm no sheet profile), so a folder that doesn't
-# give exactly one file fails loudly, naming what it found, instead of quietly picking one of them.
+# lp_one <what> <candidate...>: print the ONE candidate that exists, else explain on stderr and fail — a folder
+# with no sheet profile (tm) or several fails loudly, naming what it found, instead of quietly picking one.
 lp_one(){
   local what="$1" f m=(); shift
   for f in "$@"; do [ -e "$f" ] && m+=("$f"); done
   case ${#m[@]} in
     1) echo "${m[0]}" ;;
-    0) echo "[launchpad] datacenter '$DATACENTER' ($BLUEPRINT_SOURCE): no $what in $DC_DIR/" >&2; return 1 ;;
-    *) echo "[launchpad] datacenter '$DATACENTER' ($BLUEPRINT_SOURCE): ${#m[@]} $what files in $DC_DIR/ — need exactly one: ${m[*]}" >&2; return 1 ;;
+    0) echo "[launchpad] $DATACENTER: no $what in $DC_DIR/ — the generator needs one next to the workbook" >&2; return 1 ;;
+    *) echo "[launchpad] $DATACENTER: ${#m[@]} $what files in $DC_DIR/ — need exactly one: ${m[*]}" >&2; return 1 ;;
   esac
 }
 
-# lp_dc_inputs: resolve the chosen datacenter folder (relative to the rafay_nvcm_poc checkout, the stages' cwd) into
-#   existing → BP_COMMITTED  = $DC_DIR/blueprint_*.yaml
-#   generate → BP_XLSX       = $DC_DIR/*.xlsx
-#              BP_PROFILE    = $DC_DIR/sheet_profiles/*.yaml      (the generator requires one)
-#              BP_FACTS      = $DC_DIR/site_facts/*.yaml
-#              GEN_SITE      = the facts file's name (site_facts/blr-dc01.yaml → blr-dc01), the generated site
-# Any of them already set in the environment wins. Also run at boot (`agent.sh check`), so a folder that doesn't
-# resolve fails the run there — not hours later, after the platform install.
+# lp_dc_inputs: check the chosen file (relative to the rafay_nvcm_poc checkout, the stages' cwd) and set
+#   DC_DIR / DATACENTER  its folder, e.g. datacenters/examples/stc / stc
+#   generate → BP_PROFILE = $DC_DIR/sheet_profiles/*.yaml   (exactly one; the generator requires it)
+#              BP_FACTS   = $DC_DIR/site_facts/*.yaml       (exactly one)
+#              GEN_SITE   = the generated site: the folder's one committed blueprint's `site:`, else the facts file's name
+# Also run at boot (`agent.sh check`), so a choice that can't work fails the run there — not hours later.
 lp_dc_inputs(){
-  [[ "$DATACENTER" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "[launchpad] invalid datacenter '$DATACENTER'" >&2; return 1; }
-  [ -d "$DC_DIR" ] || { echo "[launchpad] datacenter '$DATACENTER': $DC_DIR/ is not in this rafay_nvcm_poc checkout (branch ${POC_BRANCH:-?}) — have: $(cd datacenters/examples 2>/dev/null && ls -d -- */ | tr -d / | tr '\n' ' ')" >&2; return 1; }
+  local f
   case "$BLUEPRINT_SOURCE" in
-    existing)
-      BP_COMMITTED="${BP_COMMITTED:-$(lp_one "blueprint_*.yaml" "$DC_DIR"/blueprint_*.yaml)}" || return ;;
-    generate)
-      BP_XLSX="${BP_XLSX:-$(lp_one "*.xlsx workbook" "$DC_DIR"/*.xlsx)}" || return
-      BP_PROFILE="${BP_PROFILE:-$(lp_one "sheet_profiles/*.yaml" "$DC_DIR"/sheet_profiles/*.yaml)}" || return
-      BP_FACTS="${BP_FACTS:-$(lp_one "site_facts/*.yaml" "$DC_DIR"/site_facts/*.yaml)}" || return
-      GEN_SITE="$(basename "$BP_FACTS" .yaml)" ;;
+    existing) f="$BP_COMMITTED" ;;
+    generate) f="$BP_XLSX" ;;
     *) echo "[launchpad] unknown BLUEPRINT_SOURCE '$BLUEPRINT_SOURCE' (generate | existing)" >&2; return 1 ;;
   esac
+  [[ "$f" =~ ^datacenters/examples/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.(xlsx|ya?ml)$ ]] \
+    || { echo "[launchpad] invalid blueprint file '$f' (expected datacenters/examples/<dc>/<file>)" >&2; return 1; }
+  [ -f "$f" ] || { echo "[launchpad] $f is not in this rafay_nvcm_poc checkout (branch ${POC_BRANCH:-?})" >&2; return 1; }
+  DC_DIR="$(dirname "$f")"; DATACENTER="$(basename "$DC_DIR")"
+  if [ "$BLUEPRINT_SOURCE" = existing ]; then
+    # greenfield builds a twin_clos substrate with simulate_dc.sh; a Spectrum-X blueprint goes through dc.sh + FabricTwin
+    if grep -qE '^topology:[[:space:]]*spectrumx' "$f"; then
+      echo "[launchpad] $f is a spectrumx blueprint — greenfield (simulate_dc.sh) can't build it; rafay_nvcm_poc brings these up with deploy_scripts/dc.sh" >&2
+      return 1
+    fi
+    return 0
+  fi
+  [ -n "${BP_PROFILE:-}" ] || BP_PROFILE="$(lp_one "sheet_profiles/*.yaml" "$DC_DIR"/sheet_profiles/*.yaml)" || return
+  [ -n "${BP_FACTS:-}" ]   || BP_FACTS="$(lp_one "site_facts/*.yaml" "$DC_DIR"/site_facts/*.yaml)" || return
+  # the site: the folder's ONE committed blueprint's `site:` (stc → blr-dc01, nava → nava-dc01), else the facts file's name
+  local ref=("$DC_DIR"/blueprint_*.yaml)
+  [ ${#ref[@]} -eq 1 ] && [ -f "${ref[0]}" ] && GEN_SITE="$(sed -nE 's/^site:[[:space:]]*([A-Za-z0-9._-]+).*/\1/p' "${ref[0]}" | head -1)"
+  [ -n "${GEN_SITE:-}" ] || GEN_SITE="$(basename "$BP_FACTS" .yaml)"
 }
 
-# Boot-time check (agent.sh check, right after the checkout): the chosen datacenter resolves for this source.
+# Boot-time check (agent.sh check, right after the checkout): the chosen file is usable for this source.
 lp_check(){
   lp_dc_inputs || return
   case "$BLUEPRINT_SOURCE" in
-    existing) echo "[launchpad] datacenter $DATACENTER (existing): $BP_COMMITTED" ;;
-    generate) echo "[launchpad] datacenter $DATACENTER (generate): site $GEN_SITE from $BP_XLSX + $BP_PROFILE + $BP_FACTS" ;;
+    existing) echo "[launchpad] existing blueprint ($DATACENTER): $BP_COMMITTED" ;;
+    generate) echo "[launchpad] generate blueprint ($DATACENTER): site $GEN_SITE from $BP_XLSX + $BP_PROFILE + $BP_FACTS" ;;
   esac
 }
 

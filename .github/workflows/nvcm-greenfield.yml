@@ -15,7 +15,8 @@ on:
   workflow_dispatch:
     # GitHub shows each input's `description` as its label (there is no separate help text) — the full meaning of
     # every input is in User_Guide.md → "Running greenfield". Both dropdown lists are static (GitHub can't fill a
-    # choice dynamically): add a new lab Environment to `lab`, a new datacenters/examples/<dc> folder to `datacenter`.
+    # choice dynamically): add a new lab Environment to `lab`, a new workbook / blueprint yaml in rafay_nvcm_poc's
+    # datacenters/examples/ to `generate_for` / `existing_from`.
     inputs:
       lab:
         description: "Lab · Support OCI & AWS, by Default: var.DEFAULT_LAB"
@@ -46,15 +47,36 @@ on:
           - "from blueprint-verify"
           - "from substrate"
       generate:
-        description: "Blueprint · Generate from the datacenter's .xlsx workbook (unticked: use its blueprint .yaml)"
+        description: "Blueprint · Generate (ticked: uses 'Generate Blueprint for'; unticked: uses 'Existing Blueprint from')"
         default: false
         type: boolean
-      datacenter:
-        description: "Blueprint · Datacenter (a folder of rafay_nvcm_poc datacenters/examples/)"
+      generate_for:
+        description: "Generate Blueprint for (a rafay_nvcm_poc workbook — used when Generate is ticked)"
         required: true
-        default: stc
+        default: datacenters/examples/stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx
         type: choice
-        options: [stc, nava, slab, tm, xyz]
+        options:     # every *.xlsx under rafay_nvcm_poc datacenters/examples/ (same on prototype_demo_v1 and nvcm_1.3.1_migrate_test)
+          - datacenters/examples/stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx
+          - datacenters/examples/nava/collapsed-core-mlag_requirements_v1.0.xlsx
+          - datacenters/examples/nava/nava_v2.xlsx
+          - datacenters/examples/tm/intake_tm_config.xlsx
+          - datacenters/examples/tm/tm.xlsx
+      existing_from:
+        description: "Existing Blueprint from (a rafay_nvcm_poc blueprint yaml — used when Generate is unticked)"
+        required: true
+        default: datacenters/examples/stc/blueprint_stc.yaml
+        type: choice
+        options:     # every blueprint_*.yaml under datacenters/examples/; the slab (spectrumx) ones fail at boot — greenfield can't build them
+          - datacenters/examples/stc/blueprint_stc.yaml
+          - datacenters/examples/nava/blueprint_nava-dc01.yaml
+          - datacenters/examples/tm/blueprint_tm.yaml
+          - datacenters/examples/xyz/blueprint_xyz.yaml
+          - datacenters/examples/xyz/blueprint_xyz-dc01_adopted.yaml
+          - datacenters/examples/slab/blueprint_blr.yaml
+          - datacenters/examples/slab/blueprint_gb300_slab_lab.yaml
+          - datacenters/examples/slab/blueprint_slab.yaml
+          - datacenters/examples/slab/blueprint_slab_3gb300.yaml
+          - datacenters/examples/slab/blueprint_slab_full.yaml
       tenants:
         description: "Day0 Tenants · blank: the blueprint's full tenant range"
         required: false
@@ -206,7 +228,8 @@ jobs:
           STAGES:   ${{ inputs.stages || 'all' }}
           # generate checkbox → generate | existing; a daily run (no inputs) generates, as it always has
           BP_SRC:   ${{ (github.event_name != 'workflow_dispatch' || inputs.generate) && 'generate' || 'existing' }}
-          DC:       ${{ inputs.datacenter || 'stc' }}
+          # the one file the chosen source uses (a daily run: the stc workbook)
+          BP_FILE:  ${{ (github.event_name != 'workflow_dispatch' || inputs.generate) && (inputs.generate_for || 'datacenters/examples/stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx') || inputs.existing_from }}
           # a blank tenants box is kept blank (→ the blueprint's full range); a daily run uses the STC default
           TENANTS:  ${{ (github.event_name == 'workflow_dispatch' && inputs.tenants) || (github.event_name != 'workflow_dispatch' && '3-11,84-100') || '' }}
           CLEAN:    ${{ github.event_name != 'workflow_dispatch' || inputs.clean_lab }}
@@ -217,11 +240,13 @@ jobs:
           [[ "$BRANCH"   =~ ^[A-Za-z0-9._/-]+$ && "$BRANCH" != -* ]] || { echo "::error::invalid branch '$BRANCH'"; exit 1; }
           [[ "$POC_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]     || { echo "::error::invalid POC_REPO '$POC_REPO'"; exit 1; }
           [[ "$BP_SRC"   =~ ^(generate|existing)$ ]]                   || { echo "::error::invalid blueprint_source '$BP_SRC' (generate | existing)"; exit 1; }
-          [[ "$DC"       =~ ^[A-Za-z0-9._-]+$ ]]                      || { echo "::error::invalid datacenter '$DC'"; exit 1; }
+          [[ "$BP_FILE"  =~ ^datacenters/examples/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.(xlsx|ya?ml)$ ]] || { echo "::error::invalid blueprint file '$BP_FILE'"; exit 1; }
+          DC="$(basename "$(dirname "$BP_FILE")")"
+          if [ "$BP_SRC" = generate ]; then BP_VAR=BP_XLSX; else BP_VAR=BP_COMMITTED; fi
           TENANTS="${TENANTS// /}"; [ -n "$TENANTS" ] || TENANTS=blueprint   # blank → simulate_dc.sh gets no --tenants
           [[ "$TENANTS"  =~ ^([0-9,-]+|blueprint)$ ]]                || { echo "::error::invalid tenants '$TENANTS'"; exit 1; }
           STAGES="$(scripts/run-stages.sh resolve "$STAGES")"; scripts/run-stages.sh validate "$STAGES"
-          echo "stages: $STAGES · blueprint: $DC ($BP_SRC) · tenants: $TENANTS"
+          echo "stages: $STAGES · blueprint: $BP_SRC $BP_FILE · tenants: $TENANTS"
           if [ "$CLEAN" = true ] && [ "$STAGES" != all ] && [[ ",$STAGES," != *",platform-nvcm-install,"* ]]; then
             echo "::warning::clean_lab deletes the kind cluster + all VMs, but stages '$STAGES' do not reinstall the platform — later stages will likely fail. Untick clean_lab for a partial run."
           fi
@@ -229,7 +254,7 @@ jobs:
           mkdir -p "$OUT"
           {
             echo "RUN_KEY=$RUN_KEY"; echo "POC_REPO=$POC_REPO"; echo "POC_BRANCH=$BRANCH"; echo "STAGES=$STAGES"
-            echo "BLUEPRINT_SOURCE=$BP_SRC"; echo "DATACENTER=$DC"; echo "TENANTS=$TENANTS"; echo "CLEAN_LAB=$CLEAN"; echo "STARTED_AT=$(date -u +%FT%TZ)"
+            echo "BLUEPRINT_SOURCE=$BP_SRC"; echo "BLUEPRINT_FILE=$BP_FILE"; echo "BP_VAR=$BP_VAR"; echo "DATACENTER=$DC"; echo "TENANTS=$TENANTS"; echo "CLEAN_LAB=$CLEAN"; echo "STARTED_AT=$(date -u +%FT%TZ)"
           } > "$OUT/meta.env"
           cat "$OUT/meta.env" >> "$GITHUB_OUTPUT"   # expression property names are case-insensitive
 
@@ -270,20 +295,22 @@ jobs:
           POC_REPO: ${{ steps.opts.outputs.POC_REPO }}
           BRANCH:   ${{ steps.opts.outputs.POC_BRANCH }}
           BP_SRC:   ${{ steps.opts.outputs.BLUEPRINT_SOURCE }}
-          DC:       ${{ steps.opts.outputs.DATACENTER }}
+          BP_FILE:  ${{ steps.opts.outputs.BLUEPRINT_FILE }}
+          BP_VAR:   ${{ steps.opts.outputs.BP_VAR }}
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
           LAB_IP: ${{ vars.LAB_IP }}
         run: |
           set -o pipefail   # see "Power On" above
           # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
-          # BP_SRC/DC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
+          # BP_SRC/BP_VAR/BP_FILE/TENANTS reach the remote shell unescaped by design — all are already regex-validated above
           # to plain charsets with no spaces (see "Resolve + validate options"), so plain interpolation is safe.
           # Cleanup is greenfield-only (brownfield adopts the running fabric): preflight (inside clean) → delete the
           # kind cluster → delete every VM; then prepare pulls the latest <branch> into the existing checkout.
           clean=""; [ "$CLEAN" = true ] && clean="launchpad/agent.sh clean && "
-          scripts/lab.sh ssh -A "${clean}LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC DATACENTER=$DC TENANTS=$TENANTS" \
+          scripts/lab.sh ssh -A "${clean}LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC $BP_VAR=$BP_FILE TENANTS=$TENANTS" \
             2>&1 | tee -a "$OUT/boot.log"
-          # the chosen datacenter must resolve in this checkout (one workbook+profile+facts, or one blueprint_*.yaml)
+          # the chosen file must work in this checkout: present; a workbook with one sheet profile + site facts beside it;
+          # a blueprint that greenfield can build (not spectrumx)
           scripts/lab.sh ssh "launchpad/agent.sh check $KEY" 2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
 
