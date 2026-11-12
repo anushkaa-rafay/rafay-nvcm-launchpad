@@ -46,10 +46,10 @@ the run at its first job, before anything touches OCI.
 | `POC_REPO` | Repo only | `ramakrishna-rafay/rafay_nvcm_poc` |
 | `POC_DEFAULT_BRANCH` | Repo only | `main` (used if `poc_branch` is left blank) |
 | `SCHEDULED_RUNS_ENABLED` | Repo only | the on/off switch for the [daily runs](#the-daily-greenfield-run): `true` runs them; unset or anything else skips them |
-| `SCHEDULE_1_LAB` | Repo only | the lab for the [06:00 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-3` (blank → that run is skipped) |
-| `SCHEDULE_1_POC_BRANCH` | Repo only | the `rafay_nvcm_poc` branch the 06:00 run tests, e.g. `prototype_fixes` (blank → `POC_DEFAULT_BRANCH`, then `main`) |
+| `SCHEDULE_1_LAB` | Repo only | the lab for the [06:00 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-3` (unset or invalid → that run is skipped) |
+| `SCHEDULE_1_POC_BRANCH` | Repo only | the `rafay_nvcm_poc` branch the 06:00 run tests, e.g. `prototype_fixes` (required — unset or invalid → that run is skipped) |
 | `SCHEDULE_2_LAB` | Repo only | the lab for the [06:05 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-2` (blank → that run is skipped) |
-| `SCHEDULE_2_POC_BRANCH` | Repo only | the branch the 06:05 run tests, e.g. `nvcm-1.3.1-migrate` (blank → `POC_DEFAULT_BRANCH`, then `main`) |
+| `SCHEDULE_2_POC_BRANCH` | Repo only | the branch the 06:05 run tests, e.g. `nvcm-1.3.1-migrate` (required — unset or invalid → that run is skipped) |
 | `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` | Repo (lab may override) | **OCI labs**: API-key auth IDs (see step 3) |
 | `AWS_ACCESS_KEY_ID`, `AWS_REGION` | Repo (lab may override) | **AWS labs**: IAM access key ID (`AKIA…`) and the instance's region (e.g. `ap-south-1`) |
 | `INSTANCE_ID` | Lab Environment | required. An OCI OCID (`ocid1.instance.oc1...`) or an AWS EC2 ID (`i-0abc…`); its shape decides which cloud the lab is driven through |
@@ -250,9 +250,16 @@ Both run only while the repository variable **`SCHEDULED_RUNS_ENABLED`** is `tru
 daily runs. Unset or anything else skips them entirely (title `nvcm-greenfield · SKIPPED: SCHEDULED_RUNS_ENABLED not true · …`);
 manual runs are never affected.
 
-A blank lab variable skips that run entirely — every job shows *skipped* and the title reads
-`nvcm-greenfield · SKIPPED: SCHEDULE_<n>_LAB not set · …`. A blank branch falls back to `POC_DEFAULT_BRANCH`, then
-`main`. For example `SCHEDULE_1_LAB=aa-nvcm-vlab-3` + `SCHEDULE_1_POC_BRANCH=prototype_fixes`, and `SCHEDULE_2_LAB=aa-nvcm-vlab-2` +
+Both the lab and the branch are **required**. Before anything touches a lab, the *Get Lab* job checks them and
+**skips** the run — a warning on the run says which setting was wrong, and every later job shows *skipped* — when
+either is:
+
+- unset, blank, only spaces, or a quoted `''` / `""` (values are trimmed, so stray spaces around a good value are fine);
+- not a valid name (lab: letters, digits, `.` `_` `-`; branch: a valid git branch name);
+- a lab with no GitHub Environment, or a branch that doesn't exist in `POC_REPO` (the branch is looked up only
+  when `POC_DEPLOY_KEY` is a repository-level secret; otherwise the boot job finds out).
+
+An unset lab or branch also shows in the title: `nvcm-greenfield · SKIPPED: SCHEDULE_<n>_LAB not set · …`. For example `SCHEDULE_1_LAB=aa-nvcm-vlab-3` + `SCHEDULE_1_POC_BRANCH=prototype_fixes`, and `SCHEDULE_2_LAB=aa-nvcm-vlab-2` +
 `SCHEDULE_2_POC_BRANCH=nvcm-1.3.1-migrate`. The two labs run in parallel; give them different labs, or the 06:05 run just queues behind
 the 06:00 one. A scheduled run has no form to fill in, so it takes:
 
@@ -260,8 +267,8 @@ the 06:00 one. A scheduled run has no form to fill in, so it takes:
 - every other input at its default: `stages=all`, `blueprint_source=generate`, `tenants=3-11,84-100`;
 - it always cleans the lab first (`clean_lab`) and always powers the instance off at the end.
 
-> **Set the `SCHEDULE_<n>_POC_BRANCH` of each daily run you rely on** — e.g. `prototype_fixes`. Left blank, a
-> daily run tests `POC_DEFAULT_BRANCH`, or `main` if that isn't set either — not the branch you're working on.
+> **Set both `SCHEDULE_<n>_LAB` and `SCHEDULE_<n>_POC_BRANCH` for each daily run you rely on** — e.g.
+> `prototype_fixes`. A daily run never falls back to `POC_DEFAULT_BRANCH`: with either one missing it is skipped.
 > The run title shows which branch and lab it picked (`nvcm-greenfield · <lab> · <branch> · all · daily`).
 
 Its run title ends in `· daily`. GitHub starts scheduled runs late when it is busy — often 5–30 minutes. If a

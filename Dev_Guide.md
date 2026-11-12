@@ -45,7 +45,7 @@ into `meta.env` for it.
 
 | Workflow | Triggered how | Purpose |
 |---|---|---|
-| `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run; and `schedule`, daily 06:00 IST (lab `SCHEDULE_1_LAB`, branch `SCHEDULE_1_POC_BRANCH`) and 06:05 IST (`SCHEDULE_2_LAB`, `SCHEDULE_2_POC_BRANCH`); both are skipped unless `SCHEDULED_RUNS_ENABLED` is `true`, and each while its lab variable is unset; the two crons are told apart by `github.event.schedule` | the real entry point for building a fabric from scratch |
+| `nvcm-greenfield.yml` | `workflow_dispatch` — a person clicks Run; and `schedule`, daily 06:00 IST (lab `SCHEDULE_1_LAB`, branch `SCHEDULE_1_POC_BRANCH`) and 06:05 IST (`SCHEDULE_2_LAB`, `SCHEDULE_2_POC_BRANCH`); both are skipped unless `SCHEDULED_RUNS_ENABLED` is `true`, and each when its lab or branch variable is unset, blank, invalid, or names a missing Environment / branch (the `lab` job's *Check the daily run's settings* step → `go=false`, every later job skips); the two crons are told apart by `github.event.schedule` | the real entry point for building a fabric from scratch |
 | `nvcm-brownfield.yml` | `workflow_dispatch` — a person clicks Run | the real entry point for adopting an existing fabric |
 | `_phase.yml` | `workflow_call` **only** — called by the two above, once per phase | one phase (platform/blueprint/substrate/bringup) of stages; exists so the phase logic (plan → lab access → connect → run stages → upload logs) is written once instead of once per job |
 | `weekly-report.yml` | `schedule` (Friday 09:00 IST), or a person clicks Run | `scripts/weekly-report.py`: the last 7 days of the two entry points' runs, from the Actions API + each run's committed `summary.json` → its Summary tab and a mail to `MAIL_TO`. Touches no lab |

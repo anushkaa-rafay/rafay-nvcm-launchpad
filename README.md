@@ -310,7 +310,7 @@ Full annotated layout, including what each script does internally, is in [`Dev_G
   `POC_REPO`, `POC_DEFAULT_BRANCH`, `LAB_IP`, `DEFAULT_LAB`, and for the two daily greenfield runs
   `SCHEDULED_RUNS_ENABLED` (`true` to run them at all),
   `SCHEDULE_1_LAB` + `SCHEDULE_1_POC_BRANCH` (06:00 IST) and `SCHEDULE_2_LAB` + `SCHEDULE_2_POC_BRANCH` (06:05 IST)
-  — a run whose lab variable is unset is skipped; a blank branch → `POC_DEFAULT_BRANCH` → `main`. Email (optional): `MAILS_ENABLED` (`true` to send), `MAIL_TO`, `SMTP_USERNAME`, and a login — `SMTP_OAUTH_CLIENT_ID` (+ the two
+  — a daily run skips (with a warning) unless its lab and branch are both set and valid. Email (optional): `MAILS_ENABLED` (`true` to send), `MAIL_TO`, `SMTP_USERNAME`, and a login — `SMTP_OAUTH_CLIENT_ID` (+ the two
   OAuth secrets above) or the secret `SMTP_PASSWORD` (the account needs 2-Step Verification on); nothing is mailed,
   and nothing fails, until they are set (User_Guide.md, setup step 6).
 - **Labs**: one GitHub Environment per OCI lab host. Lab-specific variables (`INSTANCE_ID`, SSH host, …)

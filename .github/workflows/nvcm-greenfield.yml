@@ -9,7 +9,7 @@ name: nvcm-greenfield
 # (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
 # one concurrency group PER LAB because, for a given lab, both drive the SAME physical OCI host.
 
-run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'SKIPPED: SCHEDULED_RUNS_ENABLED not true') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'SKIPPED: SCHEDULE_1_LAB not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_POC_BRANCH) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
+run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'SKIPPED: SCHEDULED_RUNS_ENABLED not true') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'SKIPPED: SCHEDULE_1_LAB not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_POC_BRANCH || 'SKIPPED: SCHEDULE_1_POC_BRANCH not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_POC_BRANCH || 'SKIPPED: SCHEDULE_2_POC_BRANCH not set')) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
 
 on:
   workflow_dispatch:
@@ -52,8 +52,10 @@ on:
   # rafay_nvcm_poc branch from its own pair of repository variables:
   #   06:00 IST — vars.SCHEDULE_1_LAB, vars.SCHEDULE_1_POC_BRANCH
   #   06:05 IST — vars.SCHEDULE_2_LAB, vars.SCHEDULE_2_POC_BRANCH
-  # A blank branch → POC_DEFAULT_BRANCH, else main. A blank lab → that run is skipped entirely (titled
-  # "SKIPPED: SCHEDULE_<n>_LAB not set"). The two are told apart by github.event.schedule, so the cron strings are
+  # Both are required: the Get Lab job SKIPS the daily run (a warning says why; every later job skips too) when
+  # either is unset, blank/whitespace, a quoted '' or "", an invalid name, a lab with no GitHub Environment, or
+  # a branch that doesn't exist in POC_REPO (checked only when POC_DEPLOY_KEY is a repository-level secret).
+  # A daily run has nobody watching it, so a bad setting skips it rather than booting the lab to fail. The two are told apart by github.event.schedule, so the cron strings are
   # repeated in the expressions in this file — change them everywhere at once.
   # Every other input at its default (all stages, generate, default tenants); the lab is cleaned first and always
   # powered off. Different labs run in parallel. GitHub starts scheduled runs late under load — often 5-30 minutes.
@@ -91,12 +93,61 @@ jobs:
     permissions:
       actions: read         # GET /repos/{repo}/environments/{name}
     outputs:
-      name: ${{ steps.lab.outputs.name }}
+      name:   ${{ steps.lab.outputs.name }}
+      go:     ${{ steps.daily.outputs.go || 'true' }}   # 'false' = a daily run with bad settings: every later job skips
+      branch: ${{ steps.daily.outputs.branch }}         # a daily run's checked, trimmed SCHEDULE_<n>_POC_BRANCH
     steps:
+      - name: Check the daily run's settings
+        id: daily
+        if: ${{ github.event_name == 'schedule' }}
+        env:
+          CRON:     ${{ github.event.schedule }}
+          ENABLED:  ${{ vars.SCHEDULED_RUNS_ENABLED }}
+          LAB_1:    ${{ vars.SCHEDULE_1_LAB }}
+          BRANCH_1: ${{ vars.SCHEDULE_1_POC_BRANCH }}
+          LAB_2:    ${{ vars.SCHEDULE_2_LAB }}
+          BRANCH_2: ${{ vars.SCHEDULE_2_POC_BRANCH }}
+          POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
+          POC_KEY:  ${{ secrets.POC_DEPLOY_KEY }}   # repo-level only (this job has no Environment); unset → branch not checked
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Bad settings SKIP the run (go=false + a warning), never fail it. Values are trimmed; blank, whitespace
+          # and a quoted '' or "" all count as unset.
+          skip(){ echo "::warning::daily run skipped — $*"; echo "go=false" >> "$GITHUB_OUTPUT"; exit 0; }
+          clean(){ local v="${1//$'\r'/}"; v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"
+                   [[ "$v" == "''" || "$v" == '""' ]] && v=""; printf '%s' "$v"; }
+          [[ "$(clean "$ENABLED")" =~ ^[Tt][Rr][Uu][Ee]$ ]] || skip "SCHEDULED_RUNS_ENABLED is not true"
+          case "$CRON" in
+            "30 0 * * *") n=1; lab=$(clean "$LAB_1"); branch=$(clean "$BRANCH_1") ;;
+            "35 0 * * *") n=2; lab=$(clean "$LAB_2"); branch=$(clean "$BRANCH_2") ;;
+            *) skip "unknown schedule $(printf %q "$CRON") — the cron strings in this file must all match" ;;
+          esac
+          [ -n "$lab" ]    || skip "SCHEDULE_${n}_LAB is not set"
+          [ -n "$branch" ] || skip "SCHEDULE_${n}_POC_BRANCH is not set"
+          [[ "$lab" =~ ^[A-Za-z0-9._-]+$ ]] \
+            || skip "SCHEDULE_${n}_LAB $(printf %q "$lab") is not a valid lab name (letters, digits, . _ - only)"
+          [[ "$branch" =~ ^[A-Za-z0-9._/-]+$ && "$branch" != -* ]] && git check-ref-format --branch "$branch" >/dev/null 2>&1 \
+            || skip "SCHEDULE_${n}_POC_BRANCH $(printf %q "$branch") is not a valid branch name"
+          gh api "repos/$GITHUB_REPOSITORY/environments/$lab" --silent 2>/dev/null \
+            || skip "SCHEDULE_${n}_LAB '$lab' is not a GitHub Environment of this repo (Settings → Environments)"
+          if [ -n "$POC_KEY" ]; then
+            key=$(mktemp); printf '%s\n' "${POC_KEY//$'\r'/}" > "$key"
+            rc=0; GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
+              git ls-remote --exit-code --heads "git@github.com:$POC_REPO.git" "refs/heads/$branch" >/dev/null 2>&1 || rc=$?
+            rm -f "$key"
+            [ "$rc" != 2 ] || skip "SCHEDULE_${n}_POC_BRANCH '$branch' does not exist in $POC_REPO"
+            [ "$rc" = 0 ]  || echo "::notice::could not reach $POC_REPO to check branch '$branch' (git exit $rc) — the boot job will"
+          else
+            echo "::notice::POC_DEPLOY_KEY is not a repository-level secret — not checking that branch '$branch' exists"
+          fi
+          { echo "go=true"; echo "lab=$lab"; echo "branch=$branch"; } >> "$GITHUB_OUTPUT"
+          echo "daily run $n: lab $lab, branch $branch"
+
       - name: Resolve + check lab
         id: lab
+        if: ${{ steps.daily.outputs.go != 'false' }}
         env:
-          LAB: ${{ inputs.lab || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || vars.DEFAULT_LAB }}
+          LAB: ${{ inputs.lab || steps.daily.outputs.lab || vars.DEFAULT_LAB }}
           GH_TOKEN: ${{ github.token }}
         run: |
           [ -n "$LAB" ] || { echo "::error::no lab given — set the 'lab' input (or the DEFAULT_LAB repository variable; SCHEDULE_1_LAB / SCHEDULE_2_LAB for the daily runs)"; exit 1; }
@@ -109,6 +160,7 @@ jobs:
   boot:
     name: Boot Lab
     needs: lab
+    if: ${{ needs.lab.outputs.go == 'true' }}   # a daily run with bad settings stops here; every later job skips
     environment: ${{ needs.lab.outputs.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -127,7 +179,7 @@ jobs:
       - name: Resolve + validate options
         id: opts
         env:
-          BRANCH:   ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_POC_BRANCH) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }}
+          BRANCH:   ${{ inputs.poc_branch || needs.lab.outputs.branch || vars.POC_DEFAULT_BRANCH || 'main' }}
           STAGES:   ${{ inputs.stages || 'all' }}
           BP_SRC:   ${{ inputs.blueprint_source || 'generate' }}
           TENANTS:  ${{ inputs.tenants || '3-11,84-100' }}
@@ -266,7 +318,7 @@ jobs:
     environment: ${{ needs.lab.outputs.name }}
     # !cancelled(): also after a failure or a skipped phase — see the note above the `platform` job.
     # Non-dispatch triggers (schedule) always shut down.
-    if: ${{ !cancelled() && needs.lab.result == 'success' && (github.event_name != 'workflow_dispatch' || inputs.shutdown) }}
+    if: ${{ !cancelled() && needs.lab.result == 'success' && needs.lab.outputs.go == 'true' && (github.event_name != 'workflow_dispatch' || inputs.shutdown) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -291,8 +343,8 @@ jobs:
     name: Report
     needs: [lab, boot, platform, blueprint, substrate, bringup, poweroff]
     # !cancelled(), not always() — see the note on the poweroff job above. A skipped lab job = an unconfigured
-    # second daily run: nothing ran, nothing to report.
-    if: ${{ !cancelled() && needs.lab.result != 'skipped' }}
+    # second daily run: nothing ran, nothing to report — likewise go=false, a daily run whose settings were bad.
+    if: ${{ !cancelled() && needs.lab.result != 'skipped' && needs.lab.outputs.go != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
