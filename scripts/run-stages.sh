@@ -2,6 +2,7 @@
 #
 # run-stages.sh — drive one PHASE of stages on the lab host, from the GitHub runner.
 #
+#   run-stages.sh resolve  <choice>                        # the workflow's stages dropdown → a <selection>
 #   run-stages.sh validate <selection>                     # fail on an unknown stage name
 #   run-stages.sh plan     <phase> <selection>             # print the stages this phase would run
 #   run-stages.sh run      <phase> <run_key> <selection> <out_dir>
@@ -34,6 +35,20 @@ cmd_validate(){
   for e in "${want[@]}"; do
     [[ "$known" == *" $e "* ]] || { log "unknown stage '$e' (known:$known)"; exit 2; }
   done
+}
+
+# The workflow's `stages` dropdown → a selection: "all" | "phase: <phase>" (that phase's stages) | "from <stage>"
+# (that stage and every stage after it). Anything else is passed through as an explicit comma list.
+cmd_resolve(){
+  local choice="$1" e name ph out=() on=""
+  case "$choice" in
+    all) echo all; return ;;
+    "phase: "*) for e in "${LAUNCHPAD_STAGES[@]}"; do IFS=: read -r name ph _ <<< "$e"; [ "$ph" = "${choice#phase: }" ] && out+=("$name"); done ;;
+    "from "*)   for e in "${LAUNCHPAD_STAGES[@]}"; do name="${e%%:*}"; [ "$name" = "${choice#from }" ] && on=1; [ -n "$on" ] && out+=("$name"); done ;;
+    *) echo "${choice// /}"; return ;;
+  esac
+  [ ${#out[@]} -gt 0 ] || { log "stages choice '$choice' matches no stage of $LAUNCHPAD_CATALOGUE"; exit 2; }
+  (IFS=,; echo "${out[*]}")
 }
 
 cmd_plan(){
@@ -123,6 +138,7 @@ cmd_run(){
 
 sub="${1:-}"; shift || true
 case "$sub" in
+  resolve)  cmd_resolve "$@" ;;
   validate) cmd_validate "$@" ;;
   plan)     cmd_plan "$@" ;;
   run)      cmd_run "$@" ;;

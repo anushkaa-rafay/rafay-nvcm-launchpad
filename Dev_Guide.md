@@ -104,7 +104,7 @@ to know which mode is active.
 | platform-nvcm-install | platform | `platform/platform_install.sh nvcm --yes` | 150m |
 | platform-rafay-install | platform | `platform/platform_install.sh rafay --platform-only --yes` | 60m |
 | platform-verify | platform | `platform/verify_platform_install.sh all`, re-run every 3 min for up to 15 min until it passes (pods still starting) | 20m |
-| blueprint-generate | blueprint | `blueprint/greenfield/xlsx_to_blueprint.py` (STC workbook → `blr-dc01`); with `blueprint_source=existing` it generates nothing and just confirms `datacenters/examples/stc/blueprint_stc.yaml` is there | 20m |
+| blueprint-generate | blueprint | `blueprint/greenfield/xlsx_to_blueprint.py` on `datacenters/examples/<datacenter>/` (its one `*.xlsx` + `sheet_profiles/*.yaml` + `site_facts/<site>.yaml`; stc → `blr-dc01`); with Generate unticked (`BLUEPRINT_SOURCE=existing`) it generates nothing and uses the folder's one `blueprint_*.yaml`. Resolved by `lp_dc_inputs` — also checked at boot (`agent.sh check`) | 20m |
 | blueprint-verify | blueprint | `blueprint/validate/verify_blueprint.sh` on whichever blueprint this run uses (generated or existing) | 10m |
 | substrate | substrate | `vm_image_operations.sh fetch` + `simulate_dc.sh --apply --from substrate --to substrate` (creates the fabric VMs + cabling, gates L1/L2). A failed pass is retried, 3 passes in all, 60 s apart: before each retry `recover_substrate.sh` starts any VM that is off, and a fabric VM still not running is deleted (domain + disk) so the next pass recreates it. Cleanup has just removed every VM, so there is no separate recover path | 120m |
 | site-bringup | bringup | `recover_substrate.sh` (site-scoped, idempotent), then `simulate_dc.sh --apply --auto-approve --tenants … --dc up --from underlay` — `--dc up` must come **before** `--from` (it resets `--from` to `substrate`) | 300m |
@@ -251,7 +251,7 @@ from the GitHub Actions API — is **not on this branch**. It lives alone on the
   escaped with bash's `printf '%q'` before being joined into the single command string handed to
   `ssh -A lab "..."`. SSH sends that string as *one* argument; the remote shell parses it exactly once, so
   a value with an unescaped space would silently split into two words. Greenfield's equivalent values
-  (`blueprint_source`, `tenants`) don't need this because they're already regex-validated to space-free
+  (`BLUEPRINT_SOURCE`, `DATACENTER`, `tenants`) don't need this because they're already regex-validated to space-free
   charsets in the `Resolve + validate options` step — pick whichever guarantee is easier to keep true
   (tight validation, or `%q`) rather than assuming plain interpolation is safe.
 - **Brownfield's `OUT` directory is `~/launchpad/bf-discover`, overriding `bf-onboard.sh`'s own `/tmp`

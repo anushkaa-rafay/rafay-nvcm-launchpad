@@ -2,7 +2,7 @@
 #
 # stages-greenfield.sh — the GREENFIELD stage catalogue: nothing to preserve; author intent from scratch and
 # push it to blank switches. Mirrors rafay_nvcm_poc's onboarding/greenfield/greenfield_adoption_plan.md — "this
-# path is already built and documented" in deploy_scripts/, via datacenters/examples/stc/stc_dc_deploy.md's spreadsheet → blueprint
+# path is already built and documented" in deploy_scripts/, via datacenters/examples/<dc>/ (e.g. stc/stc_dc_deploy.md)'s spreadsheet → blueprint
 # → deploy flow. Sourced in two places:
 #   * on the GitHub runner (scripts/run-stages.sh) via $LAUNCHPAD_CATALOGUE — reads LAUNCHPAD_STAGES for
 #     order, phase, timeout;
@@ -35,30 +35,74 @@ LAUNCHPAD_STAGES=(
   site-bringup:bringup:300         # 4 Site bring-up — underlay → overlay → servers → accept, gated per layer      S4–S5
 )
 
-# ── greenfield-only: the STC reference site shipped in rafay_nvcm_poc/datacenters/examples/stc ──────────────
-# rafay_nvcm_poc layout (prototype_demo_v1 and later): blueprint tools under blueprint/, the STC reference site
-# under datacenters/examples/stc/, the virtual-fabric substrate tools under targets/virtual/fabric_maintenance/twin_clos/.
-: "${STC_DIR:=datacenters/examples/stc}"
-: "${BP_XLSX:=$STC_DIR/STCS-GPUaaS_Network-Schema_v0.3.xlsx}"
-: "${BP_PROFILE:=$STC_DIR/sheet_profiles/stcs-v0.3.yaml}"
-: "${BP_FACTS:=$STC_DIR/site_facts/${SITE}.yaml}"
-: "${BP_COMMITTED:=$STC_DIR/blueprint_stc.yaml}"
+# ── greenfield-only: the datacenter folder the blueprint comes from ─────────────────────────────────────────
+# rafay_nvcm_poc layout (prototype_demo_v1 and later): blueprint tools under blueprint/, the example sites under
+# datacenters/examples/<datacenter>/, the virtual-fabric substrate tools under targets/virtual/fabric_maintenance/twin_clos/.
+: "${DATACENTER:=stc}"                 # a folder of datacenters/examples/ (the workflow's `datacenter` dropdown)
+: "${BLUEPRINT_SOURCE:=generate}"      # generate = built from the folder's workbook by this run's blueprint-generate stage
+                                       # existing = the folder's committed blueprint_*.yaml
+DC_DIR="datacenters/examples/$DATACENTER"
 BP_GENERATE=blueprint/greenfield/xlsx_to_blueprint.py
 BP_VERIFY=blueprint/validate/verify_blueprint.sh
 SUBSTRATE_DIR=targets/virtual/fabric_maintenance/twin_clos
-: "${BLUEPRINT_SOURCE:=generate}"      # generate = built by this run's blueprint-generate stage | existing = BP_COMMITTED
+
+# lp_one <what> <candidate...>: print the ONE candidate that exists, else explain on stderr and fail. The folders
+# are not uniform (slab has five blueprints, nava two workbooks, tm no sheet profile), so a folder that doesn't
+# give exactly one file fails loudly, naming what it found, instead of quietly picking one of them.
+lp_one(){
+  local what="$1" f m=(); shift
+  for f in "$@"; do [ -e "$f" ] && m+=("$f"); done
+  case ${#m[@]} in
+    1) echo "${m[0]}" ;;
+    0) echo "[launchpad] datacenter '$DATACENTER' ($BLUEPRINT_SOURCE): no $what in $DC_DIR/" >&2; return 1 ;;
+    *) echo "[launchpad] datacenter '$DATACENTER' ($BLUEPRINT_SOURCE): ${#m[@]} $what files in $DC_DIR/ — need exactly one: ${m[*]}" >&2; return 1 ;;
+  esac
+}
+
+# lp_dc_inputs: resolve the chosen datacenter folder (relative to the rafay_nvcm_poc checkout, the stages' cwd) into
+#   existing → BP_COMMITTED  = $DC_DIR/blueprint_*.yaml
+#   generate → BP_XLSX       = $DC_DIR/*.xlsx
+#              BP_PROFILE    = $DC_DIR/sheet_profiles/*.yaml      (the generator requires one)
+#              BP_FACTS      = $DC_DIR/site_facts/*.yaml
+#              GEN_SITE      = the facts file's name (site_facts/blr-dc01.yaml → blr-dc01), the generated site
+# Any of them already set in the environment wins. Also run at boot (`agent.sh check`), so a folder that doesn't
+# resolve fails the run there — not hours later, after the platform install.
+lp_dc_inputs(){
+  [[ "$DATACENTER" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "[launchpad] invalid datacenter '$DATACENTER'" >&2; return 1; }
+  [ -d "$DC_DIR" ] || { echo "[launchpad] datacenter '$DATACENTER': $DC_DIR/ is not in this rafay_nvcm_poc checkout (branch ${POC_BRANCH:-?}) — have: $(cd datacenters/examples 2>/dev/null && ls -d -- */ | tr -d / | tr '\n' ' ')" >&2; return 1; }
+  case "$BLUEPRINT_SOURCE" in
+    existing)
+      BP_COMMITTED="${BP_COMMITTED:-$(lp_one "blueprint_*.yaml" "$DC_DIR"/blueprint_*.yaml)}" || return ;;
+    generate)
+      BP_XLSX="${BP_XLSX:-$(lp_one "*.xlsx workbook" "$DC_DIR"/*.xlsx)}" || return
+      BP_PROFILE="${BP_PROFILE:-$(lp_one "sheet_profiles/*.yaml" "$DC_DIR"/sheet_profiles/*.yaml)}" || return
+      BP_FACTS="${BP_FACTS:-$(lp_one "site_facts/*.yaml" "$DC_DIR"/site_facts/*.yaml)}" || return
+      GEN_SITE="$(basename "$BP_FACTS" .yaml)" ;;
+    *) echo "[launchpad] unknown BLUEPRINT_SOURCE '$BLUEPRINT_SOURCE' (generate | existing)" >&2; return 1 ;;
+  esac
+}
+
+# Boot-time check (agent.sh check, right after the checkout): the chosen datacenter resolves for this source.
+lp_check(){
+  lp_dc_inputs || return
+  case "$BLUEPRINT_SOURCE" in
+    existing) echo "[launchpad] datacenter $DATACENTER (existing): $BP_COMMITTED" ;;
+    generate) echo "[launchpad] datacenter $DATACENTER (generate): site $GEN_SITE from $BP_XLSX + $BP_PROFILE + $BP_FACTS" ;;
+  esac
+}
 
 # The blueprint every later stage consumes. A "generate" run needs blueprint-generate to have run in THIS run.
 lp_blueprint(){
-  case "$BLUEPRINT_SOURCE" in
-    existing) echo "$POC_DIR/$BP_COMMITTED"; return ;;
-    generate) ;;
-    *) echo "unknown BLUEPRINT_SOURCE '$BLUEPRINT_SOURCE' (generate | existing)" >&2; return 1 ;;
-  esac
-  local bp="$RUN_DIR/blueprint_${SITE}.yaml"
-  [ -f "$bp" ] || { echo "no generated blueprint at $bp — run the 'blueprint-generate' stage in this run, or use blueprint_source=existing" >&2; return 1; }
+  lp_dc_inputs || return
+  if [ "$BLUEPRINT_SOURCE" = existing ]; then echo "$POC_DIR/$BP_COMMITTED"; return; fi
+  local bp="$RUN_DIR/blueprint_${GEN_SITE}.yaml"
+  [ -f "$bp" ] || { echo "no generated blueprint at $bp — run the 'blueprint-generate' stage in this run, or untick 'generate'" >&2; return 1; }
   echo "$bp"
 }
+
+# --tenants for simulate_dc.sh: TENANTS=blueprint (the workflow's blank `tenants`) leaves the flag off, so the
+# blueprint's own full tenant range is used. One arg per line; callers read it into an array.
+lp_tenant_args(){ [ "$TENANTS" = blueprint ] || printf '%s\n' --tenants "$TENANTS"; }
 
 # The python toolchain both blueprint stages need (setup_guide.md Runbook for deployment, step 3). Idempotent.
 lp_venv(){
@@ -68,18 +112,18 @@ lp_venv(){
 
 # ── stage bodies (host-prep / platform-nvcm-install / platform-rafay-install / platform-verify: common.sh) ─────────────────
 stage_blueprint_generate(){  # setup_guide.md III-2
+  # Every step is `|| return`ed: lp_run_stage runs this as `"$fn" | tee || rc=$?`, which turns set -e off inside
+  # the function — without it a failed generator still "passes" the stage (2026-11-12, run 43194653667).
+  lp_dc_inputs || return
   if [ "$BLUEPRINT_SOURCE" = existing ]; then
-    local bp; bp="$(lp_blueprint)" || return 1
-    [ -f "$bp" ] || { echo "blueprint_source=existing but $bp is not in this rafay_nvcm_poc checkout" >&2; return 1; }
-    echo "[launchpad] blueprint_source=existing — nothing to generate; this run uses $bp"
+    echo "[launchpad] generate is off — nothing to generate; this run uses $POC_DIR/$BP_COMMITTED"
     return 0
   fi
-  # Every step below is `|| return`ed: lp_run_stage runs this as `"$fn" | tee || rc=$?`, which turns set -e off
-  # inside the function — without it a failed generator still "passes" the stage (2026-11-12, run 43194653667).
-  local out="$RUN_DIR/blueprint_${SITE}.yaml"
+  local out="$RUN_DIR/blueprint_${GEN_SITE}.yaml"
   lp_venv || return
+  echo "[launchpad] generating $DATACENTER blueprint (site $GEN_SITE) from $BP_XLSX"
   .venv/bin/python3 "$BP_GENERATE" \
-      --xlsx "$BP_XLSX" --profile "$BP_PROFILE" --facts "$BP_FACTS" --site "$SITE" --out "$out" || return
+      --xlsx "$BP_XLSX" --profile "$BP_PROFILE" --facts "$BP_FACTS" --site "$GEN_SITE" --out "$out" || return
   [ -s "$out" ] || { echo "[launchpad] $BP_GENERATE exited 0 but wrote no blueprint at $out" >&2; return 1; }
   echo "[launchpad] blueprint generated: $out"
 }
@@ -87,7 +131,7 @@ stage_blueprint_generate(){  # setup_guide.md III-2
 stage_blueprint_verify(){    # setup_guide.md III-3 — the offline acceptance door, for BOTH sources
   local bp; bp="$(lp_blueprint)" || return
   lp_venv || return
-  echo "[launchpad] verifying ($BLUEPRINT_SOURCE) blueprint: $bp"
+  echo "[launchpad] verifying $DATACENTER ($BLUEPRINT_SOURCE) blueprint: $bp"
   bash "$BP_VERIFY" --blueprint "$bp"
 }
 
@@ -118,11 +162,12 @@ lp_substrate_repair()(
 # Re-running is safe: cabling and VM creation skip what exists, then the gates check again.
 stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice of S4 — always built fresh (clean_lab removed the VMs)
   local bp n=0 max="${LP_SUBSTRATE_ATTEMPTS:-3}" settle="${LP_SUBSTRATE_SETTLE_SECS:-60}"; bp="$(lp_blueprint)" || return
+  local ta; mapfile -t ta < <(lp_tenant_args)
   sudo bash "$SUBSTRATE_DIR/vm_image_operations.sh" fetch || return    # S2 — no-op once the images are staged
   while :; do
     n=$((n+1))
     bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
-        --tenants "$TENANTS" --from substrate --to substrate && return 0   # builds cabling + VMs, gates L1 + L2
+        ${ta[@]+"${ta[@]}"} --from substrate --to substrate && return 0   # builds cabling + VMs, gates L1 + L2
     if [ "$n" -ge "$max" ]; then
       echo "[launchpad] substrate: still failing after $n attempt(s) — giving up" >&2
       return 1
@@ -134,7 +179,7 @@ stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice o
 }
 
 stage_site_bringup(){        # setup_guide.md Part IV S4 (rest) + S5: underlay → overlay → servers → accept, each behind a hard gate
-  local bp; bp="$(lp_blueprint)" || return
+  local bp ta; bp="$(lp_blueprint)" || return; mapfile -t ta < <(lp_tenant_args)
   # Recover first: site-scoped and idempotent (recreates this blueprint's missing bridges, sets autostart, starts
   # its VMs). A no-op straight after the substrate stage; it is what makes a stages=site-bringup rerun work on a lab
   # that was powered off since its substrate was built (runtime bridges don't survive a host reboot).
@@ -143,5 +188,5 @@ stage_site_bringup(){        # setup_guide.md Part IV S4 (rest) + S5: underlay �
   # ORDER MATTERS: simulate_dc.sh parses left to right and `--dc up` resets --from to substrate, so it must come
   # BEFORE `--from underlay` — the other way round would rebuild the substrate the previous phase just made.
   bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
-      --tenants "$TENANTS" --dc up --from underlay
+      ${ta[@]+"${ta[@]}"} --dc up --from underlay
 }

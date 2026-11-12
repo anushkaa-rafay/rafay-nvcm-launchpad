@@ -1,7 +1,7 @@
 name: nvcm-greenfield
 # GREENFIELD: nothing to preserve — author intent from scratch and push it to blank switches. Mirrors
 # rafay_nvcm_poc's onboarding/greenfield/greenfield_adoption_plan.md (spreadsheet → blueprint → deploy).
-#   lab (resolve the `lab` input → its GitHub Environment: which OCI host, which credentials)
+#   lab (resolve the `lab` input — 'default' = vars.DEFAULT_LAB — → its GitHub Environment: which OCI host, which credentials)
 #   → boot (start OCI → wait operational → workspace cleanup → clone the rafay_nvcm_poc branch)
 #   → platform → blueprint → substrate → bringup   (config/stages-greenfield.sh, executed ON the host)
 #   → poweroff (always, unless shutdown=false) → report (always: artifact + dated commit under logs/)
@@ -9,41 +9,63 @@ name: nvcm-greenfield
 # (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
 # one concurrency group PER LAB because, for a given lab, both drive the SAME physical OCI host.
 
-run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'SKIPPED: SCHEDULED_RUNS_ENABLED not true') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'SKIPPED: SCHEDULE_1_LAB not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_POC_BRANCH || 'SKIPPED: SCHEDULE_1_POC_BRANCH not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_POC_BRANCH || 'SKIPPED: SCHEDULE_2_POC_BRANCH not set')) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
+run-name: "nvcm-greenfield · ${{ (inputs.lab != 'default' && inputs.lab) || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'SKIPPED: SCHEDULED_RUNS_ENABLED not true') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'SKIPPED: SCHEDULE_1_LAB not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_POC_BRANCH || 'SKIPPED: SCHEDULE_1_POC_BRANCH not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_POC_BRANCH || 'SKIPPED: SCHEDULE_2_POC_BRANCH not set')) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
 
 on:
   workflow_dispatch:
+    # GitHub shows each input's `description` as its label (there is no separate help text) — the full meaning of
+    # every input is in User_Guide.md → "Running greenfield". Both dropdown lists are static (GitHub can't fill a
+    # choice dynamically): add a new lab Environment to `lab`, a new datacenters/examples/<dc> folder to `datacenter`.
     inputs:
       lab:
-        description: "Lab to run on (OCI or AWS) — the name of a GitHub Environment holding that lab's INSTANCE_ID, SSH host and any secrets that differ from the repo-level ones (blank uses the DEFAULT_LAB repository variable)"
-        required: false
-        default: ""
-        type: string
+        description: "Lab · Support OCI & AWS, by Default: var.DEFAULT_LAB"
+        required: true
+        default: default
+        type: choice
+        options: [default, aa-nvcm-vlab-1, aa-nvcm-vlab-2, aa-nvcm-vlab-3]
       poc_branch:
-        description: "rafay_nvcm_poc branch to run — blank uses the POC_DEFAULT_BRANCH repository variable (falls back to main if that isn't set either)"
+        description: "rafay_nvcm_poc Branch · by Default: var.POC_DEFAULT_BRANCH"
         required: false
         default: ""
         type: string
       stages:
-        description: "Stages: 'all' or a comma list — host-prep,platform-nvcm-install,platform-rafay-install,platform-verify,blueprint-generate,blueprint-verify,substrate,site-bringup"
+        description: "Stages"
         required: true
         default: all
-        type: string
-      blueprint_source:
-        description: "Blueprint for substrate/site-bringup: generate (this run's blueprint-generate stage builds it) or existing (datacenters/examples/stc/blueprint_stc.yaml in rafay_nvcm_poc)"
-        default: generate
         type: choice
-        options: [generate, existing]
+        options:     # resolved by scripts/run-stages.sh resolve — keep in step with config/stages-greenfield.sh
+          - all
+          - "phase: platform"
+          - "phase: blueprint"
+          - "phase: substrate"
+          - "phase: bringup"
+          - "from platform-nvcm-install"
+          - "from platform-rafay-install"
+          - "from platform-verify"
+          - "from blueprint-generate"
+          - "from blueprint-verify"
+          - "from substrate"
+      generate:
+        description: "Blueprint · Generate from the datacenter's .xlsx workbook (unticked: use its blueprint .yaml)"
+        default: false
+        type: boolean
+      datacenter:
+        description: "Blueprint · Datacenter (a folder of rafay_nvcm_poc datacenters/examples/)"
+        required: true
+        default: stc
+        type: choice
+        options: [stc, nava, slab, tm, xyz]
       tenants:
-        description: "Tenant spec passed to simulate_dc.sh --tenants"
+        description: "Day0 Tenants · blank: the blueprint's full tenant range"
+        required: false
         default: "3-11,84-100"
         type: string
       clean_lab:
-        description: "Clean the lab first: delete the kind cluster (nv-config-manager) and EVERY libvirt VM with its storage. Untick when running only later stages (e.g. stages=site-bringup) against an already-installed lab"
+        description: "Clean the Lab during boot · Deletes the kind cluster (nv-config-manager) and all libvirt VMs with its storage. Note: untick when running only later stages (e.g. stages=from substrate) against an already-installed lab"
         default: true
         type: boolean
       shutdown:
-        description: "Power the lab instance off at the end (untick to keep it up for debugging)"
+        description: "Power Off the Lab · Note: untick to keep it up for debugging"
         default: true
         type: boolean
   # Two daily runs, alongside the manual trigger — only while the repository variable SCHEDULED_RUNS_ENABLED is
@@ -57,7 +79,8 @@ on:
   # a branch that doesn't exist in POC_REPO (checked only when POC_DEPLOY_KEY is a repository-level secret).
   # A daily run has nobody watching it, so a bad setting skips it rather than booting the lab to fail. The two are told apart by github.event.schedule, so the cron strings are
   # repeated in the expressions in this file — change them everywhere at once.
-  # Every other input at its default (all stages, generate, default tenants); the lab is cleaned first and always
+  # Every other input as before the dropdowns: all stages, GENERATE the stc blueprint (unlike the form's default — the
+  # daily run keeps testing the generator), default tenants; the lab is cleaned first and always
   # powered off. Different labs run in parallel. GitHub starts scheduled runs late under load — often 5-30 minutes.
   schedule:
     - cron: "30 0 * * *"   # 00:30 UTC = 06:00 IST — SCHEDULE_1_LAB / SCHEDULE_1_POC_BRANCH
@@ -69,7 +92,7 @@ on:
 # GitHub keeps at most one pending run per group — a third trigger on the same lab replaces the queued second.
 concurrency:
   # (a switched-off or unconfigured daily run gets a group of its own, so its no-op run never queues behind a real one)
-  group: nvcm-oci-lab-${{ inputs.lab || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'scheduled-runs-off') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'unset-schedule-1')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'unset-schedule-2')) || vars.DEFAULT_LAB }}
+  group: nvcm-oci-lab-${{ (inputs.lab != 'default' && inputs.lab) || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'scheduled-runs-off') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'unset-schedule-1')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'unset-schedule-2')) || vars.DEFAULT_LAB }}
   cancel-in-progress: false
 
 permissions:
@@ -147,10 +170,10 @@ jobs:
         id: lab
         if: ${{ steps.daily.outputs.go != 'false' }}
         env:
-          LAB: ${{ inputs.lab || steps.daily.outputs.lab || vars.DEFAULT_LAB }}
+          LAB: ${{ (inputs.lab != 'default' && inputs.lab) || steps.daily.outputs.lab || vars.DEFAULT_LAB }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          [ -n "$LAB" ] || { echo "::error::no lab given — set the 'lab' input (or the DEFAULT_LAB repository variable; SCHEDULE_1_LAB / SCHEDULE_2_LAB for the daily runs)"; exit 1; }
+          [ -n "$LAB" ] || { echo "::error::no lab given — pick a 'lab' (or 'default' with the DEFAULT_LAB repository variable set; SCHEDULE_1_LAB / SCHEDULE_2_LAB for the daily runs)"; exit 1; }
           [[ "$LAB" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "::error::invalid lab '$LAB' (letters, digits, . _ - only)"; exit 1; }
           gh api "repos/$GITHUB_REPOSITORY/environments/$LAB" --silent 2>/dev/null \
             || { echo "::error::lab '$LAB' is not a GitHub Environment of this repo (Settings → Environments; see README → Setup)"; exit 1; }
@@ -181,8 +204,11 @@ jobs:
         env:
           BRANCH:   ${{ inputs.poc_branch || needs.lab.outputs.branch || vars.POC_DEFAULT_BRANCH || 'main' }}
           STAGES:   ${{ inputs.stages || 'all' }}
-          BP_SRC:   ${{ inputs.blueprint_source || 'generate' }}
-          TENANTS:  ${{ inputs.tenants || '3-11,84-100' }}
+          # generate checkbox → generate | existing; a daily run (no inputs) generates, as it always has
+          BP_SRC:   ${{ (github.event_name != 'workflow_dispatch' || inputs.generate) && 'generate' || 'existing' }}
+          DC:       ${{ inputs.datacenter || 'stc' }}
+          # a blank tenants box is kept blank (→ the blueprint's full range); a daily run uses the STC default
+          TENANTS:  ${{ (github.event_name == 'workflow_dispatch' && inputs.tenants) || (github.event_name != 'workflow_dispatch' && '3-11,84-100') || '' }}
           CLEAN:    ${{ github.event_name != 'workflow_dispatch' || inputs.clean_lab }}
           POC_REPO: ${{ vars.POC_REPO || 'ramakrishna-rafay/rafay_nvcm_poc' }}
           RUN_KEY:  ${{ github.run_id }}-${{ github.run_attempt }}
@@ -191,8 +217,11 @@ jobs:
           [[ "$BRANCH"   =~ ^[A-Za-z0-9._/-]+$ && "$BRANCH" != -* ]] || { echo "::error::invalid branch '$BRANCH'"; exit 1; }
           [[ "$POC_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]     || { echo "::error::invalid POC_REPO '$POC_REPO'"; exit 1; }
           [[ "$BP_SRC"   =~ ^(generate|existing)$ ]]                   || { echo "::error::invalid blueprint_source '$BP_SRC' (generate | existing)"; exit 1; }
-          [[ "$TENANTS"  =~ ^[0-9,-]+$ ]]                            || { echo "::error::invalid tenants '$TENANTS'"; exit 1; }
-          STAGES="${STAGES// /}"; scripts/run-stages.sh validate "$STAGES"
+          [[ "$DC"       =~ ^[A-Za-z0-9._-]+$ ]]                      || { echo "::error::invalid datacenter '$DC'"; exit 1; }
+          TENANTS="${TENANTS// /}"; [ -n "$TENANTS" ] || TENANTS=blueprint   # blank → simulate_dc.sh gets no --tenants
+          [[ "$TENANTS"  =~ ^([0-9,-]+|blueprint)$ ]]                || { echo "::error::invalid tenants '$TENANTS'"; exit 1; }
+          STAGES="$(scripts/run-stages.sh resolve "$STAGES")"; scripts/run-stages.sh validate "$STAGES"
+          echo "stages: $STAGES · blueprint: $DC ($BP_SRC) · tenants: $TENANTS"
           if [ "$CLEAN" = true ] && [ "$STAGES" != all ] && [[ ",$STAGES," != *",platform-nvcm-install,"* ]]; then
             echo "::warning::clean_lab deletes the kind cluster + all VMs, but stages '$STAGES' do not reinstall the platform — later stages will likely fail. Untick clean_lab for a partial run."
           fi
@@ -200,7 +229,7 @@ jobs:
           mkdir -p "$OUT"
           {
             echo "RUN_KEY=$RUN_KEY"; echo "POC_REPO=$POC_REPO"; echo "POC_BRANCH=$BRANCH"; echo "STAGES=$STAGES"
-            echo "BLUEPRINT_SOURCE=$BP_SRC"; echo "TENANTS=$TENANTS"; echo "CLEAN_LAB=$CLEAN"; echo "STARTED_AT=$(date -u +%FT%TZ)"
+            echo "BLUEPRINT_SOURCE=$BP_SRC"; echo "DATACENTER=$DC"; echo "TENANTS=$TENANTS"; echo "CLEAN_LAB=$CLEAN"; echo "STARTED_AT=$(date -u +%FT%TZ)"
           } > "$OUT/meta.env"
           cat "$OUT/meta.env" >> "$GITHUB_OUTPUT"   # expression property names are case-insensitive
 
@@ -241,18 +270,21 @@ jobs:
           POC_REPO: ${{ steps.opts.outputs.POC_REPO }}
           BRANCH:   ${{ steps.opts.outputs.POC_BRANCH }}
           BP_SRC:   ${{ steps.opts.outputs.BLUEPRINT_SOURCE }}
+          DC:       ${{ steps.opts.outputs.DATACENTER }}
           TENANTS:  ${{ steps.opts.outputs.TENANTS }}
           LAB_IP: ${{ vars.LAB_IP }}
         run: |
           set -o pipefail   # see "Power On" above
           # -A forwards the agent for this one command only: the deploy key never touches the host's disk.
-          # BP_SRC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
+          # BP_SRC/DC/TENANTS reach the remote shell unescaped by design — both are already regex-validated above
           # to plain charsets with no spaces (see "Resolve + validate options"), so plain interpolation is safe.
           # Cleanup is greenfield-only (brownfield adopts the running fabric): preflight (inside clean) → delete the
           # kind cluster → delete every VM; then prepare pulls the latest <branch> into the existing checkout.
           clean=""; [ "$CLEAN" = true ] && clean="launchpad/agent.sh clean && "
-          scripts/lab.sh ssh -A "${clean}LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC TENANTS=$TENANTS" \
+          scripts/lab.sh ssh -A "${clean}LAB_IP='$LAB_IP' launchpad/agent.sh prepare $KEY $POC_REPO $BRANCH BLUEPRINT_SOURCE=$BP_SRC DATACENTER=$DC TENANTS=$TENANTS" \
             2>&1 | tee -a "$OUT/boot.log"
+          # the chosen datacenter must resolve in this checkout (one workbook+profile+facts, or one blueprint_*.yaml)
+          scripts/lab.sh ssh "launchpad/agent.sh check $KEY" 2>&1 | tee -a "$OUT/boot.log"
           grep -m1 '^POC_SHA=' "$OUT/boot.log" >> "$OUT/meta.env"
 
       - name: Record boot metadata
@@ -368,7 +400,7 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           TRIGGER: ${{ github.event_name }}
           ACTOR: ${{ github.triggering_actor }}
-          LAB: ${{ needs.lab.outputs.name || inputs.lab || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || vars.DEFAULT_LAB }}
+          LAB: ${{ needs.lab.outputs.name || (inputs.lab != 'default' && inputs.lab) || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB) || vars.DEFAULT_LAB }}
           RESULT_LAB: ${{ needs.lab.result }}
           RESULT_BOOT: ${{ needs.boot.result }}
           RESULT_PLATFORM: ${{ needs.platform.result }}

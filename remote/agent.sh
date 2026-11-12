@@ -8,6 +8,7 @@
 #   agent.sh preflight                                        # sudo -n works, no stage already running
 #   agent.sh clean                                            # GREENFIELD ONLY: delete the kind cluster + every libvirt VM
 #   agent.sh prepare <run_key> <owner/repo> <branch> [K=V..]  # workspace + update/clone the checkout (needs ssh -A)
+#   agent.sh check   <run_key>                                # the catalogue's boot check (lp_check), if it has one
 #   agent.sh start   <run_key> <stage> <timeout_minutes>      # launch detached; returns immediately
 #   agent.sh status  <run_key> <stage>                        # running | done <rc> | absent
 #   agent.sh diag    <run_key>                                # read-only host snapshot for a failed run
@@ -137,6 +138,20 @@ cmd_prepare(){
   cat "$run/run.env"
 }
 
+# The catalogue's boot-time check of the run's options against the fresh checkout (greenfield: the chosen
+# datacenter folder resolves to its workbook / blueprint), so a bad choice fails at boot, not hours in.
+# A catalogue without lp_check passes. Subshell: run.env and the catalogue stay out of the agent.
+cmd_check(){
+  local run="$RUNS/$1"
+  [ -f "$run/run.env" ] || die "run $1 was never prepared on this host"
+  (
+    set -a; . "$run/run.env"; set +a
+    . "$LP/stages.sh"
+    cd "$POC_DIR" || exit 1
+    if declare -F lp_check >/dev/null; then lp_check; else echo "[agent] no boot check in this catalogue"; fi
+  ) || die "boot check failed for run $1 (see above)"
+}
+
 cmd_start(){
   local key="$1" stage="$2" minutes="$3" run="$RUNS/$1"
   [ -f "$run/run.env" ] || die "run $key was never prepared on this host"
@@ -179,6 +194,7 @@ case "$sub" in
   preflight) cmd_preflight ;;
   clean)     cmd_clean ;;
   prepare)   [ $# -ge 3 ] || die "usage: prepare <run_key> <owner/repo> <branch> [K=V..]"; cmd_prepare "$@" ;;
+  check)     [ $# -eq 1 ] || die "usage: check <run_key>"; cmd_check "$@" ;;
   start)     [ $# -eq 3 ] || die "usage: start <run_key> <stage> <timeout_minutes>"; cmd_start "$@" ;;
   status)    [ $# -eq 2 ] || die "usage: status <run_key> <stage>"; cmd_status "$@" ;;
   diag)      cmd_diag ;;

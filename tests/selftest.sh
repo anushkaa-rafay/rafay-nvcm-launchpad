@@ -35,6 +35,16 @@ scripts/run-stages.sh validate not-a-stage 2>/dev/null && { echo "FAIL: validate
 [ "$(scripts/run-stages.sh plan substrate all)" = "substrate" ]
 [ "$(scripts/run-stages.sh plan bringup all)" = "site-bringup" ]
 [ -z "$(scripts/run-stages.sh plan bringup blueprint-generate,substrate)" ]   # an earlier-phase-only selection plans nothing for bringup
+# the workflow's stages dropdown → selection (resolve), and every dropdown option must resolve + validate
+[ "$(scripts/run-stages.sh resolve all)" = all ]
+[ "$(scripts/run-stages.sh resolve 'phase: blueprint')" = "blueprint-generate,blueprint-verify" ]
+[ "$(scripts/run-stages.sh resolve 'from substrate')" = "substrate,site-bringup" ]
+[ "$(scripts/run-stages.sh resolve 'substrate, site-bringup')" = "substrate,site-bringup" ]   # a plain list passes through
+scripts/run-stages.sh resolve 'phase: nope' 2>/dev/null && { echo "FAIL: resolve accepted an unknown phase"; exit 1; }
+while IFS= read -r opt; do
+  scripts/run-stages.sh validate "$(scripts/run-stages.sh resolve "$opt")" \
+    || { echo "FAIL: stages option '$opt' in nvcm-greenfield.yml does not resolve"; exit 1; }
+done < <(awk '/^      stages:/{f=1;next} f&&/^      [a-z_]+:/{exit} f&&/^ +- /{sub(/^ +- /,""); gsub(/"/,""); print}' .github/workflows/nvcm-greenfield.yml)
 
 echo "=== stage-selection — brownfield catalogue"
 export LAUNCHPAD_CATALOGUE=config/stages-brownfield.sh

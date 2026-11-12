@@ -75,13 +75,13 @@ jq -n \
   --arg trigger "${TRIGGER:-}" --arg actor "${ACTOR:-}" \
   --arg started "$started" --arg finished "$finished" \
   --arg host "${M[HOST]:-}" --arg lab "$lab" --arg instance "$instance" --arg was_running "${M[WAS_RUNNING]:-}" \
-  --arg poweroff "${RESULT_POWEROFF:-}" --arg blueprint_source "${M[BLUEPRINT_SOURCE]:-}" --arg tenants "${M[TENANTS]:-}" \
+  --arg poweroff "${RESULT_POWEROFF:-}" --arg blueprint_source "${M[BLUEPRINT_SOURCE]:-}" --arg datacenter "${M[DATACENTER]:-}" --arg tenants "${M[TENANTS]:-}" \
   --rawfile tsv "$OUT/status.tsv" '
   { status:$status, failed_stage:($failed_stage|select(.!="") // null),
     poc:{repo:$repo, branch:$branch, sha:$sha},
     run:{id:$run_id, attempt:$attempt, url:$run_url, trigger:$trigger, actor:$actor, started:$started, finished:$finished},
     oci:{lab:$lab, instance:$instance, host:$host, was_running_before:$was_running, poweroff_job:$poweroff},
-    options:{blueprint_source:$blueprint_source, tenants:$tenants},
+    options:{blueprint_source:$blueprint_source, datacenter:$datacenter, tenants:$tenants},
     stages:[ $tsv | split("\n")[] | select(length>0) | split("\t")
              | {index:(.[0]|tonumber), name:.[1], phase:.[2], result:.[3], rc:.[4], started:.[5], finished:.[6],
                 seconds:(if .[7]=="" then null else (.[7]|tonumber) end)} ] }' > "$OUT/summary.json"

@@ -35,8 +35,10 @@ two runs on the same lab still queue behind each other, greenfield and brownfiel
 - Set the repository variable `DEFAULT_LAB` to the lab used when the `lab` input is left blank. (The daily
   runs don't use it: they take their lab from `SCHEDULE_1_LAB` / `SCHEDULE_2_LAB`.)
 
-Adding a lab is just adding an Environment — no workflow change. A `lab` that isn't an Environment fails
-the run at its first job, before anything touches OCI.
+Adding a lab is adding an Environment **and** adding its name to the greenfield `lab` dropdown
+(`options:` of the `lab` input in `.github/workflows/nvcm-greenfield.yml` — GitHub can't fill a dropdown from
+the Environments). Brownfield's `lab` is still a text box. A `lab` that isn't an Environment fails the run at
+its first job, before anything touches OCI.
 
 **1. Variables** (Settings → Secrets and variables → Actions → *Variables*, or on the lab's Environment)
 
@@ -228,15 +230,31 @@ below → Run**.
 
 **Actions → nvcm-greenfield → Run workflow**
 
-| Input | Default | |
+| Form label (input) | Default | What it means |
 |---|---|---|
-| `lab` | *(blank)* | which OCI lab to run on — the name of a GitHub Environment set up as in [One-time setup](#one-time-setup). Blank uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
-| `poc_branch` | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
-| `stages` | `all` | or a comma list, for example `blueprint-generate,blueprint-verify,substrate,site-bringup` (with `clean_lab` unticked) to rerun only the DC part on an installed platform |
-| `blueprint_source` | `generate` | `generate` builds the blueprint in this run's `blueprint-generate` stage; `existing` uses `datacenters/examples/stc/blueprint_stc.yaml` from `rafay_nvcm_poc` instead. Either way `blueprint-verify` checks it before anything is built |
-| `tenants` | `3-11,84-100` | passed to `simulate_dc.sh --tenants` |
-| `clean_lab` | ✔ | delete the kind cluster and **every** VM on the host before the run, so it installs and builds from scratch. Untick when `stages` skips the platform install |
-| `shutdown` | ✔ | untick to leave the instance up for debugging |
+| **Lab** (`lab`) | `default` | the lab to run on, OCI or AWS — a dropdown of the GitHub Environments set up as in [One-time setup](#one-time-setup). `default` uses the `DEFAULT_LAB` repository variable. Runs on different labs go in parallel; a run on a lab that is busy queues behind it |
+| **rafay_nvcm_poc Branch** (`poc_branch`) | *(blank)* | the `rafay_nvcm_poc` branch to clone and run — blank uses the `POC_DEFAULT_BRANCH` repository variable, falling back to `main` if that isn't set either |
+| **Stages** (`stages`) | `all` | `all`; `phase: <phase>` runs one phase (`platform`, `blueprint`, `substrate`, `bringup`); `from <stage>` runs that stage and every one after it — e.g. `from blueprint-generate` (with **Clean the Lab** unticked) reruns only the DC part on an installed platform |
+| **Blueprint · Generate** (`generate`) | ☐ | ticked: this run's `blueprint-generate` stage builds the blueprint from the datacenter folder's `.xlsx` workbook, its `sheet_profiles/*.yaml` and its `site_facts/*.yaml` (the site is named after the facts file). Unticked: the folder's committed `blueprint_*.yaml` is used. Either way `blueprint-verify` checks it before anything is built |
+| **Blueprint · Datacenter** (`datacenter`) | `stc` | a folder of `rafay_nvcm_poc/datacenters/examples/` (`stc`, `nava`, `slab`, `tm`, `xyz`). The folder must hold exactly **one** of the files the Generate setting needs, or the run fails at **Boot Lab**, naming what it found — see the table below |
+| **Day0 Tenants** (`tenants`) | `3-11,84-100` | passed to `simulate_dc.sh --tenants`. Works with any blueprint, but the default is STC's range — change it for another datacenter, or leave it **blank** to use the blueprint's own full tenant range |
+| **Clean the Lab during boot** (`clean_lab`) | ✔ | deletes the kind cluster (`nv-config-manager`) and **all** libvirt VMs with their storage before the run, so it installs and builds from scratch. Untick when running only later stages (e.g. `from substrate`) against an already-installed lab |
+| **Power Off the Lab** (`shutdown`) | ✔ | untick to keep the instance up for debugging |
+
+GitHub shows each input's one-line description as its label in the Run form, with no room for help text —
+this table is the full explanation.
+
+Which datacenters work with which setting (`rafay_nvcm_poc` `nvcm_1.3.1_migrate_test`, 2026-11-12):
+
+| Datacenter | Generate ticked | Generate unticked |
+|---|---|---|
+| `stc` | ✔ site `blr-dc01` | ✔ `blueprint_stc.yaml` |
+| `nava` | ✘ two workbooks | ✔ `blueprint_nava-dc01.yaml` |
+| `tm` | ✘ two workbooks, no sheet profile | ✔ `blueprint_tm.yaml` |
+| `slab` | ✘ no workbook | ✘ five `blueprint_*.yaml` |
+| `xyz` | ✘ no workbook | ✘ two `blueprint_*.yaml` |
+
+A new folder in `datacenters/examples/` needs adding to the `datacenter` dropdown's `options:` to be selectable.
 
 Before the stages, **Boot Lab** powers the instance on and runs **Cleanup**:
 
@@ -247,15 +265,15 @@ Before the stages, **Boot Lab** powers the instance on and runs **Cleanup**:
   tracked files on the host are **discarded** — saved first as `~/launchpad/runs/<run>/local-changes.patch`.
   Untracked and gitignored files (`params-secrets.env`, `.venv`) are kept.
 
-If `clean_lab` is ticked but `stages` doesn't include `platform-nvcm-install`, the run shows a **warning**:
-the cleanup deletes the platform those stages need. Untick `clean_lab` for such a rerun.
+If **Clean the Lab** is ticked but **Stages** doesn't include `platform-nvcm-install`, the run shows a **warning**:
+the cleanup deletes the platform those stages need. Untick it for such a rerun.
 
 What it does next — four jobs, in order:
 
 | Job | Stages | |
 |---|---|---|
 | 1 · Installation | `host-prep` → `platform-nvcm-install` → `platform-rafay-install` → `platform-verify` | dependencies, NVCM + Nautobot, the Rafay layer, then one verdict for the whole platform (re-checked every 3 min for up to 15 min while pods finish starting) |
-| 2 · Blueprint | `blueprint-generate` → `blueprint-verify` | generate from the workbook (or take the existing one), then verify it offline |
+| 2 · Blueprint | `blueprint-generate` → `blueprint-verify` | generate from the datacenter's workbook (or take its committed blueprint), then verify it offline |
 | 3 · Substrate | `substrate` | stage the VM images, then create this blueprint's fabric VMs and cabling (gated at L1 and L2). If a check fails — say a VM caught mid-boot — it starts or recreates the VMs that aren't running and tries again, up to 3 times |
 | 4 · Site BringUp | `site-bringup` | `recover_substrate.sh` (a no-op right after Substrate), then underlay → overlay → servers → accept, gated at every layer |
 
@@ -292,7 +310,8 @@ For example `SCHEDULE_1_LAB=aa-nvcm-vlab-3` + `SCHEDULE_1_POC_BRANCH=prototype_f
 the 06:00 one. A scheduled run has no form to fill in, so it takes:
 
 - the lab and branch from the table above;
-- every other input at its default: `stages=all`, `blueprint_source=generate`, `tenants=3-11,84-100`;
+- `stages=all`, datacenter `stc` **generated** from its workbook (unlike the form, where Generate is off by
+  default — so the daily run keeps testing the generator), `tenants=3-11,84-100`;
 - it always cleans the lab first (`clean_lab`) and always powers the instance off at the end.
 
 > **Set both `SCHEDULE_<n>_LAB` and `SCHEDULE_<n>_POC_BRANCH` for each daily run you rely on** — e.g.
