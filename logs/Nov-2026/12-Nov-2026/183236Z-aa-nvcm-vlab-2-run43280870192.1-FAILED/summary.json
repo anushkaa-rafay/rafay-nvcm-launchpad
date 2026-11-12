@@ -1,0 +1,113 @@
+{
+  "status": "FAILED",
+  "failed_stage": "blueprint-verify",
+  "poc": {
+    "repo": "ramakrishna-rafay/rafay_nvcm_poc",
+    "branch": "nvcm_1.3.1_migrate_test",
+    "sha": "ef48bd64a75e7a83058d47dfc5e098d2b9ac4e33"
+  },
+  "run": {
+    "id": "43280870192",
+    "attempt": "1",
+    "url": "https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/43280870192",
+    "trigger": "workflow_dispatch",
+    "actor": "anushkaa-rafay",
+    "started": "2026-11-12T18:32:36Z",
+    "finished": "2026-11-12T18:58:28Z"
+  },
+  "oci": {
+    "lab": "aa-nvcm-vlab-2",
+    "instance": "ocid1.instance.oc1.phx.anyhqljtymbj47qcnihbser2eeavbrhapajtjkn4lba3vs5y7agurdo77djq",
+    "host": "129.146.175.81",
+    "was_running_before": "false",
+    "poweroff_job": "skipped"
+  },
+  "options": {
+    "blueprint_source": "generate",
+    "datacenter": "stc",
+    "blueprint_file": "datacenters/examples/stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx",
+    "tenants": "3-11,84-100"
+  },
+  "stages": [
+    {
+      "index": 1,
+      "name": "host-prep",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-11-12T18:37:26Z",
+      "finished": "2026-11-12T18:37:48Z",
+      "seconds": 22
+    },
+    {
+      "index": 2,
+      "name": "platform-nvcm-install",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-11-12T18:37:48Z",
+      "finished": "2026-11-12T18:51:00Z",
+      "seconds": 792
+    },
+    {
+      "index": 3,
+      "name": "platform-rafay-install",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-11-12T18:51:00Z",
+      "finished": "2026-11-12T18:55:17Z",
+      "seconds": 257
+    },
+    {
+      "index": 4,
+      "name": "platform-verify",
+      "phase": "platform",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-11-12T18:55:17Z",
+      "finished": "2026-11-12T18:56:23Z",
+      "seconds": 66
+    },
+    {
+      "index": 5,
+      "name": "blueprint-generate",
+      "phase": "blueprint",
+      "result": "passed",
+      "rc": "0",
+      "started": "2026-11-12T18:57:30Z",
+      "finished": "2026-11-12T18:57:53Z",
+      "seconds": 23
+    },
+    {
+      "index": 6,
+      "name": "blueprint-verify",
+      "phase": "blueprint",
+      "result": "failed",
+      "rc": "1",
+      "started": "2026-11-12T18:57:53Z",
+      "finished": "2026-11-12T18:58:15Z",
+      "seconds": 22
+    },
+    {
+      "index": 7,
+      "name": "substrate",
+      "phase": "substrate",
+      "result": "skipped",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    },
+    {
+      "index": 8,
+      "name": "site-bringup",
+      "phase": "bringup",
+      "result": "skipped",
+      "rc": "",
+      "started": "",
+      "finished": "",
+      "seconds": null
+    }
+  ]
+}
