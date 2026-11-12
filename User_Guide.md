@@ -48,7 +48,7 @@ the run at its first job, before anything touches OCI.
 | `SCHEDULED_RUNS_ENABLED` | Repo only | the on/off switch for the [daily runs](#the-daily-greenfield-run): `true` runs them; unset or anything else skips them |
 | `SCHEDULE_1_LAB` | Repo only | the lab for the [06:00 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-3` (unset or invalid → that run is skipped) |
 | `SCHEDULE_1_POC_BRANCH` | Repo only | the `rafay_nvcm_poc` branch the 06:00 run tests, e.g. `prototype_fixes` (required — unset or invalid → that run is skipped) |
-| `SCHEDULE_2_LAB` | Repo only | the lab for the [06:05 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-2` (blank → that run is skipped) |
+| `SCHEDULE_2_LAB` | Repo only | the lab for the [06:05 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-2` (unset or invalid → that run is skipped) |
 | `SCHEDULE_2_POC_BRANCH` | Repo only | the branch the 06:05 run tests, e.g. `nvcm-1.3.1-migrate` (required — unset or invalid → that run is skipped) |
 | `OCI_USER`, `OCI_TENANCY`, `OCI_FINGERPRINT`, `OCI_REGION` | Repo (lab may override) | **OCI labs**: API-key auth IDs (see step 3) |
 | `AWS_ACCESS_KEY_ID`, `AWS_REGION` | Repo (lab may override) | **AWS labs**: IAM access key ID (`AKIA…`) and the instance's region (e.g. `ap-south-1`) |
@@ -183,11 +183,35 @@ What happens with a partial setup — none of it ever fails a lab run:
 
 | Set up | Result |
 |---|---|
+| `MAILS_ENABLED` not `true` | no mail, whatever else is set; the step notes "no mail sent — mails are off" |
 | `MAIL_TO` unset | no mail; the report job notes "no mail sent — the MAIL_TO repository variable is not set" |
 | `MAIL_TO` set, `SMTP_USERNAME` or the login (`SMTP_PASSWORD`, or all three `SMTP_OAUTH_*`) missing | no mail; a **warning** on the run names what's missing |
 | everything set, but Gmail refuses the login | no mail; an error on the step says why — App Password: use one (the account password, or an account without 2-Step Verification, is refused); OAuth2: the refresh token was revoked/expired, or was issued to another account |
 
 The weekly report behaves the same way, except that a refused login turns its own run red.
+
+### The two on/off switches
+
+Two repository variables turn the automatic parts on and off. Each is on **only** when set to `true` (any
+capitalisation, e.g. `TRUE`); unset or any other value means off. Neither one ever affects a run you start by
+hand, other than whether it mails.
+
+| Variable | Controls | When off |
+|---|---|---|
+| `MAILS_ENABLED` | every mail: a failed run's mail and the Friday weekly report's mail | nothing is mailed; runs, logs, Summary tabs and the weekly report itself are unchanged |
+| `SCHEDULED_RUNS_ENABLED` | the two [daily greenfield runs](#the-daily-greenfield-run) | each daily run is skipped (title `SKIPPED: SCHEDULED_RUNS_ENABLED not true`); manual runs and the weekly report are unchanged |
+
+How they combine:
+
+| `MAILS_ENABLED` | `SCHEDULED_RUNS_ENABLED` | Daily runs | Mails (failed runs + weekly) |
+|---|---|---|---|
+| `true` | `true` | run | sent |
+| `false` | `true` | run — logs and Summary as usual | none |
+| `true` | `false` | skipped | sent for manual runs that fail, and the weekly report |
+| `false` | `false` | skipped | none |
+
+To pause everything for a while (e.g. a lab is being rebuilt), set both to `false` — no need to delete the
+`SCHEDULE_*` or mail settings.
 
 ## Which flow do I run?
 
@@ -259,7 +283,11 @@ either is:
 - a lab with no GitHub Environment, or a branch that doesn't exist in `POC_REPO` (the branch is looked up only
   when `POC_DEPLOY_KEY` is a repository-level secret; otherwise the boot job finds out).
 
-An unset lab or branch also shows in the title: `nvcm-greenfield · SKIPPED: SCHEDULE_<n>_LAB not set · …`. For example `SCHEDULE_1_LAB=aa-nvcm-vlab-3` + `SCHEDULE_1_POC_BRANCH=prototype_fixes`, and `SCHEDULE_2_LAB=aa-nvcm-vlab-2` +
+An unset lab or branch also shows in the title: `nvcm-greenfield · SKIPPED: SCHEDULE_<n>_LAB not set · …`. Any
+other reason (an invalid name, a missing Environment or branch) shows only in the warning — open the run and
+look under **Annotations**. A skipped daily run touches no lab, commits no logs and mails nothing.
+
+For example `SCHEDULE_1_LAB=aa-nvcm-vlab-3` + `SCHEDULE_1_POC_BRANCH=prototype_fixes`, and `SCHEDULE_2_LAB=aa-nvcm-vlab-2` +
 `SCHEDULE_2_POC_BRANCH=nvcm-1.3.1-migrate`. The two labs run in parallel; give them different labs, or the 06:05 run just queues behind
 the 06:00 one. A scheduled run has no form to fill in, so it takes:
 
@@ -341,8 +369,9 @@ DC. Use the two-run pattern there.
 ## The weekly report
 
 Every **Friday at 09:00 IST** the `weekly-report` workflow summarizes the last 7 days of greenfield and
-brownfield runs and mails it to `MAIL_TO` (the same mail setup as failure mails — step 6 of setup). The same
-report is on that run's **Summary** tab, so it's readable even before mail is set up. It shows:
+brownfield runs and mails it to `MAIL_TO` (the same mail setup as failure mails — step 6 of setup) when
+`MAILS_ENABLED` is `true`. The same report is always on that run's **Summary** tab, so it's readable with mail
+off or not yet set up. `SCHEDULED_RUNS_ENABLED` doesn't stop it — it touches no lab. It shows:
 
 - links to the dashboard and to the `logs/` folder;
 

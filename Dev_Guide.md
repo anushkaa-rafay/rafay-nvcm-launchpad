@@ -302,6 +302,22 @@ from the GitHub Actions API — is **not on this branch**. It lives alone on the
   reports don't support it: `poweroff` was `skipped` on every run that day, including PASSED run
   36585500700 where nothing upstream was skipped, i.e. its own `shutdown` condition was false.)
   Pass/fail per stage comes from `status.tsv`, not job results — a skipped phase's stages show `skipped`.
+- **A daily (scheduled) greenfield run checks its own settings first and skips, never fails.** The `lab` job's
+  *Check the daily run's settings* step (schedule only) requires `SCHEDULED_RUNS_ENABLED=true` and a
+  `SCHEDULE_<n>_LAB` / `SCHEDULE_<n>_POC_BRANCH` that are set, non-blank after trimming, not a quoted `''`/`""`,
+  valid names, an existing Environment, and (when `POC_DEPLOY_KEY` is a repo-level secret) an existing branch
+  (`git ls-remote --exit-code`: only exit 2, "no such ref", skips; a network error just notes and goes on).
+  Any miss → a `::warning::` naming it and job output `go=false`; the job itself stays green. `boot`
+  (`needs.lab.outputs.go == 'true'`), `poweroff` and `report` (`… go != 'false'`) gate on it, and every phase
+  follows `boot`, so nothing touches the lab and no logs are committed. `go` defaults to `true` for manual runs.
+  The checked, trimmed branch reaches `boot` as `needs.lab.outputs.branch` — a daily run never falls back to
+  `POC_DEFAULT_BRANCH`. The job-level `if:` on `lab` still skips switched-off / blank-lab runs without a runner;
+  `run-name` and `concurrency` mirror those two cases so such a run is titled `SKIPPED: …` and never queues
+  behind a real run. The step uses only bash 3.2 features (`printf %q`, not `${x@Q}`), so it can be tested
+  locally on macOS by extracting the `run:` block and feeding it env vars.
+- **Mail is off unless `MAILS_ENABLED=true`.** `lplib.mail_configured()` checks it first — before `MAIL_TO` and the
+  SMTP login — so both `failure-mail.py` and `weekly-report.py --mail` honour it; every step that mails passes
+  `vars.MAILS_ENABLED` in its `env:`. Add it to any new mailing step too.
 - **Every stage runs through `lp_run_stage` (`config/common.sh`), not called directly**, wired in
   `remote/agent.sh`'s generated stage script. If a stage fails with the apt/dpkg lock still held — cloud-init
   or `unattended-upgrades` running their own background `apt-get` right after boot is a common race any
