@@ -2,7 +2,7 @@
 #
 # stages-greenfield.sh — the GREENFIELD stage catalogue: nothing to preserve; author intent from scratch and
 # push it to blank switches. Mirrors rafay_nvcm_poc's onboarding/greenfield/greenfield_adoption_plan.md — "this
-# path is already built and documented" in deploy_scripts/, via stc/stc_dc_deploy.md's spreadsheet → blueprint
+# path is already built and documented" in deploy_scripts/, via datacenters/examples/stc/stc_dc_deploy.md's spreadsheet → blueprint
 # → deploy flow. Sourced in two places:
 #   * on the GitHub runner (scripts/run-stages.sh) via $LAUNCHPAD_CATALOGUE — reads LAUNCHPAD_STAGES for
 #     order, phase, timeout;
@@ -35,11 +35,17 @@ LAUNCHPAD_STAGES=(
   site-bringup:bringup:300         # 4 Site bring-up — underlay → overlay → servers → accept, gated per layer      S4–S5
 )
 
-# ── greenfield-only: the STC reference site shipped in rafay_nvcm_poc/stc ────────────────────────────────
-: "${BP_XLSX:=stc/STCS-GPUaaS_Network-Schema_v0.3.xlsx}"
-: "${BP_PROFILE:=stc/sheet_profiles/stcs-v0.3.yaml}"
-: "${BP_FACTS:=stc/site_facts/${SITE}.yaml}"
-: "${BP_COMMITTED:=stc/blueprint_stc.yaml}"
+# ── greenfield-only: the STC reference site shipped in rafay_nvcm_poc/datacenters/examples/stc ──────────────
+# rafay_nvcm_poc layout (prototype_demo_v1 and later): blueprint tools under blueprint/, the STC reference site
+# under datacenters/examples/stc/, the virtual-fabric substrate tools under targets/virtual/fabric_maintenance/twin_clos/.
+: "${STC_DIR:=datacenters/examples/stc}"
+: "${BP_XLSX:=$STC_DIR/STCS-GPUaaS_Network-Schema_v0.3.xlsx}"
+: "${BP_PROFILE:=$STC_DIR/sheet_profiles/stcs-v0.3.yaml}"
+: "${BP_FACTS:=$STC_DIR/site_facts/${SITE}.yaml}"
+: "${BP_COMMITTED:=$STC_DIR/blueprint_stc.yaml}"
+BP_GENERATE=blueprint/greenfield/xlsx_to_blueprint.py
+BP_VERIFY=blueprint/validate/verify_blueprint.sh
+SUBSTRATE_DIR=targets/virtual/fabric_maintenance/twin_clos
 : "${BLUEPRINT_SOURCE:=generate}"      # generate = built by this run's blueprint-generate stage | existing = BP_COMMITTED
 
 # The blueprint every later stage consumes. A "generate" run needs blueprint-generate to have run in THIS run.
@@ -63,22 +69,26 @@ lp_venv(){
 # ── stage bodies (host-prep / platform-nvcm-install / platform-rafay-install / platform-verify: common.sh) ─────────────────
 stage_blueprint_generate(){  # setup_guide.md III-2
   if [ "$BLUEPRINT_SOURCE" = existing ]; then
-    local bp; bp="$(lp_blueprint)"
+    local bp; bp="$(lp_blueprint)" || return 1
     [ -f "$bp" ] || { echo "blueprint_source=existing but $bp is not in this rafay_nvcm_poc checkout" >&2; return 1; }
     echo "[launchpad] blueprint_source=existing — nothing to generate; this run uses $bp"
     return 0
   fi
-  lp_venv
-  .venv/bin/python3 deploy_scripts/blueprint/xlsx_to_blueprint.py \
-      --xlsx "$BP_XLSX" --profile "$BP_PROFILE" --facts "$BP_FACTS" --site "$SITE" --out "$RUN_DIR/blueprint_${SITE}.yaml"
-  echo "[launchpad] blueprint generated: $RUN_DIR/blueprint_${SITE}.yaml"
+  # Every step below is `|| return`ed: lp_run_stage runs this as `"$fn" | tee || rc=$?`, which turns set -e off
+  # inside the function — without it a failed generator still "passes" the stage (2026-11-12, run 43194653667).
+  local out="$RUN_DIR/blueprint_${SITE}.yaml"
+  lp_venv || return
+  .venv/bin/python3 "$BP_GENERATE" \
+      --xlsx "$BP_XLSX" --profile "$BP_PROFILE" --facts "$BP_FACTS" --site "$SITE" --out "$out" || return
+  [ -s "$out" ] || { echo "[launchpad] $BP_GENERATE exited 0 but wrote no blueprint at $out" >&2; return 1; }
+  echo "[launchpad] blueprint generated: $out"
 }
 
 stage_blueprint_verify(){    # setup_guide.md III-3 — the offline acceptance door, for BOTH sources
-  local bp; bp="$(lp_blueprint)"
-  lp_venv
+  local bp; bp="$(lp_blueprint)" || return
+  lp_venv || return
   echo "[launchpad] verifying ($BLUEPRINT_SOURCE) blueprint: $bp"
-  bash deploy_scripts/verify_blueprint.sh --blueprint "$bp"
+  bash "$BP_VERIFY" --blueprint "$bp"
 }
 
 # After a failed L1/L2 gate: put this blueprint's fabric VMs back in shape for the next attempt. recover_substrate.sh
@@ -88,8 +98,8 @@ stage_blueprint_verify(){    # setup_guide.md III-3 — the offline acceptance d
 # `declare -gA` arrays stay out of the stage's environment.
 lp_substrate_repair()(
   bp="$1"; V="sudo virsh -c qemu:///system"
-  sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh || true
-  plan="$(python3 deploy_scripts/substrate/plan_substrate.py --blueprint "$bp" --emit bash)" || exit 1
+  sudo DC_BLUEPRINT="$bp" bash "$SUBSTRATE_DIR/recover_substrate.sh" || true
+  plan="$(python3 "$SUBSTRATE_DIR/plan_substrate.py" --blueprint "$bp" --emit bash)" || exit 1
   eval "$plan"
   for vm in "${VMS[@]}"; do
     [ "${IMAGES[$vm]:-}" = ubuntu ] && continue
@@ -107,8 +117,8 @@ lp_substrate_repair()(
 # pass is repaired (above), given LP_SUBSTRATE_SETTLE_SECS to boot, and re-run — LP_SUBSTRATE_ATTEMPTS passes in all.
 # Re-running is safe: cabling and VM creation skip what exists, then the gates check again.
 stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice of S4 — always built fresh (clean_lab removed the VMs)
-  local bp n=0 max="${LP_SUBSTRATE_ATTEMPTS:-3}" settle="${LP_SUBSTRATE_SETTLE_SECS:-60}"; bp="$(lp_blueprint)"
-  sudo bash deploy_scripts/substrate/vm_image_operations.sh fetch      # S2 — no-op once the images are staged
+  local bp n=0 max="${LP_SUBSTRATE_ATTEMPTS:-3}" settle="${LP_SUBSTRATE_SETTLE_SECS:-60}"; bp="$(lp_blueprint)" || return
+  sudo bash "$SUBSTRATE_DIR/vm_image_operations.sh" fetch || return    # S2 — no-op once the images are staged
   while :; do
     n=$((n+1))
     bash deploy_scripts/simulate_dc.sh --blueprint "$bp" --oci "$LAB_IP" --apply --auto-approve \
@@ -124,11 +134,11 @@ stage_substrate(){           # setup_guide.md Part IV S2 + the substrate slice o
 }
 
 stage_site_bringup(){        # setup_guide.md Part IV S4 (rest) + S5: underlay → overlay → servers → accept, each behind a hard gate
-  local bp; bp="$(lp_blueprint)"
+  local bp; bp="$(lp_blueprint)" || return
   # Recover first: site-scoped and idempotent (recreates this blueprint's missing bridges, sets autostart, starts
   # its VMs). A no-op straight after the substrate stage; it is what makes a stages=site-bringup rerun work on a lab
   # that was powered off since its substrate was built (runtime bridges don't survive a host reboot).
-  sudo DC_BLUEPRINT="$bp" bash deploy_scripts/substrate/recover_substrate.sh
+  sudo DC_BLUEPRINT="$bp" bash "$SUBSTRATE_DIR/recover_substrate.sh" || return
   # --dc up turns the servers layer ON (without it simulate_dc.sh SKIPS servers: "fabric is the deliverable").
   # ORDER MATTERS: simulate_dc.sh parses left to right and `--dc up` resets --from to substrate, so it must come
   # BEFORE `--from underlay` — the other way round would rebuild the substrate the previous phase just made.

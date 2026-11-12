@@ -30,7 +30,7 @@ on:
         default: all
         type: string
       blueprint_source:
-        description: "Blueprint for substrate/site-bringup: generate (this run's blueprint-generate stage builds it) or existing (stc/blueprint_stc.yaml in rafay_nvcm_poc)"
+        description: "Blueprint for substrate/site-bringup: generate (this run's blueprint-generate stage builds it) or existing (datacenters/examples/stc/blueprint_stc.yaml in rafay_nvcm_poc)"
         default: generate
         type: choice
         options: [generate, existing]
