@@ -45,6 +45,7 @@ the run at its first job, before anything touches OCI.
 | `DEFAULT_LAB` | Repo only | the lab used when the `lab` input is blank |
 | `POC_REPO` | Repo only | `ramakrishna-rafay/rafay_nvcm_poc` |
 | `POC_DEFAULT_BRANCH` | Repo only | `main` (used if `poc_branch` is left blank) |
+| `SCHEDULED_RUNS_ENABLED` | Repo only | the on/off switch for the [daily runs](#the-daily-greenfield-run): `true` runs them; unset or anything else skips them |
 | `SCHEDULE_1_LAB` | Repo only | the lab for the [06:00 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-3` (blank → that run is skipped) |
 | `SCHEDULE_1_POC_BRANCH` | Repo only | the `rafay_nvcm_poc` branch the 06:00 run tests, e.g. `prototype_fixes` (blank → `POC_DEFAULT_BRANCH`, then `main`) |
 | `SCHEDULE_2_LAB` | Repo only | the lab for the [06:05 IST daily run](#the-daily-greenfield-run), e.g. `aa-nvcm-vlab-2` (blank → that run is skipped) |
@@ -244,6 +245,10 @@ See `Dev_Guide.md` if you want the exact command each stage runs.
 |---|---|---|---|
 | 06:00 | `30 0 * * *` | `SCHEDULE_1_LAB` | `SCHEDULE_1_POC_BRANCH` |
 | 06:05 | `35 0 * * *` | `SCHEDULE_2_LAB` | `SCHEDULE_2_POC_BRANCH` |
+
+Both run only while the repository variable **`SCHEDULED_RUNS_ENABLED`** is `true` — the on/off switch for the
+daily runs. Unset or anything else skips them entirely (title `nvcm-greenfield · SKIPPED: SCHEDULED_RUNS_ENABLED not true · …`);
+manual runs are never affected.
 
 A blank lab variable skips that run entirely — every job shows *skipped* and the title reads
 `nvcm-greenfield · SKIPPED: SCHEDULE_<n>_LAB not set · …`. A blank branch falls back to `POC_DEFAULT_BRANCH`, then

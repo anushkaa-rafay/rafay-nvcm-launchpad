@@ -9,7 +9,7 @@ name: nvcm-greenfield
 # (adopting an ALREADY-RUNNING fabric) — the two share every job/script except the stage catalogue, and share
 # one concurrency group PER LAB because, for a given lab, both drive the SAME physical OCI host.
 
-run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'SKIPPED: SCHEDULE_1_LAB not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_POC_BRANCH) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
+run-name: "nvcm-greenfield · ${{ inputs.lab || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'SKIPPED: SCHEDULED_RUNS_ENABLED not true') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'SKIPPED: SCHEDULE_1_LAB not set')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'SKIPPED: SCHEDULE_2_LAB not set')) || vars.DEFAULT_LAB }} · ${{ inputs.poc_branch || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_POC_BRANCH) || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_POC_BRANCH) || vars.POC_DEFAULT_BRANCH || 'main' }} · ${{ inputs.stages || 'all' }}${{ github.event_name == 'schedule' && ' · daily' || '' }}"
 
 on:
   workflow_dispatch:
@@ -46,7 +46,9 @@ on:
         description: "Power the lab instance off at the end (untick to keep it up for debugging)"
         default: true
         type: boolean
-  # Two daily runs, alongside the manual trigger. A scheduled run has no inputs; each takes its lab and
+  # Two daily runs, alongside the manual trigger — only while the repository variable SCHEDULED_RUNS_ENABLED is
+  # "true" (unset or anything else → each daily run is skipped, titled "SKIPPED: SCHEDULED_RUNS_ENABLED not true").
+  # A scheduled run has no inputs; each takes its lab and
   # rafay_nvcm_poc branch from its own pair of repository variables:
   #   06:00 IST — vars.SCHEDULE_1_LAB, vars.SCHEDULE_1_POC_BRANCH
   #   06:05 IST — vars.SCHEDULE_2_LAB, vars.SCHEDULE_2_POC_BRANCH
@@ -64,8 +66,8 @@ on:
 # physical host for a given lab, so a brownfield run and a greenfield run on one lab must never overlap either.
 # GitHub keeps at most one pending run per group — a third trigger on the same lab replaces the queued second.
 concurrency:
-  # (an unconfigured daily run gets a group of its own, so its no-op run never queues behind a real one)
-  group: nvcm-oci-lab-${{ inputs.lab || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'unset-schedule-1')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'unset-schedule-2')) || vars.DEFAULT_LAB }}
+  # (a switched-off or unconfigured daily run gets a group of its own, so its no-op run never queues behind a real one)
+  group: nvcm-oci-lab-${{ inputs.lab || (github.event_name == 'schedule' && vars.SCHEDULED_RUNS_ENABLED != 'true' && 'scheduled-runs-off') || (github.event.schedule == '30 0 * * *' && (vars.SCHEDULE_1_LAB || 'unset-schedule-1')) || (github.event.schedule == '35 0 * * *' && (vars.SCHEDULE_2_LAB || 'unset-schedule-2')) || vars.DEFAULT_LAB }}
   cancel-in-progress: false
 
 permissions:
@@ -81,8 +83,9 @@ jobs:
   # the lab (boot, the phases, poweroff) runs in this Environment, so vars.* / secrets.* resolve per lab.
   lab:
     name: Get Lab
-    # a daily run does nothing until its SCHEDULE_<n>_LAB is set (every later job, report included, skips too)
-    if: ${{ github.event_name != 'schedule' || (github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB != '') || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB != '') }}
+    # a daily run does nothing unless SCHEDULED_RUNS_ENABLED is true and its SCHEDULE_<n>_LAB is set
+    # (every later job, report included, skips too)
+    if: ${{ github.event_name != 'schedule' || (vars.SCHEDULED_RUNS_ENABLED == 'true' && ((github.event.schedule == '30 0 * * *' && vars.SCHEDULE_1_LAB != '') || (github.event.schedule == '35 0 * * *' && vars.SCHEDULE_2_LAB != ''))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
