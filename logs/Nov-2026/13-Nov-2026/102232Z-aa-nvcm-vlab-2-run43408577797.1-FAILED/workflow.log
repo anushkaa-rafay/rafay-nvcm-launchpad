@@ -1,0 +1,1439 @@
+============================================================
+WORKFLOW RUN 43408577797.1 · lab aa-nvcm-vlab-2 · config/stages-greenfield.sh · nvcm_1.3.1_migrate_test @ 426d5aedb6c5
+Started 2026-11-13T10:22:32Z · https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/43408577797
+============================================================
+
+============================================================
+STAGE 01: host-prep (phase: platform)
+============================================================
+
+[2026-11-13 10:23:38 UTC] INFO  Stage host-prep not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 02: platform-nvcm-install (phase: platform)
+============================================================
+
+[2026-11-13 10:23:38 UTC] INFO  Stage platform-nvcm-install not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 03: platform-rafay-install (phase: platform)
+============================================================
+
+[2026-11-13 10:23:38 UTC] INFO  Stage platform-rafay-install not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 04: platform-verify (phase: platform)
+============================================================
+
+[2026-11-13 10:23:38 UTC] INFO  Stage platform-verify not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 05: blueprint-generate (phase: blueprint)
+============================================================
+
+[2026-11-13 10:24:37 UTC] INFO  Starting stage blueprint-generate (timeout 20m, run key 43408577797-1)
+[agent] started blueprint-generate (pid 448097, timeout 20m)
+[launchpad] stage=blueprint-generate branch=nvcm_1.3.1_migrate_test sha=426d5aedb6c522a57441d917ce6f8569b9b20c39 started=2026-11-13T10:24:38Z
+[launchpad] generate is off — nothing to generate; this run uses /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml
+[2026-11-13 10:25:00 UTC] INFO  Stage blueprint-generate passed (rc=0, 23s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 06: blueprint-verify (phase: blueprint)
+============================================================
+
+[2026-11-13 10:25:00 UTC] INFO  Starting stage blueprint-verify (timeout 10m, run key 43408577797-1)
+[agent] started blueprint-verify (pid 448861, timeout 10m)
+[launchpad] stage=blueprint-verify branch=nvcm_1.3.1_migrate_test sha=426d5aedb6c522a57441d917ce6f8569b9b20c39 started=2026-11-13T10:25:01Z
+[launchpad] verifying stc (existing) blueprint: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml
+== preflight: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'Server' is declared in foundation.roles
+  PASS  server compute-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server compute-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  server compute-03 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-03 port RMDC-GPU-LETH01:swp4 is not a fabric uplink
+  PASS  server compute-04 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-04 port RMDC-GPU-LETH02:swp4 is not a fabric uplink
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  blueprint 'blr-dc01' declares no racks — every device will be created with NO physical placement in the source of truth. Every data centre has racks, and this is always satisfiable: run `verify_blueprint.sh --fix` (F4 applies the default layout — cabinets named for their purpose: fabric, server, storage, oob), or regenerate through either intake door, or declare foundation.racks yourself. Set DC_REQUIRE_RACKS=1 to make this fatal.
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (18 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see blueprint/models/clos-leaf-spine/clos-leaf-spine.md
+
+PREFLIGHT: all 191 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+[2026-11-13 10:25:23 UTC] INFO  Stage blueprint-verify passed (rc=0, 23s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 07: substrate (phase: substrate)
+============================================================
+
+[2026-11-13 10:26:15 UTC] INFO  Starting stage substrate (timeout 120m, run key 43408577797-1)
+[agent] started substrate (pid 450688, timeout 120m)
+[launchpad] stage=substrate branch=nvcm_1.3.1_migrate_test sha=426d5aedb6c522a57441d917ce6f8569b9b20c39 started=2026-11-13T10:26:16Z
+[fetch-image] present: /var/lib/libvirt/images/cumulus-vx-5.6.0-base.qcow2 (skip)
+[fetch-image] present: /var/lib/libvirt/images/ubuntu-22.04-server-cloudimg-amd64.qcow2 (skip)
+[fetch-image] base images ready under /var/lib/libvirt/images
+╔════════════════════════════════════════════════════════════════════╗
+║  one-click bring-up    mode=apply  approve=auto  from=substrate to=substrate
+║  blueprint=/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml   oci=10.0.0.42   tenants=3-11,84-100
+╚════════════════════════════════════════════════════════════════════╝
+== preflight: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'Server' is declared in foundation.roles
+  PASS  server compute-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server compute-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  server compute-03 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-03 port RMDC-GPU-LETH01:swp4 is not a fabric uplink
+  PASS  server compute-04 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-04 port RMDC-GPU-LETH02:swp4 is not a fabric uplink
+  PASS  tenant set '3-11,84-100' within 3..100 (bad: none)
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  blueprint 'blr-dc01' declares no racks — every device will be created with NO physical placement in the source of truth. Every data centre has racks, and this is always satisfiable: run `verify_blueprint.sh --fix` (F4 applies the default layout — cabinets named for their purpose: fabric, server, storage, oob), or regenerate through either intake door, or declare foundation.racks yourself. Set DC_REQUIRE_RACKS=1 to make this fatal.
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (18 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see blueprint/models/clos-leaf-spine/clos-leaf-spine.md
+
+PREFLIGHT: all 192 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+
+════════════════════════════════════════════════════════════════════
+  STAGE: Pre-flight — tenant reservation pool (load, then verify ready)
+════════════════════════════════════════════════════════════════════
+[tenant-pool] source: the blueprint's tenant rules (tenant_network, north_south.tenant_pool), else its tenant_policy formula (/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-7d9bf48548-lhb4f (database resolved inside the pod from Nautobot's own settings)
+loaded 98 row(s); pool now: {'free': 98} (live rows before this run: 0)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-7d9bf48548-lhb4f (database resolved inside the pod from Nautobot's own settings)
+POOL READY: all 98 row(s) present and equal to the source; pool: {'free': 98}
+[tenant-pool] no orphan reservation: every deployed reservation belongs to a tenant that exists
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 0 Substrate — blueprint-driven bridges + VMs + NICs
+════════════════════════════════════════════════════════════════════
+[deploy_cabling] mode=apply action=create blueprint=blueprint_stc.yaml — 24 fabric bridges (MTU 9000)
+
+[deploy_cabling] DONE (create 24 bridges). Next: deploy_fabric_vms.sh --apply (VMs + NICs onto these bridges).
+[deploy_fabric_vms] mode=apply blueprint=blueprint_stc.yaml — 18 VMs
+[deploy_fabric_vms] mgmt net bl-mgmt exists
+[deploy_fabric_vms] VM blr-dc01-spine01 exists, skip create
+[deploy_fabric_vms] VM blr-dc01-spine02 exists, skip create
+[deploy_fabric_vms] VM blr-dc01-leaf01 already has 12 data NICs (plan: 12) — spares in place
+[deploy_fabric_vms] VM blr-dc01-leaf01 exists, skip create
+[deploy_fabric_vms] VM blr-dc01-leaf02 already has 12 data NICs (plan: 12) — spares in place
+[deploy_fabric_vms] VM blr-dc01-leaf02 exists, skip create
+[deploy_fabric_vms] VM blr-dc01-leaf03 exists, skip create
+[deploy_fabric_vms] VM blr-dc01-leaf04 exists, skip create
+[deploy_fabric_vms] VM blr-dc01-leaf05 exists, skip create
+[deploy_fabric_vms] VM blr-dc01-leaf06 exists, skip create
+[deploy_fabric_vms] VM oob01 exists, skip create
+[deploy_fabric_vms] VM oob02 exists, skip create
+[deploy_fabric_vms] VM oob03 exists, skip create
+[deploy_fabric_vms] VM dcgw01 exists, skip create
+[deploy_fabric_vms] VM dcgw02 exists, skip create
+[deploy_fabric_vms] VM vfw01 exists, skip create
+[deploy_fabric_vms] skip compute-01 — a server, not fabric (Servers layer creates it)
+[deploy_fabric_vms] skip compute-02 — a server, not fabric (Servers layer creates it)
+[deploy_fabric_vms] skip compute-03 — a server, not fabric (Servers layer creates it)
+[deploy_fabric_vms] skip compute-04 — a server, not fabric (Servers layer creates it)
+
+[deploy_fabric_vms] DONE. Next: setup_device_access.sh, then the underlay (simulate_dc.sh --from underlay).
+
+── L1 Switches + NICs — VMs running + NIC count == blueprint ──
+  PASS  blr-dc01-spine01 running, 7 NICs (mgmt + 6 data)
+  PASS  blr-dc01-spine02 running, 7 NICs (mgmt + 6 data)
+  PASS  blr-dc01-leaf01 running, 13 NICs (mgmt + 12 data)
+  PASS  blr-dc01-leaf02 running, 13 NICs (mgmt + 12 data)
+  PASS  blr-dc01-leaf03 running, 3 NICs (mgmt + 2 data)
+  PASS  blr-dc01-leaf04 running, 3 NICs (mgmt + 2 data)
+  PASS  blr-dc01-leaf05 running, 9 NICs (mgmt + 8 data)
+  PASS  blr-dc01-leaf06 running, 9 NICs (mgmt + 8 data)
+  PASS  oob01 running, 3 NICs (mgmt + 2 data)
+  PASS  oob02 running, 3 NICs (mgmt + 2 data)
+  PASS  oob03 running, 3 NICs (mgmt + 2 data)
+  PASS  dcgw01 running, 4 NICs (mgmt + 3 data)
+  PASS  dcgw02 running, 3 NICs (mgmt + 2 data)
+  PASS  vfw01 running, 3 NICs (mgmt + 2 data)
+  SKIP  compute-01 (server — created by the Servers layer; not part of L1)
+  SKIP  compute-02 (server — created by the Servers layer; not part of L1)
+  SKIP  compute-03 (server — created by the Servers layer; not part of L1)
+  SKIP  compute-04 (server — created by the Servers layer; not part of L1)
+GATE L1: PASS
+
+── L2 Wiring — bridges present, MTU 9000, correct endpoints ──
+  PASS  bridge bl-l1s1 present, MTU 9000
+  PASS  bridge bl-l1s2 present, MTU 9000
+  PASS  bridge bl-l2s1 present, MTU 9000
+  PASS  bridge bl-l2s2 present, MTU 9000
+  PASS  bridge bl-l3s1 present, MTU 9000
+  PASS  bridge bl-l3s2 present, MTU 9000
+  PASS  bridge bl-l4s1 present, MTU 9000
+  PASS  bridge bl-l4s2 present, MTU 9000
+  PASS  bridge bl-l5fw present, MTU 9000
+  PASS  bridge bl-l5g1 present, MTU 9000
+  PASS  bridge bl-l5g2 present, MTU 9000
+  PASS  bridge bl-l5s1 present, MTU 9000
+  PASS  bridge bl-l5s2 present, MTU 9000
+  PASS  bridge bl-l6fw present, MTU 9000
+  PASS  bridge bl-l6g1 present, MTU 9000
+  PASS  bridge bl-l6g2 present, MTU 9000
+  PASS  bridge bl-l6s1 present, MTU 9000
+  PASS  bridge bl-l6s2 present, MTU 9000
+  PASS  bridge bl-o1l1 present, MTU 9000
+  PASS  bridge bl-o1l2 present, MTU 9000
+  PASS  bridge bl-o2l1 present, MTU 9000
+  PASS  bridge bl-o2l2 present, MTU 9000
+  PASS  bridge bl-o3l1 present, MTU 9000
+  PASS  bridge bl-o3l2 present, MTU 9000
+  SKIP  bridge bl-svr1 (server link — Servers layer)
+  SKIP  bridge bl-svr2 (server link — Servers layer)
+  SKIP  bridge bl-svr3 (server link — Servers layer)
+  SKIP  bridge bl-svr4 (server link — Servers layer)
+  PASS  endpoints of bl-l1s1 correct (blr-dc01-leaf01:1 <-> blr-dc01-spine01:1)
+  PASS  endpoints of bl-l1s2 correct (blr-dc01-leaf01:2 <-> blr-dc01-spine02:1)
+  PASS  endpoints of bl-l2s1 correct (blr-dc01-leaf02:1 <-> blr-dc01-spine01:2)
+  PASS  endpoints of bl-l2s2 correct (blr-dc01-leaf02:2 <-> blr-dc01-spine02:2)
+  PASS  endpoints of bl-l3s1 correct (blr-dc01-leaf03:1 <-> blr-dc01-spine01:3)
+  PASS  endpoints of bl-l3s2 correct (blr-dc01-leaf03:2 <-> blr-dc01-spine02:3)
+  PASS  endpoints of bl-l4s1 correct (blr-dc01-leaf04:1 <-> blr-dc01-spine01:4)
+  PASS  endpoints of bl-l4s2 correct (blr-dc01-leaf04:2 <-> blr-dc01-spine02:4)
+  PASS  endpoints of bl-l5s1 correct (blr-dc01-leaf05:1 <-> blr-dc01-spine01:5)
+  PASS  endpoints of bl-l5s2 correct (blr-dc01-leaf05:2 <-> blr-dc01-spine02:5)
+  PASS  endpoints of bl-l6s1 correct (blr-dc01-leaf06:1 <-> blr-dc01-spine01:6)
+  PASS  endpoints of bl-l6s2 correct (blr-dc01-leaf06:2 <-> blr-dc01-spine02:6)
+  PASS  endpoints of bl-l5g1 correct (dcgw01:1 <-> blr-dc01-leaf05:3)
+  PASS  endpoints of bl-l6g1 correct (dcgw01:3 <-> blr-dc01-leaf06:3)
+  PASS  endpoints of bl-l5g2 correct (dcgw02:1 <-> blr-dc01-leaf05:4)
+  PASS  endpoints of bl-l6g2 correct (dcgw02:2 <-> blr-dc01-leaf06:4)
+  PASS  endpoints of bl-l5fw correct (vfw01:1 <-> blr-dc01-leaf05:8)
+  PASS  endpoints of bl-l6fw correct (vfw01:2 <-> blr-dc01-leaf06:8)
+  PASS  endpoints of bl-o1l1 correct (oob01:1 <-> blr-dc01-leaf05:5)
+  PASS  endpoints of bl-o1l2 correct (oob01:2 <-> blr-dc01-leaf06:5)
+  PASS  endpoints of bl-o2l1 correct (oob02:1 <-> blr-dc01-leaf05:6)
+  PASS  endpoints of bl-o2l2 correct (oob02:2 <-> blr-dc01-leaf06:6)
+  PASS  endpoints of bl-o3l1 correct (oob03:1 <-> blr-dc01-leaf05:7)
+  PASS  endpoints of bl-o3l2 correct (oob03:2 <-> blr-dc01-leaf06:7)
+  SKIP  link blr-dc01-leaf01:3 <-> compute-01:1 (server not created yet — Servers layer)
+  SKIP  link blr-dc01-leaf02:3 <-> compute-02:1 (server not created yet — Servers layer)
+  SKIP  link blr-dc01-leaf01:4 <-> compute-03:1 (server not created yet — Servers layer)
+  SKIP  link blr-dc01-leaf02:4 <-> compute-04:1 (server not created yet — Servers layer)
+GATE L2: PASS
+
+[dc-up] DONE — all stages + gates passed.
+[2026-11-13 10:27:00 UTC] INFO  Stage substrate passed (rc=0, 45s)
+
+------------------------------------------------------------
+STAGE STATUS: PASSED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 08: site-bringup (phase: bringup)
+============================================================
+
+[2026-11-13 10:27:51 UTC] INFO  Starting stage site-bringup (timeout 300m, run key 43408577797-1)
+[agent] started site-bringup (pid 454290, timeout 300m)
+[launchpad] stage=site-bringup branch=nvcm_1.3.1_migrate_test sha=426d5aedb6c522a57441d917ce6f8569b9b20c39 started=2026-11-13T10:27:52Z
+MISSING domain compute-01 (rebuild: deploy_fabric_vms.sh --apply)
+MISSING domain compute-02 (rebuild: deploy_fabric_vms.sh --apply)
+MISSING domain compute-03 (rebuild: deploy_fabric_vms.sh --apply)
+MISSING domain compute-04 (rebuild: deploy_fabric_vms.sh --apply)
+--- state ---
+ Id   Name               State
+----------------------------------
+ 1    blr-dc01-spine01   running
+ 2    blr-dc01-spine02   running
+ 3    blr-dc01-leaf01    running
+ 4    blr-dc01-leaf02    running
+ 5    blr-dc01-leaf03    running
+ 6    blr-dc01-leaf04    running
+ 7    blr-dc01-leaf05    running
+ 8    blr-dc01-leaf06    running
+ 9    oob01              running
+ 10   oob02              running
+ 11   oob03              running
+ 12   dcgw01             running
+ 13   dcgw02             running
+ 14   vfw01              running
+
+╔════════════════════════════════════════════════════════════════════╗
+║  one-click bring-up    mode=apply  approve=auto  from=underlay to=accept
+║  blueprint=/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml   oci=10.0.0.42   tenants=3-11,84-100
+╚════════════════════════════════════════════════════════════════════╝
+== preflight: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'Server' is declared in foundation.roles
+  PASS  server compute-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server compute-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  server compute-03 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-03 port RMDC-GPU-LETH01:swp4 is not a fabric uplink
+  PASS  server compute-04 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-04 port RMDC-GPU-LETH02:swp4 is not a fabric uplink
+  PASS  tenant set '3-11,84-100' within 3..100 (bad: none)
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  blueprint 'blr-dc01' declares no racks — every device will be created with NO physical placement in the source of truth. Every data centre has racks, and this is always satisfiable: run `verify_blueprint.sh --fix` (F4 applies the default layout — cabinets named for their purpose: fabric, server, storage, oob), or regenerate through either intake door, or declare foundation.racks yourself. Set DC_REQUIRE_RACKS=1 to make this fatal.
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (18 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see blueprint/models/clos-leaf-spine/clos-leaf-spine.md
+
+PREFLIGHT: all 192 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+
+════════════════════════════════════════════════════════════════════
+  STAGE: Pre-flight — tenant reservation pool (load, then verify ready)
+════════════════════════════════════════════════════════════════════
+[tenant-pool] source: the blueprint's tenant rules (tenant_network, north_south.tenant_pool), else its tenant_policy formula (/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-7d9bf48548-lhb4f (database resolved inside the pod from Nautobot's own settings)
+loaded 98 row(s); pool now: {'free': 98} (live rows before this run: 0)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-7d9bf48548-lhb4f (database resolved inside the pod from Nautobot's own settings)
+POOL READY: all 98 row(s) present and equal to the source; pool: {'free': 98}
+[tenant-pool] no orphan reservation: every deployed reservation belongs to a tenant that exists
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 1 Underlay — fabric intent + BGP-unnumbered
+════════════════════════════════════════════════════════════════════
+[nvue-bootstrap] mode: blueprint blueprint_stc.yaml — 14 device(s); creating NVUE user 'nv-config-manager' + verifying REST :8765
+  RMDC-GPU-SETH01    192.168.94.11   NVUE_REST=200  ok
+  RMDC-GPU-SETH02    192.168.94.12   NVUE_REST=200  ok
+  RMDC-GPU-LETH01    192.168.94.13   NVUE_REST=200  ok
+  RMDC-GPU-LETH02    192.168.94.14   NVUE_REST=200  ok
+  RMDC-GPU-LETH03    192.168.94.15   NVUE_REST=200  ok
+  RMDC-GPU-LETH04    192.168.94.16   NVUE_REST=200  ok
+  RMDC-GPU-LETH05    192.168.94.17   NVUE_REST=200  ok
+  RMDC-GPU-LETH06    192.168.94.18   NVUE_REST=200  ok
+  RMDC-GPU-OOB01     192.168.94.19   NVUE_REST=200  ok
+  RMDC-GPU-OOB02     192.168.94.20   NVUE_REST=200  ok
+  RMDC-GPU-OOB03     192.168.94.21   NVUE_REST=200  ok
+  RMDC-DC-R-01       192.168.94.22   NVUE_REST=200  ok
+  RMDC-DC-R-02       192.168.94.23   NVUE_REST=200  ok
+  RMDC-VFW-01        192.168.94.24   NVUE_REST=200  ok
+[nvue-bootstrap] seed-nvcm-cred: [site.blr-dc01] api_user_key_r1 already correct
+[site-secrets] [site.blr-dc01] of nv-config-manager-network-secrets: root_password_r1, api_user_key_r1, hash_salt (apply)
+  root_password_r1 set
+  api_user_key_r1 already
+  hash_salt already
+[site-secrets] written; the consumers were restarted to read it
+
+[nvue-bootstrap] OK: all 14 device(s) return NVUE REST 200 — NVCM can authenticate.
+╔════════════════════════════════════════════════════════════════════╗
+║  site bring-up   mode=apply   approve=auto
+║  blueprint=/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml
+╚════════════════════════════════════════════════════════════════════╝
+[provision-site] NOTE: designed for INITIAL site bring-up. Re-applying cables on an already-built fabric hits the create-once limitation (stc_review §4.3) — the supported re-apply is decommission → recreate.
+
+══ 1/5  validate blueprint + generate fabric designs → /tmp/dc-site-designs ══
+== preflight: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'Server' is declared in foundation.roles
+  PASS  server compute-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server compute-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  server compute-03 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-03 port RMDC-GPU-LETH01:swp4 is not a fabric uplink
+  PASS  server compute-04 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-04 port RMDC-GPU-LETH02:swp4 is not a fabric uplink
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  blueprint 'blr-dc01' declares no racks — every device will be created with NO physical placement in the source of truth. Every data centre has racks, and this is always satisfiable: run `verify_blueprint.sh --fix` (F4 applies the default layout — cabinets named for their purpose: fabric, server, storage, oob), or regenerate through either intake door, or declare foundation.racks yourself. Set DC_REQUIRE_RACKS=1 to make this fatal.
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (18 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see blueprint/models/clos-leaf-spine/clos-leaf-spine.md
+
+PREFLIGHT: all 191 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+wrote /tmp/dc-site-designs/foundation.design.yaml
+wrote /tmp/dc-site-designs/edge.design.yaml
+wrote /tmp/dc-site-designs/underlay.design.yaml
+wrote /tmp/dc-site-designs/cables.design.yaml
+wrote /tmp/dc-site-designs/servers.design.yaml
+
+══ 1b/5  seed the site data to the cluster (jobs PVC: packages + vendored blueprint + designs) ══
+== regenerating site_provision designs from the blueprint (/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml) ==
+== seeding JOBS_ROOT packages onto PVC nautobot-custom-jobs: common blueprint_validate drift ib lifecycle provision server tenant site_provision ==
+== vendored tenant policy: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml -> tenant/blueprint.yaml ==
+pod/dc-jobs-writer condition met
+command terminated with exit code 1
+   no pre-rename job packages on the PVC (expected — nothing to clean)
+   seeded common
+   seeded blueprint_validate
+   seeded drift
+   seeded ib
+   seeded lifecycle
+   seeded provision
+   seeded server
+   seeded tenant
+   seeded site_provision
+== restarting celery + web + render-api + temporal worker to load the jobs ==
+deployment.apps/nv-config-manager-nautobot-celery restarted
+deployment.apps/nv-config-manager-nautobot restarted
+deployment.apps/nv-config-manager-render-api restarted
+deployment.apps/nv-config-manager-temporal-nv-config-manager-worker restarted
+== restarting dhcp-refresh + temporal-scheduler (stale-connection reconnect, best-effort) ==
+deployment.apps/nv-config-manager-dhcp-refresh restarted
+deployment.apps/nv-config-manager-temporal-scheduler restarted
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-nautobot" successfully rolled out
+deployment "nv-config-manager-render-api" successfully rolled out
+deployment "nv-config-manager-temporal-nv-config-manager-worker" successfully rolled out
+Waiting for deployment "nv-config-manager-dhcp-refresh" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-dhcp-refresh" successfully rolled out
+Waiting for deployment "nv-config-manager-temporal-scheduler" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-temporal-scheduler" successfully rolled out
+[suppress-loader] RESULT total=1 disabled=1
+== enabling the seeded lifecycle jobs (modules matching (^|\.)(common|blueprint_validate|drift|ib|lifecycle|provision|server|tenant|site_provision)\.) ==
+   RESULT installed=32 newly_enabled=0 (attempt 1/60)
+== done. JOBS_ROOT jobs seeded + enabled (32 installed). ==
+
+══ 1c/5  tenant reservation pool — load from the blueprint, then verify it is ready ══
+[tenant-pool] source: the blueprint's tenant rules (tenant_network, north_south.tenant_pool), else its tenant_policy formula (/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-694ddd469f-mf8l2 (database resolved inside the pod from Nautobot's own settings)
+loaded 98 row(s); pool now: {'free': 98} (live rows before this run: 0)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-694ddd469f-mf8l2 (database resolved inside the pod from Nautobot's own settings)
+POOL READY: all 98 row(s) present and equal to the source; pool: {'free': 98}
+[tenant-pool] no orphan reservation: every deployed reservation belongs to a tenant that exists
+
+══ 2/5  apply fabric designs into the Nautobot SoT (foundation + underlay + edge + cables) ══
+[provision-site] preserved the device contexts (day-2 keys merge back after the design applies)
+Building design from /tmp/design.yaml
+2026-11-13T10:33:35.453390Z [info     ] Updated LocationType Provider  [nautobot_design_builder.design]
+2026-11-13T10:33:35.476192Z [info     ] Updated LocationType Region    [nautobot_design_builder.design]
+2026-11-13T10:33:35.494217Z [info     ] Updated LocationType Site      [nautobot_design_builder.design]
+2026-11-13T10:33:35.517957Z [info     ] Updated LocationType Building  [nautobot_design_builder.design]
+2026-11-13T10:33:35.537147Z [info     ] Updated LocationType Room      [nautobot_design_builder.design]
+2026-11-13T10:33:35.564886Z [info     ] Updated Location Rafay         [nautobot_design_builder.design]
+2026-11-13T10:33:35.582496Z [info     ] Updated Location India         [nautobot_design_builder.design]
+2026-11-13T10:33:35.605785Z [info     ] Updated Location blr-dc01      [nautobot_design_builder.design]
+2026-11-13T10:33:35.624946Z [info     ] Updated Location blr-building001 [nautobot_design_builder.design]
+2026-11-13T10:33:35.644242Z [info     ] Updated Location blr-building001-room001 [nautobot_design_builder.design]
+2026-11-13T10:33:35.654047Z [info     ] Updated Manufacturer NVIDIA    [nautobot_design_builder.design]
+2026-11-13T10:33:35.658004Z [info     ] Updated Manufacturer Generic   [nautobot_design_builder.design]
+2026-11-13T10:33:35.671644Z [info     ] Updated DeviceType Cumulus VX  [nautobot_design_builder.design]
+2026-11-13T10:33:35.679225Z [info     ] Updated DeviceType Generic Server [nautobot_design_builder.design]
+2026-11-13T10:33:35.690992Z [info     ] Updated Role spine             [nautobot_design_builder.design]
+2026-11-13T10:33:35.701658Z [info     ] Updated Role leaf              [nautobot_design_builder.design]
+2026-11-13T10:33:35.710349Z [info     ] Updated Role GPU               [nautobot_design_builder.design]
+2026-11-13T10:33:35.721423Z [info     ] Updated Role Server            [nautobot_design_builder.design]
+2026-11-13T10:33:35.736268Z [info     ] Updated Namespace Global       [nautobot_design_builder.design]
+[provision-site] applied foundation.design.yaml
+Building design from /tmp/design.yaml
+2026-11-13T10:34:04.492316Z [info     ] Updated Platform Cumulus Linux [nautobot_design_builder.design]
+2026-11-13T10:34:04.511686Z [info     ] Updated Prefix 172.23.0.0/24   [nautobot_design_builder.design]
+2026-11-13T10:34:04.526431Z [info     ] Updated VLAN placeholder (100) [nautobot_design_builder.design]
+2026-11-13T10:34:04.572625Z [info     ] Updated Device RMDC-GPU-SETH01 [nautobot_design_builder.design]
+2026-11-13T10:34:04.899536Z [info     ] Updated Device RMDC-GPU-SETH02 [nautobot_design_builder.design]
+2026-11-13T10:34:05.052382Z [info     ] Updated Device RMDC-GPU-LETH01 [nautobot_design_builder.design]
+2026-11-13T10:34:05.231331Z [info     ] Updated Device RMDC-GPU-LETH02 [nautobot_design_builder.design]
+2026-11-13T10:34:05.411723Z [info     ] Updated Device RMDC-GPU-LETH03 [nautobot_design_builder.design]
+2026-11-13T10:34:05.489224Z [info     ] Updated Device RMDC-GPU-LETH04 [nautobot_design_builder.design]
+2026-11-13T10:34:05.566246Z [info     ] Updated Device RMDC-GPU-LETH05 [nautobot_design_builder.design]
+2026-11-13T10:34:05.687175Z [info     ] Updated Device RMDC-GPU-LETH06 [nautobot_design_builder.design]
+2026-11-13T10:34:05.806690Z [info     ] Updated Device RMDC-GPU-OOB01  [nautobot_design_builder.design]
+2026-11-13T10:34:05.891557Z [info     ] Updated Device RMDC-GPU-OOB02  [nautobot_design_builder.design]
+2026-11-13T10:34:05.972383Z [info     ] Updated Device RMDC-GPU-OOB03  [nautobot_design_builder.design]
+[provision-site] applied underlay.design.yaml
+Building design from /tmp/design.yaml
+2026-11-13T10:34:35.041348Z [info     ] Updated Platform Cumulus Linux [nautobot_design_builder.design]
+2026-11-13T10:34:35.078219Z [info     ] Updated Device RMDC-DC-R-01    [nautobot_design_builder.design]
+2026-11-13T10:34:35.104473Z [info     ] Updated Device RMDC-DC-R-02    [nautobot_design_builder.design]
+2026-11-13T10:34:35.133583Z [info     ] Updated Device RMDC-VFW-01     [nautobot_design_builder.design]
+[provision-site] applied edge.design.yaml
+cable reconcile: adopted 24 existing, freed 0 stale termination(s) before connect
+2026-11-13T10:35:03.441755Z [info     ] Updated Device RMDC-GPU-SETH01 [nautobot_design_builder.design]
+2026-11-13T10:35:03.805092Z [info     ] Updated Device RMDC-GPU-SETH02 [nautobot_design_builder.design]
+2026-11-13T10:35:03.984595Z [info     ] Updated Device RMDC-GPU-LETH01 [nautobot_design_builder.design]
+2026-11-13T10:35:04.068827Z [info     ] Updated Device RMDC-GPU-LETH02 [nautobot_design_builder.design]
+2026-11-13T10:35:04.142218Z [info     ] Updated Device RMDC-GPU-LETH03 [nautobot_design_builder.design]
+2026-11-13T10:35:04.211636Z [info     ] Updated Device RMDC-GPU-LETH04 [nautobot_design_builder.design]
+2026-11-13T10:35:04.287805Z [info     ] Updated Device RMDC-GPU-LETH05 [nautobot_design_builder.design]
+2026-11-13T10:35:04.505669Z [info     ] Updated Device RMDC-GPU-LETH06 [nautobot_design_builder.design]
+2026-11-13T10:35:04.706803Z [info     ] Updated Device RMDC-DC-R-01    [nautobot_design_builder.design]
+2026-11-13T10:35:04.785000Z [info     ] Updated Device RMDC-DC-R-02    [nautobot_design_builder.design]
+2026-11-13T10:35:04.860599Z [info     ] Updated Device RMDC-VFW-01     [nautobot_design_builder.design]
+2026-11-13T10:35:04.935180Z [info     ] Updated Device RMDC-GPU-OOB01  [nautobot_design_builder.design]
+2026-11-13T10:35:05.004985Z [info     ] Updated Device RMDC-GPU-OOB02  [nautobot_design_builder.design]
+2026-11-13T10:35:05.078400Z [info     ] Updated Device RMDC-GPU-OOB03  [nautobot_design_builder.design]
+APPLIED design from /tmp/design.yaml
+[provision-site] applied cables.design.yaml
+RESTORED 0 device(s); keys: -
+[provision-site] servers: add per node via '4.1 · Register (add to free pool)' + Attach (not part of fabric bring-up); with tenant0 the REST register parks a new server, the CLI flow parks with server_operations.sh park
+
+══ 2b/5  set mgmt eth0 + primary_ip4 + render/deploy-enable (from the blueprint) ══
+== backfill-mgmt: stamping eth0 + primary_ip4 (+ render/deploy-enable) for 14 device(s) ==
+mgmt stamped: 14 device(s), 0 not-in-SoT, render-enabled: 14
+server mgmt stamped: 0 server(s)
+
+══ 3/5  configure switches (NVCM gate: auto) ══
+[render-templates] repo plugin: 104 files, checksum 88af09401592; blueprint renders for Cumulus 5.6.0
+[render-templates] the volume already matches the repo — nothing to copy, nothing restarted
+[render-templates] Cumulus 5.6.0 templates are on the volume
+[provision-site] deploy scope: 13 blueprint device(s) (never 'all' on a shared SoT)
+[account-context] worker login 'nv-config-manager': kept/updated lab=False ssh_key=False users=['cumulus', 'nv-config-manager', 'nvConfigManager'] VERIFIED
+== configure-devices: DC_APPROVE=auto, 13 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 28610c20 500 in 2.8s — retrying in 2s
+  render 28610c20 500 in 1.9s — retrying in 4s
+  render 28610c20 500 in 2.0s  (attempt 3/3)
+  render 2f5638ef 500 in 2.3s — retrying in 2s
+  render 2f5638ef 500 in 1.4s — retrying in 4s
+  render 2f5638ef 500 in 1.3s  (attempt 3/3)
+  render 649cfb43 500 in 2.5s — retrying in 2s
+  render 649cfb43 500 in 1.4s — retrying in 4s
+  render 649cfb43 500 in 1.4s  (attempt 3/3)
+  render 2b46ac90 500 in 1.4s — retrying in 2s
+  render 2b46ac90 500 in 1.4s — retrying in 4s
+  render 2b46ac90 500 in 1.4s  (attempt 3/3)
+  render 25778bcd 500 in 1.4s — retrying in 2s
+  render 25778bcd 500 in 1.4s — retrying in 4s
+  render 25778bcd 500 in 1.7s  (attempt 3/3)
+  render 3d215c73 500 in 1.9s — retrying in 2s
+  render 3d215c73 500 in 1.5s — retrying in 4s
+  render 3d215c73 500 in 1.9s  (attempt 3/3)
+  render a880ca7d 500 in 2.0s — retrying in 2s
+  render a880ca7d 500 in 1.4s — retrying in 4s
+  render a880ca7d 500 in 1.5s  (attempt 3/3)
+  render 1c572783 500 in 1.5s — retrying in 2s
+  render 1c572783 500 in 1.4s — retrying in 4s
+  render 1c572783 500 in 2.0s  (attempt 3/3)
+  render da31a70c 500 in 2.0s — retrying in 2s
+  render da31a70c 500 in 1.4s — retrying in 4s
+  render da31a70c 500 in 1.3s  (attempt 3/3)
+  render 2e6809b6 500 in 1.4s — retrying in 2s
+  render 2e6809b6 500 in 1.3s — retrying in 4s
+  render 2e6809b6 500 in 1.6s  (attempt 3/3)
+  render e2a2d443 500 in 2.1s — retrying in 2s
+  render e2a2d443 500 in 1.5s — retrying in 4s
+  render e2a2d443 500 in 1.5s  (attempt 3/3)
+  render e2a6a11d 500 in 1.7s — retrying in 2s
+  render e2a6a11d 500 in 1.4s — retrying in 4s
+  render e2a6a11d 500 in 1.5s  (attempt 3/3)
+  render 89f7b9c7 500 in 1.8s — retrying in 2s
+  render 89f7b9c7 500 in 1.2s — retrying in 4s
+  render 89f7b9c7 500 in 1.1s  (attempt 3/3)
+  == render phase: 13 device(s) in 76s (concurrency 2) ==
+  RENDER FAILED for 13 of 13 device(s) after 3 attempts each: 28610c20 2f5638ef 649cfb43 2b46ac90 25778bcd 3d215c73 a880ca7d 1c572783 da31a70c 2e6809b6 e2a2d443 e2a6a11d 89f7b9c7
+  NOTHING is deployed — not even the devices that rendered cleanly. That is deliberate:
+  a device with no intended configuration is the one case where a DeployWorkflow can push
+  nothing and still report COMPLETED, so deploying it would manufacture a false success —
+  and this failure is not one a deploy can fix. It is a platform fault, most often the
+  location-resolver plugin, which 500s for EVERY device at once rather than one
+  (challenges/nvcm_render_location_hierarchy_bug.md). Fix that, then re-run: this door is
+  safe to re-run: every stage is idempotent and an already-configured device just
+  produces an empty diff. It does NOT skip them, though — a re-run is a full pass over
+  every device you pass, so budget the same time.
+command terminated with exit code 1
+== ABORTED BEFORE DEPLOY: the render stage failed ==
+[provision-site] the render stage failed before anything was deployed (the platform was not answering): waiting for it, then running the configure step again (1/3)
+[account-context] worker login 'nv-config-manager': kept/updated lab=False ssh_key=False users=['cumulus', 'nv-config-manager', 'nvConfigManager'] VERIFIED
+== configure-devices: DC_APPROVE=auto, 13 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 28610c20 500 in 2.1s — retrying in 2s
+  render 28610c20 500 in 1.4s — retrying in 4s
+  render 28610c20 500 in 1.3s  (attempt 3/3)
+  render 2f5638ef 500 in 2.7s — retrying in 2s
+  render 2f5638ef 500 in 1.8s — retrying in 4s
+  render 2f5638ef 500 in 2.0s  (attempt 3/3)
+  render 649cfb43 500 in 2.3s — retrying in 2s
+  render 649cfb43 500 in 1.9s — retrying in 4s
+  render 649cfb43 500 in 1.3s  (attempt 3/3)
+  render 2b46ac90 500 in 1.4s — retrying in 2s
+  render 2b46ac90 500 in 1.9s — retrying in 4s
+  render 2b46ac90 500 in 1.4s  (attempt 3/3)
+  render 25778bcd 500 in 1.5s — retrying in 2s
+  render 25778bcd 500 in 1.3s — retrying in 4s
+  render 25778bcd 500 in 2.0s  (attempt 3/3)
+  render 3d215c73 500 in 1.4s — retrying in 2s
+  render 3d215c73 500 in 1.4s — retrying in 4s
+  render 3d215c73 500 in 2.4s  (attempt 3/3)
+  render a880ca7d 500 in 1.9s — retrying in 2s
+  render a880ca7d 500 in 1.5s — retrying in 4s
+  render a880ca7d 500 in 1.4s  (attempt 3/3)
+  render 1c572783 500 in 1.4s — retrying in 2s
+  render 1c572783 500 in 1.5s — retrying in 4s
+  render 1c572783 500 in 2.1s  (attempt 3/3)
+  render da31a70c 500 in 2.2s — retrying in 2s
+  render da31a70c 500 in 1.4s — retrying in 4s
+  render da31a70c 500 in 1.9s  (attempt 3/3)
+  render 2e6809b6 500 in 1.5s — retrying in 2s
+  render 2e6809b6 500 in 1.4s — retrying in 4s
+  render 2e6809b6 500 in 1.8s  (attempt 3/3)
+  render e2a2d443 500 in 1.5s — retrying in 2s
+  render e2a2d443 500 in 1.4s — retrying in 4s
+  render e2a2d443 500 in 1.4s  (attempt 3/3)
+  render e2a6a11d 500 in 1.3s — retrying in 2s
+  render e2a6a11d 500 in 1.7s — retrying in 4s
+  render e2a6a11d 500 in 1.3s  (attempt 3/3)
+  render 89f7b9c7 500 in 1.3s — retrying in 2s
+  render 89f7b9c7 500 in 1.2s — retrying in 4s
+  render 89f7b9c7 500 in 1.1s  (attempt 3/3)
+  == render phase: 13 device(s) in 75s (concurrency 2) ==
+  RENDER FAILED for 13 of 13 device(s) after 3 attempts each: 28610c20 2f5638ef 649cfb43 2b46ac90 25778bcd 3d215c73 a880ca7d 1c572783 da31a70c 2e6809b6 e2a2d443 e2a6a11d 89f7b9c7
+  NOTHING is deployed — not even the devices that rendered cleanly. That is deliberate:
+  a device with no intended configuration is the one case where a DeployWorkflow can push
+  nothing and still report COMPLETED, so deploying it would manufacture a false success —
+  and this failure is not one a deploy can fix. It is a platform fault, most often the
+  location-resolver plugin, which 500s for EVERY device at once rather than one
+  (challenges/nvcm_render_location_hierarchy_bug.md). Fix that, then re-run: this door is
+  safe to re-run: every stage is idempotent and an already-configured device just
+  produces an empty diff. It does NOT skip them, though — a re-run is a full pass over
+  every device you pass, so budget the same time.
+command terminated with exit code 1
+== ABORTED BEFORE DEPLOY: the render stage failed ==
+[provision-site] the render stage failed before anything was deployed (the platform was not answering): waiting for it, then running the configure step again (2/3)
+[account-context] worker login 'nv-config-manager': kept/updated lab=False ssh_key=False users=['cumulus', 'nv-config-manager', 'nvConfigManager'] VERIFIED
+== configure-devices: DC_APPROVE=auto, 13 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 28610c20 500 in 1.6s — retrying in 2s
+  render 28610c20 500 in 1.4s — retrying in 4s
+  render 28610c20 500 in 1.4s  (attempt 3/3)
+  render 2f5638ef 500 in 2.2s — retrying in 2s
+  render 2f5638ef 500 in 1.5s — retrying in 4s
+  render 2f5638ef 500 in 1.4s  (attempt 3/3)
+  render 649cfb43 500 in 1.9s — retrying in 2s
+  render 649cfb43 500 in 1.4s — retrying in 4s
+  render 649cfb43 500 in 1.4s  (attempt 3/3)
+  render 2b46ac90 500 in 1.9s — retrying in 2s
+  render 2b46ac90 500 in 1.4s — retrying in 4s
+  render 2b46ac90 500 in 1.5s  (attempt 3/3)
+  render 25778bcd 500 in 2.0s — retrying in 2s
+  render 25778bcd 500 in 1.4s — retrying in 4s
+  render 25778bcd 500 in 1.5s  (attempt 3/3)
+  render 3d215c73 500 in 1.9s — retrying in 2s
+  render 3d215c73 500 in 1.4s — retrying in 4s
+  render 3d215c73 500 in 2.3s  (attempt 3/3)
+  render a880ca7d 500 in 2.2s — retrying in 2s
+  render a880ca7d 500 in 1.4s — retrying in 4s
+  render a880ca7d 500 in 1.5s  (attempt 3/3)
+  render 1c572783 500 in 1.5s — retrying in 2s
+  render 1c572783 500 in 1.5s — retrying in 4s
+  render 1c572783 500 in 2.1s  (attempt 3/3)
+  render da31a70c 500 in 2.2s — retrying in 2s
+  render da31a70c 500 in 1.6s — retrying in 4s
+  render da31a70c 500 in 1.3s  (attempt 3/3)
+  render 2e6809b6 500 in 1.6s — retrying in 2s
+  render 2e6809b6 500 in 2.5s — retrying in 4s
+  render 2e6809b6 500 in 1.5s  (attempt 3/3)
+  render e2a2d443 500 in 1.4s — retrying in 2s
+  render e2a2d443 500 in 1.8s — retrying in 4s
+  render e2a2d443 500 in 1.3s  (attempt 3/3)
+  render e2a6a11d 500 in 1.2s — retrying in 2s
+  render e2a6a11d 500 in 1.2s — retrying in 4s
+  render e2a6a11d 500 in 1.9s  (attempt 3/3)
+  render 89f7b9c7 500 in 2.1s — retrying in 2s
+  render 89f7b9c7 500 in 1.6s — retrying in 4s
+  render 89f7b9c7 500 in 1.1s  (attempt 3/3)
+  == render phase: 13 device(s) in 75s (concurrency 2) ==
+  RENDER FAILED for 13 of 13 device(s) after 3 attempts each: 28610c20 2f5638ef 649cfb43 2b46ac90 25778bcd 3d215c73 a880ca7d 1c572783 da31a70c 2e6809b6 e2a2d443 e2a6a11d 89f7b9c7
+  NOTHING is deployed — not even the devices that rendered cleanly. That is deliberate:
+  a device with no intended configuration is the one case where a DeployWorkflow can push
+  nothing and still report COMPLETED, so deploying it would manufacture a false success —
+  and this failure is not one a deploy can fix. It is a platform fault, most often the
+  location-resolver plugin, which 500s for EVERY device at once rather than one
+  (challenges/nvcm_render_location_hierarchy_bug.md). Fix that, then re-run: this door is
+  safe to re-run: every stage is idempotent and an already-configured device just
+  produces an empty diff. It does NOT skip them, though — a re-run is a full pass over
+  every device you pass, so budget the same time.
+command terminated with exit code 1
+== ABORTED BEFORE DEPLOY: the render stage failed ==
+[provision-site] FAILED: bash '/home/ubuntu/rafay_nvcm_poc/deploy_scripts/fabric/configure_devices.sh' 28610c20-94a7-4a4c-804a-80d0e3afc0cd 2f5638ef-d6db-45da-8081-1d4e0545affd 649cfb43-4ac1-425f-808b-78cb54581f15 2b46ac90-ec19-4341-8afa-66ee3b8bfea5 25778bcd-9fcd-489f-92fc-7b53f7ad0aff 3d215c73-f831-4263-9796-a16462aaf885 a880ca7d-f4b5-4342-8b3b-9c2ef1e437b7 1c572783-4b99-47bb-97d8-64c1665d7aa0 da31a70c-fe5d-4e3d-921e-96c74166ef02 2e6809b6-aac7-43d4-9439-217f4044c5a3 e2a2d443-d70d-429b-815d-e1e488215494 e2a6a11d-3bc3-4cdb-8b14-26f9164854ee 89f7b9c7-0931-4cf7-b64c-10b214b986ce (exit 1)
+[dc-up] FAILED: DC_STAMP_MGMT=1 DC_SPARE_SERVER_PORTS=8 bash '/home/ubuntu/rafay_nvcm_poc/deploy_scripts/fabric/provision_site.sh' --blueprint /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml --apply --no-tenant0 --auto-approve --tenants 3-11,84-100
+[2026-11-13 10:43:04 UTC] ERROR Stage site-bringup failed (rc=1, 913s)
+
+------------------------------------------------------------
+STAGE STATUS: FAILED
+------------------------------------------------------------
+
+
+============================================================
+WORKFLOW STATUS: FAILED (failed stage: site-bringup)
+============================================================

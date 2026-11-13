@@ -1,0 +1,23 @@
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+[lab] instance state: RUNNING
+[lab] already RUNNING — nothing to start
+[lab] instance RUNNING
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+::warning::SSH_KNOWN_HOSTS not set — trusting the lab host key on first use
+[lab] lab = ubuntu@129.146.175.81; waiting for SSH
+[lab] systemd: running
+[agent] preflight ok: aa-nvcm-vlab-2 · Ubuntu 24.04.5 LTS · 20 cpu · 48 GiB · 539G free
+[agent] updating existing checkout in place: nvcm_1.3.1_migrate_test@ef48bd6
+[agent] WARNING: tracked local edits in /home/ubuntu/rafay_nvcm_poc discarded — saved to /home/ubuntu/launchpad/runs/43408577797-1/local-changes.patch
+[agent] checked out ramakrishna-rafay/rafay_nvcm_poc@nvcm_1.3.1_migrate_test (426d5ae setup_device_access: forward the switch passwords to seed_site_secrets.sh)
+RUN_KEY=43408577797-1
+RUN_DIR=/home/ubuntu/launchpad/runs/43408577797-1
+POC_DIR=/home/ubuntu/rafay_nvcm_poc
+POC_REPO=ramakrishna-rafay/rafay_nvcm_poc
+POC_BRANCH=nvcm_1.3.1_migrate_test
+POC_SHA=426d5aedb6c522a57441d917ce6f8569b9b20c39
+LAB_IP=10.0.0.42
+BLUEPRINT_SOURCE=existing
+BP_COMMITTED=datacenters/examples/stc/blueprint_stc.yaml
+TENANTS=3-11\,84-100
+[launchpad] existing blueprint (stc): datacenters/examples/stc/blueprint_stc.yaml
