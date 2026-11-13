@@ -1,0 +1,837 @@
+============================================================
+WORKFLOW RUN 43416384485.1 · lab aa-nvcm-vlab-2 · config/stages-greenfield.sh · nvcm_1.3.1_migrate_test @ 2b05ca5a13d2
+Started 2026-11-13T11:21:30Z · https://github.com/anushkaa-rafay/rafay-nvcm-launchpad/actions/runs/43416384485
+============================================================
+
+============================================================
+STAGE 01: host-prep (phase: platform)
+============================================================
+
+[2026-11-13 11:22:23 UTC] INFO  Stage host-prep not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 02: platform-nvcm-install (phase: platform)
+============================================================
+
+[2026-11-13 11:22:23 UTC] INFO  Stage platform-nvcm-install not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 03: platform-rafay-install (phase: platform)
+============================================================
+
+[2026-11-13 11:22:23 UTC] INFO  Stage platform-rafay-install not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 04: platform-verify (phase: platform)
+============================================================
+
+[2026-11-13 11:22:23 UTC] INFO  Stage platform-verify not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 05: blueprint-generate (phase: blueprint)
+============================================================
+
+[2026-11-13 11:22:33 UTC] INFO  Stage blueprint-generate not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 06: blueprint-verify (phase: blueprint)
+============================================================
+
+[2026-11-13 11:22:33 UTC] INFO  Stage blueprint-verify not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 07: substrate (phase: substrate)
+============================================================
+
+[2026-11-13 11:22:41 UTC] INFO  Stage substrate not in this run's stage selection
+
+------------------------------------------------------------
+STAGE STATUS: NOT-SELECTED
+------------------------------------------------------------
+
+
+============================================================
+STAGE 08: site-bringup (phase: bringup)
+============================================================
+
+[2026-11-13 11:23:29 UTC] INFO  Starting stage site-bringup (timeout 300m, run key 43416384485-1)
+[agent] started site-bringup (pid 526216, timeout 300m)
+[launchpad] stage=site-bringup branch=nvcm_1.3.1_migrate_test sha=2b05ca5a13d27416229e08e3de80864570cbca18 started=2026-11-13T11:23:30Z
+MISSING domain compute-01 (rebuild: deploy_fabric_vms.sh --apply)
+MISSING domain compute-02 (rebuild: deploy_fabric_vms.sh --apply)
+MISSING domain compute-03 (rebuild: deploy_fabric_vms.sh --apply)
+MISSING domain compute-04 (rebuild: deploy_fabric_vms.sh --apply)
+--- state ---
+ Id   Name               State
+----------------------------------
+ 1    blr-dc01-spine01   running
+ 2    blr-dc01-spine02   running
+ 3    blr-dc01-leaf01    running
+ 4    blr-dc01-leaf02    running
+ 5    blr-dc01-leaf03    running
+ 6    blr-dc01-leaf04    running
+ 7    blr-dc01-leaf05    running
+ 8    blr-dc01-leaf06    running
+ 9    oob01              running
+ 10   oob02              running
+ 11   oob03              running
+ 12   dcgw01             running
+ 13   dcgw02             running
+ 14   vfw01              running
+
+╔════════════════════════════════════════════════════════════════════╗
+║  one-click bring-up    mode=apply  approve=auto  from=underlay to=accept
+║  blueprint=/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml   oci=10.0.0.42   tenants=3-11,84-100
+╚════════════════════════════════════════════════════════════════════╝
+== preflight: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'Server' is declared in foundation.roles
+  PASS  server compute-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server compute-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  server compute-03 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-03 port RMDC-GPU-LETH01:swp4 is not a fabric uplink
+  PASS  server compute-04 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-04 port RMDC-GPU-LETH02:swp4 is not a fabric uplink
+  PASS  tenant set '3-11,84-100' within 3..100 (bad: none)
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  blueprint 'blr-dc01' declares no racks — every device will be created with NO physical placement in the source of truth. Every data centre has racks, and this is always satisfiable: run `verify_blueprint.sh --fix` (F4 applies the default layout — cabinets named for their purpose: fabric, server, storage, oob), or regenerate through either intake door, or declare foundation.racks yourself. Set DC_REQUIRE_RACKS=1 to make this fatal.
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (18 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see blueprint/models/clos-leaf-spine/clos-leaf-spine.md
+
+PREFLIGHT: all 192 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+
+════════════════════════════════════════════════════════════════════
+  STAGE: Pre-flight — tenant reservation pool (load, then verify ready)
+════════════════════════════════════════════════════════════════════
+[tenant-pool] source: the blueprint's tenant rules (tenant_network, north_south.tenant_pool), else its tenant_policy formula (/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-694ddd469f-mf8l2 (database resolved inside the pod from Nautobot's own settings)
+loaded 98 row(s); pool now: {'free': 98} (live rows before this run: 0)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-694ddd469f-mf8l2 (database resolved inside the pod from Nautobot's own settings)
+POOL READY: all 98 row(s) present and equal to the source; pool: {'free': 98}
+[tenant-pool] no orphan reservation: every deployed reservation belongs to a tenant that exists
+
+════════════════════════════════════════════════════════════════════
+  STAGE: 1 Underlay — fabric intent + BGP-unnumbered
+════════════════════════════════════════════════════════════════════
+[nvue-bootstrap] mode: blueprint blueprint_stc.yaml — 14 device(s); creating NVUE user 'nv-config-manager' + verifying REST :8765
+  RMDC-GPU-SETH01    192.168.94.11   NVUE_REST=200  ok
+  RMDC-GPU-SETH02    192.168.94.12   NVUE_REST=200  ok
+  RMDC-GPU-LETH01    192.168.94.13   NVUE_REST=200  ok
+  RMDC-GPU-LETH02    192.168.94.14   NVUE_REST=200  ok
+  RMDC-GPU-LETH03    192.168.94.15   NVUE_REST=200  ok
+  RMDC-GPU-LETH04    192.168.94.16   NVUE_REST=200  ok
+  RMDC-GPU-LETH05    192.168.94.17   NVUE_REST=200  ok
+  RMDC-GPU-LETH06    192.168.94.18   NVUE_REST=200  ok
+  RMDC-GPU-OOB01     192.168.94.19   NVUE_REST=200  ok
+  RMDC-GPU-OOB02     192.168.94.20   NVUE_REST=200  ok
+  RMDC-GPU-OOB03     192.168.94.21   NVUE_REST=200  ok
+  RMDC-DC-R-01       192.168.94.22   NVUE_REST=200  ok
+  RMDC-DC-R-02       192.168.94.23   NVUE_REST=200  ok
+  RMDC-VFW-01        192.168.94.24   NVUE_REST=200  ok
+[nvue-bootstrap] seed-nvcm-cred: [site.blr-dc01] api_user_key_r1 already correct
+[site-secrets] [site.blr-dc01] of nv-config-manager-network-secrets: root_password_r1, api_user_key_r1, hash_salt (apply)
+  root_password_r1 already
+  api_user_key_r1 already
+  hash_salt already
+[site-secrets] nothing to change
+
+[nvue-bootstrap] OK: all 14 device(s) return NVUE REST 200 — NVCM can authenticate.
+╔════════════════════════════════════════════════════════════════════╗
+║  site bring-up   mode=apply   approve=auto
+║  blueprint=/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml
+╚════════════════════════════════════════════════════════════════════╝
+[provision-site] NOTE: designed for INITIAL site bring-up. Re-applying cables on an already-built fabric hits the create-once limitation (stc_review §4.3) — the supported re-apply is decommission → recreate.
+
+══ 1/5  validate blueprint + generate fabric designs → /tmp/dc-site-designs ══
+== preflight: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml ==
+  PASS  fabric_mtu is a sane jumbo value 1500..9216 — site policy, not one reference's number (got 9216)
+  PASS  at least one spine defined (got 2)
+  PASS  at least one leaf defined (got 6)
+  PASS  leaf RMDC-GPU-LETH01 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH02 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH03 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH04 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH05 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  leaf RMDC-GPU-LETH06 has one uplink port per spine (swp1, swp2); missing none  [no `uplinks:` declared, so the swp{n} default was assumed]
+  PASS  spine RMDC-GPU-SETH01 has >= 6 fabric ports (got 6)
+  PASS  spine RMDC-GPU-SETH02 has >= 6 fabric ports (got 6)
+  PASS  RMDC-GPU-SETH01 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-SETH02 fabric_ports has no duplicates (['swp1', 'swp2', 'swp3', 'swp4', 'swp5', 'swp6'])
+  PASS  RMDC-GPU-LETH01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH04 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-LETH05 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-LETH06 fabric_ports has no duplicates (['swp1', 'swp2', 'swp5', 'swp6', 'swp7'])
+  PASS  RMDC-GPU-OOB01 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB02 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  RMDC-GPU-OOB03 fabric_ports has no duplicates (['swp1', 'swp2'])
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-01
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  cabling.dcgw_links references known DC-GW RMDC-DC-R-02
+  PASS  dcgw_link leaf RMDC-GPU-LETH05 exists
+  PASS  dcgw_link leaf RMDC-GPU-LETH06 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH05 exists
+  PASS  vfw_cable leaf RMDC-GPU-LETH06 exists
+  PASS  oob_attach device RMDC-GPU-OOB01 exists
+  PASS  oob_attach device RMDC-GPU-OOB02 exists
+  PASS  oob_attach device RMDC-GPU-OOB03 exists
+  PASS  servers.role declared (required by the servers design)
+  PASS  servers.manufacturer declared (required by the servers design)
+  PASS  servers.device_type declared (required by the servers design)
+  PASS  servers.platform declared (required by the servers design)
+  PASS  servers.nodes declared (required by the servers design)
+  PASS  servers.device_type 'Generic Server' is declared in foundation.device_types
+  PASS  servers.role 'Server' is declared in foundation.roles
+  PASS  server compute-01 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-01 port RMDC-GPU-LETH01:swp3 is not a fabric uplink
+  PASS  server compute-02 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-02 port RMDC-GPU-LETH02:swp3 is not a fabric uplink
+  PASS  server compute-03 attaches to 'RMDC-GPU-LETH01', which exists and is a fabric switch
+  PASS  server compute-03 port RMDC-GPU-LETH01:swp4 is not a fabric uplink
+  PASS  server compute-04 attaches to 'RMDC-GPU-LETH02', which exists and is a fabric switch
+  PASS  server compute-04 port RMDC-GPU-LETH02:swp4 is not a fabric uplink
+  PASS  tenant_policy block present
+  PASS  tenant_policy.hgx_vlan.base is int
+  PASS  tenant_policy.hgx_l2vni.vni_offset is int
+  PASS  tenant_policy.hgx_l2vni.tracks is str
+  PASS  tenant_policy.hgx_subnet.supernet is str
+  PASS  tenant_policy.hgx_subnet.third_octet_base is int
+  PASS  tenant_policy.hgx_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_vlan.base is int
+  PASS  tenant_policy.nfs_vlan.over90_base is int
+  PASS  tenant_policy.nfs_vlan.over90_from is int
+  PASS  tenant_policy.nfs_l2vni.vni_offset is int
+  PASS  tenant_policy.nfs_l2vni.tracks is str
+  PASS  tenant_policy.nfs_subnet.supernet is str
+  PASS  tenant_policy.nfs_subnet.prefix_len is int
+  PASS  tenant_policy.nfs_subnet.stride is int
+  PASS  tenant_policy.nfs_subnet.from_tenant is int
+  PASS  tenant_policy.mpls_vlan.base is int
+  PASS  tenant_policy.internet_vlan.base is int
+  PASS  tenant_policy.l3vni.base is int
+  PASS  tenant_policy.l3vni_vlan.base is int
+  PASS  tenant_policy.vfw_asn.base is int
+  PASS  tenant_policy.ib_pkey.base is int
+  PASS  tenant_policy.bl_p2p_block.supernet is str
+  PASS  tenant_policy.bl_p2p_block.block_size is int
+  PASS  tenant_policy.bl_p2p_block.from_tenant is int
+  PASS  tenant_policy.bl_p2p_subint.stride is int
+  PASS  tenant_policy.bl_p2p_subint.from_tenant is int
+  PASS  tenant_policy.ib_rails.containing_supernet is str
+  PASS  tenant_policy.ib_rails.second_octet_base is int
+  PASS  tenant_policy.ib_rails.blocks is int
+  PASS  tenant_policy.ib_rails.rails_per_tenant is int
+  PASS  tenant_policy.ib_rails.prefix_len is int
+  PASS  tenant_policy.ib_rails.first_block_reserved is int
+  PASS  tenant_policy.ib_rails.first_block_max_tenant is int
+  PASS  tenant_policy.ib_rails.tenants_per_block is int
+  PASS  tenant_policy.dcgw_asn is int (got int)
+  PASS  tenant_policy.spine_asn is int (got int)
+  PASS  tenant_policy.vrf_name is str (got str)
+  PASS  HGX VLAN stays in 1..4094 for T=3..100 (top 209)
+  PASS  NFS VLAN stays in 1..4094 for T=3..100 (top 411)
+  PASS  MPLS VLAN stays in 1..4094 for T=3..100 (top 609)
+  PASS  Internet VLAN stays in 1..4094 for T=3..100 (top 709)
+  PASS  L3VNI-transit VLAN stays in 1..4094 for T=3..100 (top 3100)
+  PASS  tenant_policy.hgx_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.nfs_l2vni.vni_offset >= 100000 (L2VNI convention; got 100000)
+  PASS  tenant_policy.dcgw_asn is a valid ASN (216419)
+  PASS  tenant_policy.spine_asn is a valid ASN (65307)
+  PASS  vFW ASN stays valid for T=3..100
+  PASS  IB PKey stays 16-bit for T=3..100 (top 0x8064)
+  PASS  IB rails fit one /16 block (rails_per_tenant * tenants_per_block <= 256)
+  PASS  tenant_policy.vrf_name contains the '{T}' placeholder (got 'tenant{T}')
+  PASS  edge.p2p_subint_bases present (needed to derive the L7 edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-02 base 1311)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH05 <-> RMDC-DC-R-01 base 1312)
+  PASS  p2p_subint_bases RMDC-GPU-LETH05 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH05 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-02 base 1321)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-02 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  p2p_subint_bases entry well-formed (RMDC-GPU-LETH06 <-> RMDC-DC-R-01 base 1322)
+  PASS  p2p_subint_bases RMDC-GPU-LETH06 <-> RMDC-DC-R-01 maps to exactly one cabled link (got 1)
+  PASS  border leaf RMDC-GPU-LETH06 has an integer asn (needed for the edge map)
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-01 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH05 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  cabled uplink RMDC-GPU-LETH06 <-> RMDC-DC-R-02 has a p2p_subint vlan_base
+  PASS  location_path present (the full Nautobot location chain)
+  PASS  every location_path node has both 'name' and 'type'
+  PASS  location_path ends at 'location' (blr-building001-room001); ends at 'blr-building001-room001'
+  PASS  location_path has no repeated name (['Rafay', 'India', 'blr-dc01', 'blr-building001', 'blr-building001-room001'])
+  PASS  location_path types ['Provider', 'Region', 'Site', 'Building', 'Room'] form a contiguous prefix of the catalog's location-type chain ['Provider', 'Region', 'Site', 'Building', 'Room'] (skipping a level rewires the shared hierarchy — GT-1)
+  PASS  foundation.device_types declared
+  PASS  foundation.roles declared
+  PASS  switch device_type 'Cumulus VX' is declared in foundation.device_types
+  PASS  device_type Cumulus VX manufacturer 'NVIDIA' is in foundation.manufacturers
+  PASS  device_type Generic Server manufacturer 'Generic' is in foundation.manufacturers
+  foundation provenance: device_types=blueprint, location_types=blueprint, locations=blueprint, manufacturers=blueprint, namespaces=blueprint, platforms=blueprint, roles=blueprint, statuses=CATALOG(fallback)
+  PASS  location instances come from THIS blueprint (location_path), never from the shared catalog
+  PASS  shared catalog carries no locations.yaml (a site instance in a shared fallback repo)
+  PASS  shared catalog carries no tenants.yaml (a site instance in a shared fallback repo)
+  PASS  tenant_policy.shared_vrf present (needed to number the shared VRFs)
+  PASS  tenant_policy.shared_vrf.l3vni_base declared
+  PASS  tenant_policy.shared_vrf.l3vni_vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vlan_base declared
+  PASS  tenant_policy.shared_vrf.l2vni_offset declared
+  PASS  tenant_policy.shared_vrf.subnet declared
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'oob', 'index': 1}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'admin', 'index': 2}
+  PASS  shared_vrfs entry has a name and integer index: {'name': 'shared-obj', 'index': 3}
+  PASS  shared_vrfs indexes are unique ([1, 2, 3])
+  PASS  shared_vrfs names are unique (['oob', 'admin', 'shared-obj'])
+  PASS  shared VRF 'oob' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'admin' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared VRF 'shared-obj' does not collide with the tenant naming template 'tenant{T}'
+  PASS  shared_vrf.subnet.prefix_len is 24 (the net is emitted as a 3-octet prefix); got 24
+  PASS  shared VRF index 1: L3VNI 300901 does not collide with a tenant L3VNI
+  PASS  shared VRF index 1: VLANs 3901/901 do not collide with a tenant VLAN
+  PASS  shared VRF index 1: VLANs 3901/901 within 1..4094
+  PASS  shared VRF index 1: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 2: L3VNI 300902 does not collide with a tenant L3VNI
+  PASS  shared VRF index 2: VLANs 3902/902 do not collide with a tenant VLAN
+  PASS  shared VRF index 2: VLANs 3902/902 within 1..4094
+  PASS  shared VRF index 2: L2VNI does not collide with a tenant L2VNI
+  PASS  shared VRF index 3: L3VNI 300903 does not collide with a tenant L3VNI
+  PASS  shared VRF index 3: VLANs 3903/903 do not collide with a tenant VLAN
+  PASS  shared VRF index 3: VLANs 3903/903 within 1..4094
+  PASS  shared VRF index 3: L2VNI does not collide with a tenant L2VNI
+  PASS  qos.roce.enable is true and qos.roce.roles is non-empty
+  PASS  qos.roce.roles all match a role present in switches[] (unknown: none)
+  PASS  qos.roce matches at least one device (matched 6)
+  PASS  RoCE enabled with jumbo fabric_mtu 9216 (lossless needs the buffer headroom)
+  PASS  tenant_policy.tenant_range present
+  PASS  tenant_policy.tenant_range min/max are integers
+  PASS  tenant_policy.tenant_range is sane (3..100)
+  PASS  tenant_policy.server_host_offset is an integer (got 20)
+  PASS  tenant_policy.server_host_offset 20 leaves room in the plane subnet (2..200)
+  PASS  tenant_policy.server_host_offset does not collide with the anycast gateway (.1)
+  PASS  tenant_policy.server_host_offset 20 clears the per-switch SVI octets (10..15 for 6 fabric switch(es)) — an offset inside that range assigns a server the address a switch already answers on
+  PASS  tenant_policy.bl_p2p_subint.pool is a 'start-end' range (got '1301-1516')
+  PASS  every border<->DC-GW sub-int VLAN stays inside pool 1301-1516 (computed span 1311-1516 for T=3..100)
+  PASS  no unknown/misspelled blueprint keys
+  PASS  gitops/rbac spec derives cleanly (customer=stc, 1 repo(s), 6 object permissions)
+  PASS  edge.policy_prefix is a valid policy-name token (got 'STC')
+  PASS  edge.egress_standin present (external-egress supernet; also seeds the DC-GW loopback)
+  PASS  no unresolved '# TODO(confirm)' placeholders (0 found)
+  PASS  no key is left holding 'TODO(confirm)' as its VALUE (0 found)
+  WARN  blueprint 'blr-dc01' declares no racks — every device will be created with NO physical placement in the source of truth. Every data centre has racks, and this is always satisfiable: run `verify_blueprint.sh --fix` (F4 applies the default layout — cabinets named for their purpose: fabric, server, storage, oob), or regenerate through either intake door, or declare foundation.racks yourself. Set DC_REQUIRE_RACKS=1 to make this fatal.
+  PASS  consumer: the REAL loader accepts the blueprint (unknown keys hard-fail)
+  PASS  consumer: all design emitters run (skipped-as-optional: none)
+  PASS  edge device RMDC-DC-R-01: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-DC-R-02: role 'leaf' is declared in foundation.roles
+  PASS  edge device RMDC-VFW-01: role 'leaf' is declared in foundation.roles
+  PASS  consumer: tenant core edge_map compiles (p2p bases <-> cabling.dcgw_links agree)
+  PASS  consumer: f(T) sweep T3..T100 — no VLAN/VNI collisions
+  PASS  consumer: policy_fingerprint() computes (the write-once guard a tenant is stamped with)
+  PASS  consumer: render templates resolve for platform 'cumulus-linux' version '5.6' (2 entrypoint(s))
+  PASS  consumer: plan_substrate derives the VM plan (18 VM(s))
+  PASS  vfw RMDC-VFW-01: policy keys nested under config:, not flat (ok — flat keys parse but render a hollow intent; verify_blueprint.sh --fix folds them)
+  PASS  vfw RMDC-VFW-01: config is a mapping with asn (hollow config renders 'intended None')
+  PASS  mgmt IPs are unique across all devices (dupes: none)
+  PASS  switch loopbacks are unique (router-ids collide otherwise; dupes: none)
+  PASS  every switch loopback falls inside fabric_loopback_prefix 172.23.0.0/24 (out of range: [])
+  PASS  topology 'clos-leaf-spine' is one we support — see blueprint/models/clos-leaf-spine/clos-leaf-spine.md
+
+PREFLIGHT: all 191 checks passed — blueprint is topology-sound. (1 warning(s) — review them)
+wrote /tmp/dc-site-designs/foundation.design.yaml
+wrote /tmp/dc-site-designs/edge.design.yaml
+wrote /tmp/dc-site-designs/underlay.design.yaml
+wrote /tmp/dc-site-designs/cables.design.yaml
+wrote /tmp/dc-site-designs/servers.design.yaml
+
+══ 1b/5  seed the site data to the cluster (jobs PVC: packages + vendored blueprint + designs) ══
+== regenerating site_provision designs from the blueprint (/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml) ==
+== seeding JOBS_ROOT packages onto PVC nautobot-custom-jobs: common blueprint_validate drift ib lifecycle provision server tenant site_provision ==
+== vendored tenant policy: /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml -> tenant/blueprint.yaml ==
+pod/dc-jobs-writer condition met
+command terminated with exit code 1
+   no pre-rename job packages on the PVC (expected — nothing to clean)
+   seeded common
+   seeded blueprint_validate
+   seeded drift
+   seeded ib
+   seeded lifecycle
+   seeded provision
+   seeded server
+   seeded tenant
+   seeded site_provision
+== restarting celery + web + render-api + temporal worker to load the jobs ==
+deployment.apps/nv-config-manager-nautobot-celery restarted
+deployment.apps/nv-config-manager-nautobot restarted
+deployment.apps/nv-config-manager-render-api restarted
+deployment.apps/nv-config-manager-temporal-nv-config-manager-worker restarted
+== restarting dhcp-refresh + temporal-scheduler (stale-connection reconnect, best-effort) ==
+deployment.apps/nv-config-manager-dhcp-refresh restarted
+deployment.apps/nv-config-manager-temporal-scheduler restarted
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "nv-config-manager-nautobot" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-nautobot" successfully rolled out
+deployment "nv-config-manager-render-api" successfully rolled out
+deployment "nv-config-manager-temporal-nv-config-manager-worker" successfully rolled out
+Waiting for deployment "nv-config-manager-dhcp-refresh" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-dhcp-refresh" successfully rolled out
+Waiting for deployment "nv-config-manager-temporal-scheduler" rollout to finish: 0 of 1 updated replicas are available...
+deployment "nv-config-manager-temporal-scheduler" successfully rolled out
+[suppress-loader] RESULT total=1 disabled=1
+== enabling the seeded lifecycle jobs (modules matching (^|\.)(common|blueprint_validate|drift|ib|lifecycle|provision|server|tenant|site_provision)\.) ==
+   RESULT installed=32 newly_enabled=0 (attempt 1/60)
+== done. JOBS_ROOT jobs seeded + enabled (32 installed). ==
+
+══ 1c/5  tenant reservation pool — load from the blueprint, then verify it is ready ══
+[tenant-pool] source: the blueprint's tenant rules (tenant_network, north_south.tenant_pool), else its tenant_policy formula (/home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-5d8c464bb8-pxd2w (database resolved inside the pod from Nautobot's own settings)
+loaded 98 row(s); pool now: {'free': 98} (live rows before this run: 0)
+SOURCE OK
+  tenant numbers : 98 row(s), T=3..100
+  HGX VLAN       : 112..209
+  NFS VLAN       : 312..411
+  L3VNI          : 300003..300100
+  IB PKey / rails: 98 / 98 row(s) carry them
+  vFW ASN        : 65103..65200
+target: namespace=nv-config-manager pod=nv-config-manager-nautobot-5d8c464bb8-pxd2w (database resolved inside the pod from Nautobot's own settings)
+POOL READY: all 98 row(s) present and equal to the source; pool: {'free': 98}
+[tenant-pool] no orphan reservation: every deployed reservation belongs to a tenant that exists
+
+══ 2/5  apply fabric designs into the Nautobot SoT (foundation + underlay + edge + cables) ══
+[provision-site] preserved the device contexts (day-2 keys merge back after the design applies)
+Building design from /tmp/design.yaml
+2026-11-13T11:28:17.674941Z [info     ] Updated LocationType Provider  [nautobot_design_builder.design]
+2026-11-13T11:28:17.697727Z [info     ] Updated LocationType Region    [nautobot_design_builder.design]
+2026-11-13T11:28:17.716124Z [info     ] Updated LocationType Site      [nautobot_design_builder.design]
+2026-11-13T11:28:17.737034Z [info     ] Updated LocationType Building  [nautobot_design_builder.design]
+2026-11-13T11:28:17.756943Z [info     ] Updated LocationType Room      [nautobot_design_builder.design]
+2026-11-13T11:28:17.787264Z [info     ] Updated Location Rafay         [nautobot_design_builder.design]
+2026-11-13T11:28:17.806177Z [info     ] Updated Location India         [nautobot_design_builder.design]
+2026-11-13T11:28:17.825255Z [info     ] Updated Location blr-dc01      [nautobot_design_builder.design]
+2026-11-13T11:28:17.844714Z [info     ] Updated Location blr-building001 [nautobot_design_builder.design]
+2026-11-13T11:28:17.865317Z [info     ] Updated Location blr-building001-room001 [nautobot_design_builder.design]
+2026-11-13T11:28:17.875655Z [info     ] Updated Manufacturer NVIDIA    [nautobot_design_builder.design]
+2026-11-13T11:28:17.879938Z [info     ] Updated Manufacturer Generic   [nautobot_design_builder.design]
+2026-11-13T11:28:17.893463Z [info     ] Updated DeviceType Cumulus VX  [nautobot_design_builder.design]
+2026-11-13T11:28:17.901025Z [info     ] Updated DeviceType Generic Server [nautobot_design_builder.design]
+2026-11-13T11:28:17.911851Z [info     ] Updated Role spine             [nautobot_design_builder.design]
+2026-11-13T11:28:17.922405Z [info     ] Updated Role leaf              [nautobot_design_builder.design]
+2026-11-13T11:28:17.932722Z [info     ] Updated Role GPU               [nautobot_design_builder.design]
+2026-11-13T11:28:17.942655Z [info     ] Updated Role Server            [nautobot_design_builder.design]
+2026-11-13T11:28:17.956706Z [info     ] Updated Namespace Global       [nautobot_design_builder.design]
+[provision-site] applied foundation.design.yaml
+Building design from /tmp/design.yaml
+2026-11-13T11:28:46.664645Z [info     ] Updated Platform Cumulus Linux [nautobot_design_builder.design]
+2026-11-13T11:28:46.688346Z [info     ] Updated Prefix 172.23.0.0/24   [nautobot_design_builder.design]
+2026-11-13T11:28:46.701124Z [info     ] Updated VLAN placeholder (100) [nautobot_design_builder.design]
+2026-11-13T11:28:46.739806Z [info     ] Updated Device RMDC-GPU-SETH01 [nautobot_design_builder.design]
+2026-11-13T11:28:47.079656Z [info     ] Updated Device RMDC-GPU-SETH02 [nautobot_design_builder.design]
+2026-11-13T11:28:47.218606Z [info     ] Updated Device RMDC-GPU-LETH01 [nautobot_design_builder.design]
+2026-11-13T11:28:47.392316Z [info     ] Updated Device RMDC-GPU-LETH02 [nautobot_design_builder.design]
+2026-11-13T11:28:47.565697Z [info     ] Updated Device RMDC-GPU-LETH03 [nautobot_design_builder.design]
+2026-11-13T11:28:47.646832Z [info     ] Updated Device RMDC-GPU-LETH04 [nautobot_design_builder.design]
+2026-11-13T11:28:47.728718Z [info     ] Updated Device RMDC-GPU-LETH05 [nautobot_design_builder.design]
+2026-11-13T11:28:47.856901Z [info     ] Updated Device RMDC-GPU-LETH06 [nautobot_design_builder.design]
+2026-11-13T11:28:47.978981Z [info     ] Updated Device RMDC-GPU-OOB01  [nautobot_design_builder.design]
+2026-11-13T11:28:48.056714Z [info     ] Updated Device RMDC-GPU-OOB02  [nautobot_design_builder.design]
+2026-11-13T11:28:48.132998Z [info     ] Updated Device RMDC-GPU-OOB03  [nautobot_design_builder.design]
+[provision-site] applied underlay.design.yaml
+Building design from /tmp/design.yaml
+2026-11-13T11:29:17.131921Z [info     ] Updated Platform Cumulus Linux [nautobot_design_builder.design]
+2026-11-13T11:29:17.172189Z [info     ] Updated Device RMDC-DC-R-01    [nautobot_design_builder.design]
+2026-11-13T11:29:17.197502Z [info     ] Updated Device RMDC-DC-R-02    [nautobot_design_builder.design]
+2026-11-13T11:29:17.227140Z [info     ] Updated Device RMDC-VFW-01     [nautobot_design_builder.design]
+[provision-site] applied edge.design.yaml
+cable reconcile: adopted 24 existing, freed 0 stale termination(s) before connect
+2026-11-13T11:29:45.458816Z [info     ] Updated Device RMDC-GPU-SETH01 [nautobot_design_builder.design]
+2026-11-13T11:29:45.819038Z [info     ] Updated Device RMDC-GPU-SETH02 [nautobot_design_builder.design]
+2026-11-13T11:29:45.986235Z [info     ] Updated Device RMDC-GPU-LETH01 [nautobot_design_builder.design]
+2026-11-13T11:29:46.061211Z [info     ] Updated Device RMDC-GPU-LETH02 [nautobot_design_builder.design]
+2026-11-13T11:29:46.132642Z [info     ] Updated Device RMDC-GPU-LETH03 [nautobot_design_builder.design]
+2026-11-13T11:29:46.203254Z [info     ] Updated Device RMDC-GPU-LETH04 [nautobot_design_builder.design]
+2026-11-13T11:29:46.278334Z [info     ] Updated Device RMDC-GPU-LETH05 [nautobot_design_builder.design]
+2026-11-13T11:29:46.491000Z [info     ] Updated Device RMDC-GPU-LETH06 [nautobot_design_builder.design]
+2026-11-13T11:29:46.689826Z [info     ] Updated Device RMDC-DC-R-01    [nautobot_design_builder.design]
+2026-11-13T11:29:46.759676Z [info     ] Updated Device RMDC-DC-R-02    [nautobot_design_builder.design]
+2026-11-13T11:29:46.834497Z [info     ] Updated Device RMDC-VFW-01     [nautobot_design_builder.design]
+2026-11-13T11:29:46.919719Z [info     ] Updated Device RMDC-GPU-OOB01  [nautobot_design_builder.design]
+2026-11-13T11:29:46.996861Z [info     ] Updated Device RMDC-GPU-OOB02  [nautobot_design_builder.design]
+2026-11-13T11:29:47.069499Z [info     ] Updated Device RMDC-GPU-OOB03  [nautobot_design_builder.design]
+APPLIED design from /tmp/design.yaml
+[provision-site] applied cables.design.yaml
+RESTORED 0 device(s); keys: -
+[provision-site] servers: add per node via '4.1 · Register (add to free pool)' + Attach (not part of fabric bring-up); with tenant0 the REST register parks a new server, the CLI flow parks with server_operations.sh park
+
+══ 2b/5  set mgmt eth0 + primary_ip4 + render/deploy-enable (from the blueprint) ══
+== backfill-mgmt: stamping eth0 + primary_ip4 (+ render/deploy-enable) for 14 device(s) ==
+mgmt stamped: 14 device(s), 0 not-in-SoT, render-enabled: 14
+server mgmt stamped: 0 server(s)
+
+══ 3/5  configure switches (NVCM gate: auto) ══
+[render-templates] repo plugin: 104 files, checksum bd60c16d8ade; blueprint renders for Cumulus 5.6.0
+[render-templates] backup of what was on the volume: /home/ubuntu/render_templates_backup/20261113-113051
+[render-templates] volume now matches the repo (104 files)
+[render-templates] restarting render-api + the temporal worker to load the templates (they install the plugin at start)
+[render-templates] render pods ready
+[render-templates] Cumulus 5.6.0 templates are on the volume
+[provision-site] deploy scope: 13 blueprint device(s) (never 'all' on a shared SoT)
+[account-context] worker login 'nv-config-manager': kept/updated lab=False ssh_key=False users=['cumulus', 'nv-config-manager', 'nvConfigManager'] sites=['blr-dc01'] VERIFIED
+== configure-devices: DC_APPROVE=auto, 13 device(s) ==
+  self-heal: terminated 0 stale RUNNING DeployWorkflow(s) + 0 orphan BackupWorkflow(s) before deploy
+Defaulted container "api" out of: api, install-template-plugins (init)
+  render 28610c20 201 in 3.1s
+  render 2f5638ef 201 in 3.4s
+  render 649cfb43 201 in 2.7s
+  render 2b46ac90 201 in 3.0s
+  render 25778bcd 201 in 3.2s
+  render 3d215c73 201 in 2.8s
+  render a880ca7d 201 in 2.7s
+  render 1c572783 201 in 3.2s
+  render da31a70c 201 in 3.1s
+  render 2e6809b6 201 in 2.6s
+  render e2a2d443 201 in 2.3s
+  render e2a6a11d 201 in 2.2s
+  render 89f7b9c7 201 in 1.2s
+  == render phase: 13 device(s) in 18s (concurrency 2) ==
+  preflight: checked=13 worker=nv-config-manager bad=0
+== BATCH MODE: deploying 13 device(s) with width 2 (R1: independent devices, auto gate) ==
+  28610c20: the switch rejected the configuration during apply — will not retry, nothing was configured
+  28610c20: FAILED failed_stage=True in 14s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 5bdb80eb-9366-4633-b6cb-19a65f88a3bc
+  2f5638ef: the switch rejected the configuration during apply — will not retry, nothing was configured
+  2f5638ef: FAILED failed_stage=True in 15s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 17a5df21-0549-426a-9569-130d8cad6f36
+  649cfb43: the switch rejected the configuration during apply — will not retry, nothing was configured
+  649cfb43: FAILED failed_stage=True in 13s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow aa672fb3-b411-401a-bf84-7e3ef93bf2bb
+  2b46ac90: the switch rejected the configuration during apply — will not retry, nothing was configured
+  2b46ac90: FAILED failed_stage=True in 14s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 44951ac0-eddd-4138-829e-11e4caa7fe63
+  25778bcd: the switch rejected the configuration during apply — will not retry, nothing was configured
+  25778bcd: FAILED failed_stage=True in 13s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow c6f2c119-e9b9-4030-a13f-39108da9acab
+  3d215c73: the switch rejected the configuration during apply — will not retry, nothing was configured
+  3d215c73: FAILED failed_stage=True in 14s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 02781c76-4231-44fd-803b-adb75e3e8d25
+  a880ca7d: the switch rejected the configuration during apply — will not retry, nothing was configured
+  a880ca7d: FAILED failed_stage=True in 13s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 24483295-92cc-4fc9-9782-49fd4ef15d2b
+  1c572783: the switch rejected the configuration during apply — will not retry, nothing was configured
+  1c572783: FAILED failed_stage=True in 14s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 123c2308-290f-45bd-8c3c-1be96bc26fe3
+  da31a70c: the switch rejected the configuration during apply — will not retry, nothing was configured
+  da31a70c: FAILED failed_stage=True in 13s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 67b47ef6-0ef7-4305-9ae6-d30b2d2cbcc5
+  2e6809b6: the switch rejected the configuration during apply — will not retry, nothing was configured
+  2e6809b6: FAILED failed_stage=True in 14s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 71ea6799-6f77-441c-8e5d-b1f26d58172a
+  e2a2d443: the switch rejected the configuration during apply — will not retry, nothing was configured
+  e2a2d443: FAILED failed_stage=True in 13s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 8b05b485-bbe0-4371-8eda-8f5e0dc7780e
+  e2a6a11d: the switch rejected the configuration during apply — will not retry, nothing was configured
+  e2a6a11d: FAILED failed_stage=True in 14s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow b1b7a720-2be4-4ab2-a038-a37816914f64
+  89f7b9c7: the switch rejected the configuration during apply — will not retry, nothing was configured
+  89f7b9c7: FAILED failed_stage=True in 13s
+      stages: load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+      workflow 51d070ba-224b-4c40-950f-4f0a1f54e9c5
+== SUMMARY: 0/13 configured, 0 awaiting review, 13 NOT CONFIGURED in 102s (width 2) ==
+== deploy phase: 13 device(s) = 7 wave(s) at width 2, median 14s/device (fastest 13s, slowest 15s) ==
+   width is the divisor on the wave count. To find out whether this platform sustains a wider window, re-run with $DC_DEPLOY_CONCURRENCY=4 and compare these numbers.
+  NOT CONFIGURED  28610c20  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  2f5638ef  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  649cfb43  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  2b46ac90  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  25778bcd  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  3d215c73  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  a880ca7d  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  1c572783  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  da31a70c  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  2e6809b6  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  e2a2d443  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  e2a6a11d  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  NOT CONFIGURED  89f7b9c7  FAILED  load_intended_configuration=COMPLETE | perform_configuration_diff=COMPLETE | apply_configuration=FAILED | perform_backup=NOT_STARTED
+  Those devices do NOT match the SoT.
+  * apply_configuration FAILED — the SWITCH REJECTED the configuration. This is not a
+    size problem and staging will NOT help: the intended config itself is invalid for
+    that device. The worker log below carries NVUE's own reason and names the offending
+    key (for example an interface address that is not a valid prefix). Fix the source
+    data that produced it — usually a value missing from the blueprint — then re-run.
+  The full cause appears ONLY in the temporal-worker log (printed below by the caller).
+== NOT-CONFIGURED: 28610c20-94a7-4a4c-804a-80d0e3afc0cd 2f5638ef-d6db-45da-8081-1d4e0545affd 649cfb43-4ac1-425f-808b-78cb54581f15 2b46ac90-ec19-4341-8afa-66ee3b8bfea5 25778bcd-9fcd-489f-92fc-7b53f7ad0aff 3d215c73-f831-4263-9796-a16462aaf885 a880ca7d-f4b5-4342-8b3b-9c2ef1e437b7 1c572783-4b99-47bb-97d8-64c1665d7aa0 da31a70c-fe5d-4e3d-921e-96c74166ef02 2e6809b6-aac7-43d4-9439-217f4044c5a3 e2a2d443-d70d-429b-815d-e1e488215494 e2a6a11d-3bc3-4cdb-8b14-26f9164854ee 89f7b9c7-0931-4cf7-b64c-10b214b986ce ==
+command terminated with exit code 1
+== configure-devices total: 159s (render + deploy + overhead) ==
+== temporal-worker log — the only place the stage error appears (matching lines, last 40) ==
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '5bdb80eb-9366-4633-b6cb-19a65f88a3bc', 'workflow_run_id': '01a1d4af-25ae-78e1-8395-577cb6290206', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:33:40,961", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "5bdb80eb-9366-4633-b6cb-19a65f88a3bc", "workflow_run_id": "01a1d4af-25ae-78e1-8395-577cb6290206", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '17a5df21-0549-426a-9569-130d8cad6f36', 'workflow_run_id': '01a1d4af-261c-7927-a534-2e93ae356b4e', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:33:41,097", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "17a5df21-0549-426a-9569-130d8cad6f36", "workflow_run_id": "01a1d4af-261c-7927-a534-2e93ae356b4e", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': 'aa672fb3-b411-401a-bf84-7e3ef93bf2bb', 'workflow_run_id': '01a1d4af-63e4-7f33-a81d-206643da3208', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:33:58,727", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "aa672fb3-b411-401a-bf84-7e3ef93bf2bb", "workflow_run_id": "01a1d4af-63e4-7f33-a81d-206643da3208", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '44951ac0-eddd-4138-829e-11e4caa7fe63', 'workflow_run_id': '01a1d4af-6456-7028-8266-467bcb917161', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:33:58,846", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "44951ac0-eddd-4138-829e-11e4caa7fe63", "workflow_run_id": "01a1d4af-6456-7028-8266-467bcb917161", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '02781c76-4231-44fd-803b-adb75e3e8d25', 'workflow_run_id': '01a1d4af-9f61-7302-a3c5-177ea8ff231a', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:14,006", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "02781c76-4231-44fd-803b-adb75e3e8d25", "workflow_run_id": "01a1d4af-9f61-7302-a3c5-177ea8ff231a", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': 'c6f2c119-e9b9-4030-a13f-39108da9acab', 'workflow_run_id': '01a1d4af-9ef2-778f-a71f-b70570fac75d', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:14,038", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "c6f2c119-e9b9-4030-a13f-39108da9acab", "workflow_run_id": "01a1d4af-9ef2-778f-a71f-b70570fac75d", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '24483295-92cc-4fc9-9782-49fd4ef15d2b', 'workflow_run_id': '01a1d4af-d7ac-739d-a742-870a7dd80bc5', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:28,389", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "24483295-92cc-4fc9-9782-49fd4ef15d2b", "workflow_run_id": "01a1d4af-d7ac-739d-a742-870a7dd80bc5", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '123c2308-290f-45bd-8c3c-1be96bc26fe3', 'workflow_run_id': '01a1d4af-d819-72ed-a8d9-95020b4a25b8', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:28,420", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "123c2308-290f-45bd-8c3c-1be96bc26fe3", "workflow_run_id": "01a1d4af-d819-72ed-a8d9-95020b4a25b8", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '67b47ef6-0ef7-4305-9ae6-d30b2d2cbcc5', 'workflow_run_id': '01a1d4b0-0ffb-7931-aba6-9e3839c9d8f2', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:42,690", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "67b47ef6-0ef7-4305-9ae6-d30b2d2cbcc5", "workflow_run_id": "01a1d4b0-0ffb-7931-aba6-9e3839c9d8f2", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '71ea6799-6f77-441c-8e5d-b1f26d58172a', 'workflow_run_id': '01a1d4b0-106e-7edc-8571-27feb0df6a73', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:42,964", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "71ea6799-6f77-441c-8e5d-b1f26d58172a", "workflow_run_id": "01a1d4b0-106e-7edc-8571-27feb0df6a73", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '8b05b485-bbe0-4371-8eda-8f5e0dc7780e', 'workflow_run_id': '01a1d4b0-4809-7994-90af-8dd02d24da57', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:56,979", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "8b05b485-bbe0-4371-8eda-8f5e0dc7780e", "workflow_run_id": "01a1d4b0-4809-7994-90af-8dd02d24da57", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': 'b1b7a720-2be4-4ab2-a038-a37816914f64', 'workflow_run_id': '01a1d4b0-4875-78f3-9a79-74aa93839b68', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:34:57,194", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "b1b7a720-2be4-4ab2-a038-a37816914f64", "workflow_run_id": "01a1d4b0-4875-78f3-9a79-74aa93839b68", "workflow_type": "DeployWorkflow"}}
+    {"message": "Completing activity as failed ({'activity_id': '6', 'activity_type': 'apply_approved_configuration', 'attempt': 1, 'namespace': 'default', 'task_queue': 'default-task-queue', 'workflow_id': '51d070ba-224b-4c40-950f-4f0a1f54e9c5', 'workflow_run_id': '01a1d4b0-7fe0-7bec-83c0-71b5c9f78dd4', 'workflow_type': 'DeployWorkflow'})", "levelname": "WARNING", "name": "temporalio.activity", "asctime": "2026-11-13 11:35:10,987", "module": "_activity", "lineno": 474, "exc_info": "Traceback (most recent call last):\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 359, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 714, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/contrib/opentelemetry/_interceptor.py\", line 383, in execute_activity\n    return await super().execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 132, in execute_activity\n    return await self.next.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 904, in execute_activity\n    return await loop.run_in_executor(input.executor, func, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/concurrent/futures/thread.py\", line 59, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 971, in _execute_sync_activity\n    return fn(*args)\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/ngc/activities/deploy.py\", line 119, in apply_approved_configuration\n    connection.commit_candidate_config(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        activity_input.configuration,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        partial=activity_input.partial,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/code/nv-config-manager/.venv/lib/python3.13/site-packages/nv_config_manager/temporal/client/device.py\", line 1632, in commit_candidate_config\n    raise InvalidConfigException(\n    ...<2 lines>...\n    )\nnv_config_manager.temporal.client.device.InvalidConfigException: Invalid config: {\"issue\": {\"00000\": {\"code\": \"generic\", \"data\": {\"msg\": \"User cumulus already exists in the system. NVUE will not take over the user\"}, \"message\": \"User cumulus already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}, \"00001\": {\"code\": \"generic\", \"data\": {\"msg\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\"}, \"message\": \"User nv-config-manager already exists in the system. NVUE will not take over the user\", \"severity\": \"error\"}}, \"progress\": \"Invalid config\"}", "level": "warning", "service": "temporal-worker", "include_in_slo": "true", "temporal_activity": {"activity_id": "6", "activity_type": "apply_approved_configuration", "attempt": 1, "namespace": "default", "task_queue": "default-task-queue", "workflow_id": "51d070ba-224b-4c40-950f-4f0a1f54e9c5", "workflow_run_id": "01a1d4b0-7fe0-7bec-83c0-71b5c9f78dd4", "workflow_type": "DeployWorkflow"}}
+== configure-devices: FAILED — one or more devices do NOT match the SoT (see SUMMARY above) ==
+[provision-site] FAILED: bash '/home/ubuntu/rafay_nvcm_poc/deploy_scripts/fabric/configure_devices.sh' 28610c20-94a7-4a4c-804a-80d0e3afc0cd 2f5638ef-d6db-45da-8081-1d4e0545affd 649cfb43-4ac1-425f-808b-78cb54581f15 2b46ac90-ec19-4341-8afa-66ee3b8bfea5 25778bcd-9fcd-489f-92fc-7b53f7ad0aff 3d215c73-f831-4263-9796-a16462aaf885 a880ca7d-f4b5-4342-8b3b-9c2ef1e437b7 1c572783-4b99-47bb-97d8-64c1665d7aa0 da31a70c-fe5d-4e3d-921e-96c74166ef02 2e6809b6-aac7-43d4-9439-217f4044c5a3 e2a2d443-d70d-429b-815d-e1e488215494 e2a6a11d-3bc3-4cdb-8b14-26f9164854ee 89f7b9c7-0931-4cf7-b64c-10b214b986ce (exit 1)
+[dc-up] FAILED: DC_STAMP_MGMT=1 DC_SPARE_SERVER_PORTS=8 bash '/home/ubuntu/rafay_nvcm_poc/deploy_scripts/fabric/provision_site.sh' --blueprint /home/ubuntu/rafay_nvcm_poc/datacenters/examples/stc/blueprint_stc.yaml --apply --no-tenant0 --auto-approve --tenants 3-11,84-100
+[2026-11-13 11:35:30 UTC] ERROR Stage site-bringup failed (rc=1, 721s)
+
+------------------------------------------------------------
+STAGE STATUS: FAILED
+------------------------------------------------------------
+
+
+============================================================
+WORKFLOW STATUS: FAILED (failed stage: site-bringup)
+============================================================
