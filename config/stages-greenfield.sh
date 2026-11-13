@@ -140,6 +140,9 @@ stage_blueprint_generate(){  # setup_guide.md III-2
 }
 
 stage_blueprint_verify(){    # setup_guide.md III-3 — the offline acceptance door, for BOTH sources
+  # lp_dc_inputs here, not only inside $(lp_blueprint): that runs in a subshell, so the DATACENTER it sets is lost
+  # and the echo below dies under the stage's `set -u` (2026-11-12, "DATACENTER: unbound variable").
+  lp_dc_inputs || return
   local bp; bp="$(lp_blueprint)" || return
   lp_venv || return
   echo "[launchpad] verifying $DATACENTER ($BLUEPRINT_SOURCE) blueprint: $bp"
