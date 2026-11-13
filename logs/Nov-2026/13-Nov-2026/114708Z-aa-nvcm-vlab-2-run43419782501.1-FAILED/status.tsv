@@ -1,0 +1,8 @@
+1	host-prep	platform	not-selected				
+2	platform-nvcm-install	platform	not-selected				
+3	platform-rafay-install	platform	not-selected				
+4	platform-verify	platform	not-selected				
+5	blueprint-generate	blueprint	not-selected				
+6	blueprint-verify	blueprint	not-selected				
+7	substrate	substrate	not-selected				
+8	site-bringup	bringup	failed	1	2026-11-13T11:49:12Z	2026-11-13T12:00:21Z	669
