@@ -1,0 +1,28 @@
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+[lab] instance state: RUNNING
+[lab] already RUNNING — nothing to start
+[lab] instance RUNNING
+Warning: To increase security of your API key located at /home/runner/.oci/key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+::warning::SSH_KNOWN_HOSTS not set — trusting the lab host key on first use
+[lab] lab = ubuntu@158.101.14.60; waiting for SSH
+[lab] systemd: running
+[agent] preflight ok: aa-nvcm-vlab-1 · Ubuntu 24.04.5 LTS · 20 cpu · 48 GiB · 549G free
+[agent] deleting kind cluster 'nv-config-manager'
+Deleting cluster "nv-config-manager" ...
+Deleted nodes: ["nv-config-manager-control-plane"]
+[agent] deleted 0 VM(s)
+[agent] preflight ok: aa-nvcm-vlab-1 · Ubuntu 24.04.5 LTS · 20 cpu · 48 GiB · 561G free
+[agent] updating existing checkout in place: nvcm-1.3.1-migrate@4267d9d
+[agent] checked out ramakrishna-rafay/rafay_nvcm_poc@nvcm_1.3.1_migrate_test (ef48bd6 Merge nvcm_1.3.1 into prototype_demo_v1 as nvcm_1.3.1_migrate_test)
+RUN_KEY=43371183514-1
+RUN_DIR=/home/ubuntu/launchpad/runs/43371183514-1
+POC_DIR=/home/ubuntu/rafay_nvcm_poc
+POC_REPO=ramakrishna-rafay/rafay_nvcm_poc
+POC_BRANCH=nvcm_1.3.1_migrate_test
+POC_SHA=ef48bd64a75e7a83058d47dfc5e098d2b9ac4e33
+LAB_IP=10.0.0.207
+BLUEPRINT_SOURCE=existing
+BP_COMMITTED=datacenters/examples/slab/blueprint_blr.yaml
+TENANTS=3-11\,84-100
+[launchpad] datacenters/examples/slab/blueprint_blr.yaml is a spectrumx blueprint — greenfield (simulate_dc.sh) can't build it; rafay_nvcm_poc brings these up with deploy_scripts/dc.sh
+[agent] ERROR: boot check failed for run 43371183514-1 (see above)
